@@ -1,0 +1,1403 @@
+     ____
+    / _  |   Frida 16.6.6 - A world-class dynamic instrumentation toolkit
+   | (_| |
+    > _  |   Commands:
+   /_/ |_|       help      -> Displays the help system
+   . . . .       object?   -> Display information about 'object'
+   . . . .       exit/quit -> Exit
+   . . . .
+   . . . .   More info at https://frida.re/docs/home/
+   . . . .
+   . . . .   Connected to 127.0.0.1:27042 (id=socket@127.0.0.1:27042)
+Attaching...
+[0/7] Script started
+[1/7] Looking for libcocos2dcpp.so
+[2/7] Found module
+[*] Module: libcocos2dcpp.so
+[*] Path: /data/app/com.appsomniacs.da2-11mis0M8o7giymLnCynO4w==/lib/arm/libcocos2dcpp.so
+[*] Base: 0xce7c4000
+[*] Size: 12038144 bytes / 0xb7b000
+[3/7] Enumerating memory ranges
+
+[Memory ranges] count=5
+  0xce7c4000 - 0xcf2a3000 r-x size=0xadf000
+  0xce7c4000 - 0xcf2a3000 r-x size=0xadf000
+  0xcf2a4000 - 0xcf2f2000 r-- size=0x4e000
+  0xcf2f2000 - 0xcf33f000 rw- size=0x4d000
+  0xcf2f2000 - 0xcf33f000 rw- size=0x4d000
+[4/7] Enumerating exports
+
+[Exports] count=36225
+  function 0xcead4641 _ZnwjPv
+  function 0xcf125e28 __aeabi_unwind_cpp_pr0
+  function 0xcead46e1 _ZN7cocos2d10CCDirector13getOpenGLViewEv
+  function 0xcead4719 _ZSt4atanf
+  function 0xcead4731 _ZSt3cosf
+  function 0xcead4749 _ZSt5floorf
+  function 0xcead4761 _ZSt3sinf
+  function 0xcee78f1d _ZN7cocos2d6CCRectC1Effff
+  function 0xcee7f7a9 _ZN7cocos2d8CCString16createWithFormatEPKcz
+  function 0xcee7f5c1 _ZNK7cocos2d8CCString10getCStringEv
+  function 0xcf0d01cc __cxa_end_cleanup
+  function 0xcf125e30 __aeabi_unwind_cpp_pr1
+  variable 0xcf301d84 scaleLayer
+  variable 0xcf301d70 screenSize
+  variable 0xcf3016f8 centerPoint
+  function 0xcead6b05 _ZNSt6vectorISsSaISsEEC1Ev
+  function 0xcead6b5d _ZNSt6vectorISsSaISsEE9push_backEOSs
+  function 0xcead6b1d _ZNSt6vectorISsSaISsEED1Ev
+  function 0xcead6bd9 _ZN9__gnu_cxxmiIPcSsEENS_17__normal_iteratorIT_T0_E15difference_typeERKS5_S8_
+  function 0xcead6c01 _ZN9__gnu_cxx17__normal_iteratorIPcSsEmmEi
+  function 0xcead6ba9 _ZN9__gnu_cxx17__normal_iteratorIPcSsEppEi
+  function 0xcead6b7d _ZN9__gnu_cxxneIPcSsEEbRKNS_17__normal_iteratorIT_T0_EES7_
+  function 0xcefde781 deflateInit_
+  function 0xcf0d188c __cxa_allocate_exception
+  function 0xcf0d21bc __cxa_throw
+  function 0xcefdd225 deflate
+  function 0xcefde4e1 deflateEnd
+  function 0xcf0d1980 __cxa_free_exception
+  function 0xcefe00d1 inflateInit_
+  function 0xcefe0125 inflate
+  function 0xcefe1905 inflateEnd
+  function 0xcead6c31 _Z9to_stringIiESsT_
+  function 0xceec7399 _ZN7cocos2d6clampfEfff
+  function 0xcead6039 _ZN7_JNIEnv9FindClassEPKc
+  function 0xcead6059 _ZN7_JNIEnv12NewGlobalRefEP8_jobject
+  function 0xcead6095 _ZN7_JNIEnv14GetObjectClassEP8_jobject
+  function 0xcead6115 _ZN7_JNIEnv12NewStringUTFEPKc
+  function 0xcead6135 _ZN6RakNet10RakNetGUIDC2Ey
+  function 0xcead6135 _ZN6RakNet10RakNetGUIDC1Ey
+  function 0xcead6159 JNI_OnLoad
+  function 0xceeb79c9 _ZN7cocos2d9JniHelper9setJavaVMEP7_JavaVM
+  function 0xceeb7a65 _ZN7cocos2d9JniHelper6getEnvEv
+  function 0xceeb7b71 _ZN7cocos2d9JniHelper21logAndClearExceptionsEP7_JNIEnv
+  function 0xceeb7b0d _ZN7cocos2d9JniHelper20setCachedClassLoaderEP8_jobject
+  function 0xceeb7b31 _ZN7cocos2d9JniHelper24setCachedFindClassMethodEP10_jmethodID
+  function 0xcead6245 Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeInit
+  function 0xcee81251 _ZN7cocos2d10CCDirector14sharedDirectorEv
+  function 0xceeb2f09 _ZN7cocos2d9CCEGLView16sharedOpenGLViewEv
+  function 0xcf0d07b8 _Znwj
+  function 0xceae6a01 _ZN11AppDelegateC1Ev
+  function 0xceeb32f1 _ZN7cocos2d13CCApplication17sharedApplicationEv
+  function 0xceeb3269 _ZN7cocos2d13CCApplication3runEv
+  function 0xceebb629 _ZN7cocos2d24ccGLInvalidateStateCacheEv
+  function 0xceebba0d _ZN7cocos2d13CCShaderCache17sharedShaderCacheEv
+  function 0xceebc04d _ZN7cocos2d13CCShaderCache20reloadDefaultShadersEv
+  function 0xcee82f71 _ZN7cocos2d10ccDrawInitEv
+  function 0xceeda629 _ZN7cocos2d14CCTextureCache17reloadAllTexturesEv
+  function 0xceec6255 _ZN7cocos2d20CCNotificationCenter24sharedNotificationCenterEv
+  function 0xceec66d1 _ZN7cocos2d20CCNotificationCenter16postNotificationEPKcPNS_8CCObjectE
+  function 0xcee817c5 _ZN7cocos2d10CCDirector18setGLDefaultValuesEv
+  function 0xcf0d0e04 _ZdlPv
+  function 0xcead630d Java_com_appsomniacs_da2_DA2Activity_nativeIsPlatformAmazon
+  function 0xcead631d Java_com_appsomniacs_da2_DA2Activity_nativeSetActivity
+  function 0xceeb7b99 _ZN7cocos2d9JniHelper11setActivityEP8_jobject
+  function 0xcead6341 Java_com_appsomniacs_da2_DA2Activity_nativeSetAssetManager
+  function 0xceeb7bbd _ZN7cocos2d9JniHelper15setAssetManagerEP8_jobject
+  function 0xcead6365 Java_com_appsomniacs_da2_DA2Activity_nativeSetGpgsReadyState
+  function 0xceb70649 _ZN16GPGSStateManager25setSignInCompletedionFlagEb
+  function 0xcead63bd Java_com_appsomniacs_da2_DA2Activity_nativeInitGPGS
+  function 0xcead63cd Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityResult
+  function 0xcead63dd Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityCreated
+  function 0xcead63ed Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityDestroyed
+  function 0xceee6f85 _ZN13CocosDenshion17SimpleAudioEngine12sharedEngineEv
+  function 0xceee72c1 _ZN13CocosDenshion17SimpleAudioEngine14stopAllEffectsEv
+  function 0xceee6fc9 _ZN13CocosDenshion17SimpleAudioEngine3endEv
+  function 0xcead6425 Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityPausedDueToScreenLock
+  function 0xcee82485 _ZN7cocos2d10CCDirector5pauseEv
+  function 0xcead645d Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityPaused
+  function 0xceee7075 _ZN13CocosDenshion17SimpleAudioEngine20pauseBackgroundMusicEv
+  variable 0xcf301d6c sndEng
+  function 0xcead64b9 Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityResumed
+  function 0xceee7085 _ZN13CocosDenshion17SimpleAudioEngine21resumeBackgroundMusicEv
+  function 0xceec8225 _ZN7cocos2d13CCUserDefault17sharedUserDefaultEv
+  function 0xceec7d31 _ZN7cocos2d13CCUserDefault13getBoolForKeyEPKcb
+  function 0xcead6515 Java_com_appsomniacs_da2_DA2Activity_nativeOnActivitySaveInstanceState
+  function 0xcead6525 Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityStarted
+  function 0xcead6531 Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityWillStop
+  function 0xcead656d Java_com_appsomniacs_da2_DA2Activity_nativeOnActivityStopped
+  function 0xcead65a9 Java_com_appsomniacs_da2_DA2Activity_nativeResetInterstitial
+  function 0xceec8199 _ZN7cocos2d13CCUserDefault16setIntegerForKeyEPKci
+  function 0xcead65d1 Java_com_appsomniacs_da2_DA2Activity_nativeInitSession
+  function 0xcecf9da9 _ZN20ApplicationInterface24hasClaimedClientIdentityEv
+  function 0xcebe4c11 _ZN14NetworkManager20sharedNetworkManagerEv
+  function 0xcebedb85 _ZN14NetworkManager17requestWebSessionEf
+  function 0xcead65f9 Java_com_appsomniacs_da2_DA2Activity_nativeRegisterPurchase
+  function 0xceeb7a49 _ZN7cocos2d9JniHelper14jstring2stringEP8_jstring
+  function 0xced0e085 _ZN10IapManager16sharedIapManagerEv
+  function 0xced0f13d _ZN10IapManager16registerPurchaseESsSsSs
+  function 0xcead66e9 Java_com_appsomniacs_da2_DA2Activity_nativeSetIdentity
+  function 0xcecf9b5d _ZN20ApplicationInterface24getClaimedClientIdentityEv
+  function 0xcecf9cf9 _ZN20ApplicationInterface24setClaimedClientIdentityESs
+  function 0xcecf9d51 _ZN20ApplicationInterface17setDeviceIdentityESs
+  function 0xcead67e5 Java_com_appsomniacs_da2_DA2Activity_nativeGetClaimedIdentity
+  function 0xcead6829 Java_com_appsomniacs_da2_DA2Activity_nativeRewardedAdCompleted
+  function 0xcecfaf99 _ZN20ApplicationInterface19RewardedAdCompletedEv
+  function 0xcead683d Java_com_appsomniacs_da2_DA2Activity_nativeRewardedAdClosed
+  function 0xcecfb015 _ZN20ApplicationInterface16RewardedAdClosedEv
+  function 0xcead6851 Java_com_appsomniacs_da2_DA2Activity_nativeRewardedAdReset
+  function 0xcecfb031 _ZN20ApplicationInterface15RewardedAdResetEv
+  function 0xcead6865 Java_com_appsomniacs_da2_DA2Activity_nativeLogin
+  function 0xceec81fd _ZN7cocos2d13CCUserDefault15setStringForKeyEPKcRKSs
+  function 0xcee7f6d5 _ZN7cocos2d8CCString6createERKSs
+  function 0xcee7fab1 _ZN7cocos2d7CCArray6createEPNS_8CCObjectEz
+  function 0xcead6a59 Java_com_appsomniacs_da2_DA2Activity_nativeFetchAllAchievementsCallback
+  function 0xceb7082d _ZN16GPGSStateManager28FetchAllAchievementsCallbackEbSsii
+  function 0xcead6b05 _ZNSt6vectorISsSaISsEEC2Ev
+  function 0xcead6c95 _ZNSt12_Vector_baseISsSaISsEEC2Ev
+  function 0xcead6b1d _ZNSt6vectorISsSaISsEED2Ev
+  function 0xcead6ce1 _ZNSt12_Vector_baseISsSaISsEE19_M_get_Tp_allocatorEv
+  function 0xcead6ced _ZSt8_DestroyIPSsSsEvT_S1_RSaIT0_E
+  function 0xcead6cad _ZNSt12_Vector_baseISsSaISsEED2Ev
+  function 0xcead6b51 _ZSt4moveIRSsEONSt16remove_referenceIT_E4typeEOS2_
+  function 0xcead6d11 _ZNSt6vectorISsSaISsEE12emplace_backIISsEEEvDpOT_
+  function 0xcead6d75 _ZNK9__gnu_cxx17__normal_iteratorIPcSsE4baseEv
+  function 0xcead6d5d _ZN9__gnu_cxx17__normal_iteratorIPcSsEC1ERKS1_
+  function 0xcead6c7d _ZNSt12_Vector_baseISsSaISsEE12_Vector_implD2Ev
+  function 0xcead6dc9 _ZNSaISsED2Ev
+  function 0xcead6c7d _ZNSt12_Vector_baseISsSaISsEE12_Vector_implD1Ev
+  function 0xcead6de1 _ZNSt12_Vector_baseISsSaISsEE12_Vector_implC1Ev
+  function 0xcead6c95 _ZNSt12_Vector_baseISsSaISsEEC1Ev
+  function 0xcead6d8d _ZNSt12_Vector_baseISsSaISsEE13_M_deallocateEPSsj
+  function 0xcead6cad _ZNSt12_Vector_baseISsSaISsEED1Ev
+  function 0xcead6e09 _ZSt8_DestroyIPSsEvT_S1_
+  function 0xcead6d05 _ZSt7forwardISsEOT_RNSt16remove_referenceIS0_E4typeE
+  function 0xcead6e21 _ZNSt16allocator_traitsISaISsEE9constructISsISsEEEDTcl12_S_constructfp_fp0_spcl7forwardIT0_Efp1_EEERS0_PT_DpOS3_
+  function 0xcead6e45 _ZNSt6vectorISsSaISsEE19_M_emplace_back_auxIISsEEEvDpOT_
+  function 0xcead6d11 _ZNSt6vectorISsSaISsEE12emplace_backIJSsEEEvDpOT_
+  function 0xcead6d5d _ZN9__gnu_cxx17__normal_iteratorIPcSsEC2ERKS1_
+  function 0xcead6d81 _ZNKSt12_Vector_baseISsSaISsEE19_M_get_Tp_allocatorEv
+  function 0xcead6f6d _ZN9__gnu_cxx13new_allocatorISsE10deallocateEPSsj
+  function 0xcead6db1 _ZNKSt6vectorISsSaISsEE4sizeEv
+  function 0xcead6fad _ZN9__gnu_cxx13new_allocatorISsED2Ev
+  function 0xcead6dc9 _ZNSaISsED1Ev
+  function 0xcead6de1 _ZNSt12_Vector_baseISsSaISsEE12_Vector_implC2Ev
+  function 0xcead6fb9 _ZNSaISsEC2Ev
+  function 0xcead6fd1 _ZNSt12_Destroy_auxILb0EE9__destroyIPSsEEvT_S3_
+  function 0xcead6ffd _ZNSt16allocator_traitsISaISsEE12_S_constructISsISsEEENSt9enable_ifIXsrNS1_18__construct_helperIT_IDpT0_EEE5valueEvE4typeERS0_PS5_DpOS6_
+  function 0xcead6e21 _ZNSt16allocator_traitsISaISsEE9constructISsJSsEEEDTcl12_S_constructfp_fp0_spcl7forwardIT0_Efp1_EEERS0_PT_DpOS3_
+  function 0xcead7021 _ZNKSt6vectorISsSaISsEE12_M_check_lenEjPKc
+  function 0xcead6f85 _ZNSt12_Vector_baseISsSaISsEE11_M_allocateEj
+  function 0xcead70ad _ZSt34__uninitialized_move_if_noexcept_aIPSsS0_SaISsEET0_T_S3_S2_RT1_
+  function 0xcf0d0a44 __cxa_end_catch
+  function 0xcf0d0964 __cxa_begin_catch
+  function 0xcead70dd _ZNSt16allocator_traitsISaISsEE7destroyISsEEvRS0_PT_
+  function 0xcf0d226c __cxa_rethrow
+  function 0xcead6e45 _ZNSt6vectorISsSaISsEE19_M_emplace_back_auxIJSsEEEvDpOT_
+  function 0xcead70f5 _ZN9__gnu_cxx13new_allocatorISsE8allocateEjPKv
+  function 0xcead6fad _ZN9__gnu_cxx13new_allocatorISsED1Ev
+  function 0xcead7131 _ZN9__gnu_cxx13new_allocatorISsEC2Ev
+  function 0xcead6fb9 _ZNSaISsEC1Ev
+  function 0xcead713d _ZSt11__addressofISsEPT_RS0_
+  function 0xcead7149 _ZSt8_DestroyISsEvPT_
+  function 0xcead715d _ZN9__gnu_cxx13new_allocatorISsE9constructISsISsEEEvPT_DpOT0_
+  function 0xcead6ffd _ZNSt16allocator_traitsISaISsEE12_S_constructISsJSsEEENSt9enable_ifIXsrNS1_18__construct_helperIT_JDpT0_EEE5valueEvE4typeERS0_PS5_DpOS6_
+  function 0xcead718d _ZNKSt6vectorISsSaISsEE8max_sizeEv
+  function 0xcead71ad _ZSt3maxIjERKT_S2_S2_
+  function 0xcead71cd _ZSt32__make_move_if_noexcept_iteratorIPSsSt13move_iteratorIS0_EET0_T_
+  function 0xcead71e9 _ZSt22__uninitialized_copy_aISt13move_iteratorIPSsES1_SsET0_T_S4_S3_RSaIT1_E
+  function 0xcead7209 _ZNSt16allocator_traitsISaISsEE10_S_destroyISsEENSt9enable_ifIXsrNS1_16__destroy_helperIT_EE5valueEvE4typeERS0_PS5_
+  function 0xcead7221 _ZNK9__gnu_cxx13new_allocatorISsE8max_sizeEv
+  function 0xcead7131 _ZN9__gnu_cxx13new_allocatorISsEC1Ev
+  function 0xcead715d _ZN9__gnu_cxx13new_allocatorISsE9constructISsJSsEEEvPT_DpOT0_
+  function 0xcead7231 _ZNSt16allocator_traitsISaISsEE8max_sizeERKS0_
+  function 0xcead7249 _ZNSt13move_iteratorIPSsEC1ES0_
+  function 0xcead725d _ZSt18uninitialized_copyISt13move_iteratorIPSsES1_ET0_T_S4_S3_
+  function 0xcead727d _ZN9__gnu_cxx13new_allocatorISsE7destroyISsEEvPT_
+  function 0xcead7291 _ZNSt16allocator_traitsISaISsEE11_S_max_sizeIKS0_EENSt9enable_ifIXsrNS1_16__maxsize_helperIT_EE5valueEjE4typeERS6_
+  function 0xcead7249 _ZNSt13move_iteratorIPSsEC2ES0_
+  function 0xcead72a9 _ZNSt20__uninitialized_copyILb0EE13__uninit_copyISt13move_iteratorIPSsES3_EET0_T_S6_S5_
+  function 0xcead7351 _ZNKSt13move_iteratorIPSsEdeEv
+  function 0xcead736d _ZSt10_ConstructISsISsEEvPT_DpOT0_
+  function 0xcead7339 _ZNSt13move_iteratorIPSsEppEv
+  function 0xcead7319 _ZStneIPSsEbRKSt13move_iteratorIT_ES5_
+  function 0xcead7399 _ZSteqIPSsEbRKSt13move_iteratorIT_ES5_
+  function 0xcead736d _ZSt10_ConstructISsJSsEEvPT_DpOT0_
+  function 0xcead73c1 _ZNKSt13move_iteratorIPSsE4baseEv
+  function 0xcee78919 _ZN7cocos2d7CCPointC1Eff
+  function 0xcee78cd1 _ZN7cocos2d6CCSizeC1Eff
+  function 0xced8578d _ZN6RakNet13SystemAddressC1Ev
+  function 0xcead7501 _ZN7cocos2d8CCObject6updateEf
+  function 0xcead759d _ZN7cocos2d9CCIntegerC2Ei
+  function 0xcee7d9b1 _ZN7cocos2d8CCObjectC2Ev
+  variable 0xcf2b2620 _ZTVN7cocos2d9CCIntegerE
+  function 0xcead759d _ZN7cocos2d9CCIntegerC1Ei
+  function 0xcead75d1 _ZN7cocos2d9CCInteger6createEi
+  function 0xcee7db41 _ZN7cocos2d8CCObject11autoreleaseEv
+  function 0xcead7609 _ZN7cocos2d9CCInteger13acceptVisitorERNS_13CCDataVisitorE
+  function 0xcead7625 _ZN7cocos2d7CCFloatC2Ef
+  variable 0xcf2b2600 _ZTVN7cocos2d7CCFloatE
+  function 0xcead7625 _ZN7cocos2d7CCFloatC1Ef
+  function 0xcead7659 _ZNK7cocos2d7CCFloat8getValueEv
+  function 0xcead7669 _ZN7cocos2d7CCFloat6createEf
+  function 0xcead76a5 _ZN7cocos2d7CCFloat13acceptVisitorERNS_13CCDataVisitorE
+  function 0xcead76c1 _ZN7cocos2d8CCSprite14getTextureRectEv
+  function 0xcee789bd _ZNK7cocos2d7CCPointplERKS0_
+  function 0xcead9005 _ZN4Item13getIsGrabableEv
+  function 0xcead9015 _ZN4Item12getIsManagedEv
+  function 0xcead9025 _ZN4Item13getIsMapSpawnEv
+  function 0xcead9035 _ZN4Item13setIsGrabableEb
+  function 0xcead904d _ZN4Item12setIsManagedEb
+  function 0xcead9065 _ZN4Item13setIsMapSpawnEb
+  function 0xcead907d _ZN6Weapon15setFireDelegateEP18WeaponFireDelegate
+  function 0xcead9091 _ZN6Weapon15setIsTriggeringEb
+  function 0xcead90a1 _ZN6Weapon12isTriggeringEv
+  function 0xcead90ad _ZN4AK47C2Ev
+  function 0xcecdba2d _ZN6WeaponC2Ev
+  variable 0xcf2b22b0 _ZTV4AK47
+  function 0xcead90ad _ZN4AK47C1Ev
+  function 0xcead90d9 _ZN4AK474initEv
+  function 0xcecdba81 _ZN6Weapon4initEv
+  function 0xceebdc91 _ZN7cocos2d8CCSprite25createWithSpriteFrameNameEPKc
+  function 0xcee7db2d _ZN7cocos2d8CCObject6retainEv
+  function 0xcee7ff15 _ZN7cocos2d7CCArray9addObjectEPNS_8CCObjectE
+  function 0xcee7fdc9 _ZN7cocos2d7CCArray13objectAtIndexEj
+  function 0xcead9389 _ZN4AK47D2Ev
+  function 0xcee7dafd _ZN7cocos2d8CCObject7releaseEv
+  function 0xcecdbcad _ZN6WeaponD2Ev
+  function 0xcead9389 _ZN4AK47D1Ev
+  function 0xcead93ed _ZN4AK47D0Ev
+  function 0xcead9409 _ZN4AK4711triggerPullEf
+  function 0xcecad641 _ZN5Sound17playSoundPositionEi6cpVect
+  function 0xcead9569 _ZN4AK4714updateItemStepEf
+  function 0xcead9685 _ZN4AK4720updateRemoteItemStepEf
+  function 0xcead96e5 _ZN4AK4717remoteTriggerPullEf
+  function 0xcead9759 _ZN4AK4713getShellPointEv
+  function 0xcee77f3d _ZN7cocos2d29__CCPointApplyAffineTransformERKNS_7CCPointERKNS_17CCAffineTransformE
+  function 0xcee78975 _ZN7cocos2d7CCPointaSERKS0_
+  variable 0xcf301d80 worldLayer
+  function 0xcead9835 _ZN4AK479playSoundEv
+  function 0xcead987d _ZN4AK4723setPrimaryConfigurationEv
+  function 0xcef4206b cpBodySetAngle
+  function 0xcead99c1 _ZN4AK4725setSecondaryConfigurationEv
+  function 0xcead9b29 _ZN4AK4719setMapConfigurationEv
+  variable 0xcf304f7c playerScale
+  function 0xcead9c31 _ZN4AK4716getWeaponTextureEv
+  function 0xcead9c59 _ZN4AK4713getWeaponRectEv
+  function 0xcee78f55 _ZN7cocos2d6CCRectC1ERKS0_
+  function 0xcead9c81 _ZN4AK477isRightEv
+  function 0xcead9cbd _ZN4AK478setRightEb
+  variable 0xcf2b25f4 _ZTI4AK47
+  function 0xcee7d97d _ZN7cocos2d9CCCopying12copyWithZoneEPNS_6CCZoneE
+  function 0xcee7db89 _ZN7cocos2d8CCObject7isEqualEPKS0_
+  function 0xcee7dba5 _ZN7cocos2d8CCObject13acceptVisitorERNS_13CCDataVisitorE
+  function 0xcee76f39 _ZN7cocos2d6CCNode6updateEf
+  function 0xcee7567d _ZN7cocos2d6CCNode9setZOrderEi
+  function 0xcee75669 _ZN7cocos2d6CCNode10_setZOrderEi
+  function 0xcee75659 _ZN7cocos2d6CCNode9getZOrderEv
+  function 0xcee756d1 _ZN7cocos2d6CCNode10setVertexZEf
+  function 0xcee756c1 _ZN7cocos2d6CCNode10getVertexZEv
+  function 0xcee757fd _ZN7cocos2d6CCNode9setScaleXEf
+  function 0xcee757ed _ZN7cocos2d6CCNode9getScaleXEv
+  function 0xcee75831 _ZN7cocos2d6CCNode9setScaleYEf
+  function 0xcee75821 _ZN7cocos2d6CCNode9getScaleYEv
+  function 0xcee75795 _ZN7cocos2d6CCNode8setScaleEf
+  function 0xcee75785 _ZN7cocos2d6CCNode8getScaleEv
+  function 0xcee757c1 _ZN7cocos2d6CCNode8setScaleEff
+  function 0xcee75865 _ZN7cocos2d6CCNode11setPositionERKNS_7CCPointE
+  function 0xcee75855 _ZN7cocos2d6CCNode11getPositionEv
+  function 0xcee758b1 _ZN7cocos2d6CCNode11setPositionEff
+  function 0xcee75895 _ZN7cocos2d6CCNode11getPositionEPfS1_
+  function 0xcee75901 _ZN7cocos2d6CCNode12setPositionXEf
+  function 0xcee758e1 _ZN7cocos2d6CCNode12getPositionXEv
+  function 0xcee75935 _ZN7cocos2d6CCNode12setPositionYEf
+  function 0xcee758f1 _ZN7cocos2d6CCNode12getPositionYEv
+  function 0xcee75601 _ZN7cocos2d6CCNode8setSkewXEf
+  function 0xcee755f1 _ZN7cocos2d6CCNode8getSkewXEv
+  function 0xcee75635 _ZN7cocos2d6CCNode8setSkewYEf
+  function 0xcee75625 _ZN7cocos2d6CCNode8getSkewYEv
+  function 0xcee75a75 _ZN7cocos2d6CCNode14setAnchorPointERKNS_7CCPointE
+  function 0xcee75a65 _ZN7cocos2d6CCNode14getAnchorPointEv
+  function 0xcee75a55 _ZN7cocos2d6CCNode22getAnchorPointInPointsEv
+  function 0xcee75b11 _ZN7cocos2d6CCNode14setContentSizeERKNS_6CCSizeE
+  function 0xcee75b01 _ZNK7cocos2d6CCNode14getContentSizeEv
+  function 0xcee75a3d _ZN7cocos2d6CCNode10setVisibleEb
+  function 0xcee75a2d _ZN7cocos2d6CCNode9isVisibleEv
+  function 0xcee756f1 _ZN7cocos2d6CCNode11setRotationEf
+  function 0xcee756e1 _ZN7cocos2d6CCNode11getRotationEv
+  function 0xcee7572d _ZN7cocos2d6CCNode12setRotationXEf
+  function 0xcee7571d _ZN7cocos2d6CCNode12getRotationXEv
+  function 0xcee75761 _ZN7cocos2d6CCNode12setRotationYEf
+  function 0xcee75751 _ZN7cocos2d6CCNode12getRotationYEv
+  function 0xcee75c75 _ZN7cocos2d6CCNode17setOrderOfArrivalEj
+  function 0xcee75c65 _ZN7cocos2d6CCNode17getOrderOfArrivalEv
+  function 0xcee75cb9 _ZN7cocos2d6CCNode16setGLServerStateENS_15ccGLServerStateE
+  function 0xcee75ca9 _ZN7cocos2d6CCNode16getGLServerStateEv
+  function 0xcee75be1 _ZN7cocos2d6CCNode28ignoreAnchorPointForPositionEb
+  function 0xcee75bd1 _ZN7cocos2d6CCNode30isIgnoreAnchorPointForPositionEv
+  function 0xcee760b1 _ZN7cocos2d6CCNode8addChildEPS0_
+  function 0xcee7608d _ZN7cocos2d6CCNode8addChildEPS0_i
+  function 0xcee76001 _ZN7cocos2d6CCNode8addChildEPS0_ii
+  function 0xcee75f45 _ZN7cocos2d6CCNode13getChildByTagEi
+  function 0xcee75969 _ZN7cocos2d6CCNode11getChildrenEv
+  function 0xcee75979 _ZNK7cocos2d6CCNode16getChildrenCountEv
+  function 0xcee75bbd _ZN7cocos2d6CCNode9setParentEPS0_
+  function 0xcee75bad _ZN7cocos2d6CCNode9getParentEv
+  function 0xcee760d9 _ZN7cocos2d6CCNode16removeFromParentEv
+  function 0xcee760f5 _ZN7cocos2d6CCNode26removeFromParentAndCleanupEb
+  function 0xcee7612d _ZN7cocos2d6CCNode11removeChildEPS0_
+  function 0xcee7614d _ZN7cocos2d6CCNode11removeChildEPS0_b
+  function 0xcee76191 _ZN7cocos2d6CCNode16removeChildByTagEi
+  function 0xcee761b1 _ZN7cocos2d6CCNode16removeChildByTagEib
+  function 0xcee761f1 _ZN7cocos2d6CCNode17removeAllChildrenEv
+  function 0xcee7620d _ZN7cocos2d6CCNode28removeAllChildrenWithCleanupEb
+  function 0xcee763b9 _ZN7cocos2d6CCNode12reorderChildEPS0_i
+  function 0xcee76405 _ZN7cocos2d6CCNode15sortAllChildrenEv
+  function 0xcee759e1 _ZN7cocos2d6CCNode7getGridEv
+  function 0xcee759f1 _ZN7cocos2d6CCNode7setGridEPNS_10CCGridBaseE
+  function 0xcee75c1d _ZNK7cocos2d6CCNode6getTagEv
+  function 0xcee75c2d _ZN7cocos2d6CCNode6setTagEi
+  function 0xcee75c41 _ZN7cocos2d6CCNode11getUserDataEv
+  function 0xcee75c51 _ZN7cocos2d6CCNode11setUserDataEPv
+  function 0xcee75c99 _ZN7cocos2d6CCNode13getUserObjectEv
+  function 0xcee75ccd _ZN7cocos2d6CCNode13setUserObjectEPNS_8CCObjectE
+  function 0xcee75c89 _ZN7cocos2d6CCNode16getShaderProgramEv
+  function 0xcee75d05 _ZN7cocos2d6CCNode16setShaderProgramEPNS_11CCGLProgramE
+  function 0xcee759a5 _ZN7cocos2d6CCNode9getCameraEv
+  function 0xcee75b9d _ZN7cocos2d6CCNode9isRunningEv
+  function 0xcee76b0d _ZN7cocos2d6CCNode21registerScriptHandlerEi
+  function 0xcee76b31 _ZN7cocos2d6CCNode23unregisterScriptHandlerEv
+  function 0xcee76779 _ZN7cocos2d6CCNode7onEnterEv
+  function 0xcee76875 _ZN7cocos2d6CCNode26onEnterTransitionDidFinishEv
+  function 0xcee76a25 _ZN7cocos2d6CCNode6onExitEv
+  function 0xcee7694d _ZN7cocos2d6CCNode24onExitTransitionDidStartEv
+  function 0xcee75e09 _ZN7cocos2d6CCNode7cleanupEv
+  function 0xcee764d9 _ZN7cocos2d6CCNode4drawEv
+  function 0xcee764e1 _ZN7cocos2d6CCNode5visitEv
+  function 0xcee75d41 _ZN7cocos2d6CCNode11boundingBoxEv
+  function 0xcee76b6d _ZN7cocos2d6CCNode16setActionManagerEPNS_15CCActionManagerE
+  function 0xcee76bb9 _ZN7cocos2d6CCNode16getActionManagerEv
+  function 0xcee76c9d _ZN7cocos2d6CCNode12setSchedulerEPNS_11CCSchedulerE
+  function 0xcee76ce9 _ZN7cocos2d6CCNode12getSchedulerEv
+  function 0xcee77605 _ZN7cocos2d6CCNode15updateTransformEv
+  function 0xcee76fb9 _ZN7cocos2d6CCNode21nodeToParentTransformEv
+  function 0xcee77369 _ZN7cocos2d6CCNode21parentToNodeTransformEv
+  function 0xcee773d5 _ZN7cocos2d6CCNode20nodeToWorldTransformEv
+  function 0xcee7744d _ZN7cocos2d6CCNode20worldToNodeTransformEv
+  function 0xcee776e5 _ZN7cocos2d6CCNode12addComponentEPNS_11CCComponentE
+  function 0xcee77711 _ZN7cocos2d6CCNode15removeComponentEPKc
+  function 0xcee7773d _ZN7cocos2d6CCNode15removeComponentEPNS_11CCComponentE
+  function 0xcee77769 _ZN7cocos2d6CCNode19removeAllComponentsEv
+  function 0xcecdbd39 _ZN6Weapon8initBodyEv
+  function 0xceb8e6f5 _ZN4Item12addBodyShapeEv
+  function 0xceb8e74d _ZN4Item15removeBodyShapeEv
+  function 0xceb8e6a5 _ZN4Item8syncBodyEv
+  function 0xceb8e6cd _ZN4Item10unSyncBodyEv
+  function 0xcecdcadd _ZN6Weapon10setContactEbSsi
+  function 0xceb8e89d _ZN4Item10getContactEv
+  function 0xceb8e7bd _ZN4Item24setHostDualConfigurationEv
+  function 0xceb8e7ad _ZN4Item20setDualConfigurationEv
+  function 0xceb8e861 _ZN4Item9setFiringEb
+  function 0xceb8e851 _ZN4Item8isFiringEv
+  function 0xceb8e8ad _ZN4Item9isInSpaceEv
+  function 0xceb8e8bd _ZN4Item11setPlayerIDESs
+  function 0xceb8e8d9 _ZN4Item11getPlayerIDEv
+  function 0xceb8e7d9 _ZN4Item7setUUIDESs
+  function 0xceb8e7f5 _ZN4Item7getUUIDEv
+  function 0xcecdc799 _ZN6Weapon9setHostIDESs
+  function 0xceb8e815 _ZN4Item9getHostIDEv
+  function 0xceb8e915 _ZN4Item16getUpdateElapsedEv
+  function 0xceb8e925 _ZN4Item16setUpdateElapsedEf
+  function 0xceb8e939 _ZN4Item9setNormalE6cpVect
+  function 0xceb8e961 _ZN4Item9getNormalEv
+  function 0xceb8e985 _ZN4Item5isNewEv
+  function 0xceb8e995 _ZN4Item8setIsNewEb
+  function 0xceb8e9ad _ZN4Item16canPlayerBeModedEv
+  function 0xceb8e9d9 _ZN4Item9isModItemEv
+  function 0xceb8e9b9 _ZN4Item14startPlayerModEv
+  function 0xceb8e9c1 _ZN4Item13stopPlayerModEv
+  function 0xceb8e9c9 _ZN4Item11doPlayerModEf
+  function 0xcecdc2a1 _ZN6Weapon15getBulletsFiredEv
+  function 0xcecdc291 _ZN6Weapon16getBulletsToFireEv
+  function 0xcecdc261 _ZN6Weapon16setBulletsToFireEh
+  function 0xcecdc279 _ZN6Weapon15setBulletsFiredEh
+  function 0xcecdc249 _ZN6Weapon12resetBulletsEv
+  function 0xcecdc7e1 _ZN6Weapon10updateStepEf
+  function 0xcecdbea1 _ZN6Weapon22updateRemoteWeaponStepEf
+  function 0xcecdc0dd _ZN6Weapon7getTypeEv
+  function 0xcecdc109 _ZN6Weapon7getAmmoEv
+  function 0xcecdc1d1 _ZN6Weapon7setAmmoEi
+  function 0xcecdc141 _ZN6Weapon11getAmmoTypeEv
+  function 0xcecdc151 _ZN6Weapon11setAmmoTypeE8ItemType
+  function 0xcecdc165 _ZN6Weapon7getClipEv
+  function 0xcecdc201 _ZN6Weapon7setClipEi
+  function 0xcecdc0ed _ZN6Weapon12reloadWeaponEv
+  function 0xcecdc231 _ZN6Weapon13getViewOffsetEv
+  function 0xcecdc2b1 _ZN6Weapon9getDamageEv
+  function 0xcecdc2c1 _ZN6Weapon14getMeleeDamageEv
+  function 0xcecdc2d1 _ZN6Weapon14getMeleeLengthEv
+  function 0xcecdc2e1 _ZN6Weapon8getRangeEv
+  function 0xcecdc2f1 _ZN6Weapon8isLockedEv
+  function 0xcecdc301 _ZN6Weapon7setLockEb
+  function 0xcecdc319 _ZN6Weapon15getAmmoCapacityEv
+  function 0xcecdc329 _ZN6Weapon15getClipCapacityEv
+  function 0xcecdc341 _ZN6Weapon13getReloadTimeEv
+  function 0xcecdc361 _ZN6Weapon18setClipCapacityModEi
+  function 0xcecdc375 _ZN6Weapon16setClipReloadModEf
+  function 0xcecdc389 _ZN6Weapon10setZoomModEf
+  function 0xcecdc39d _ZN6Weapon7addAmmoEi
+  function 0xcecdc3ed _ZN6Weapon7subAmmoEi
+  function 0xcecdc469 _ZN6Weapon11isReloadingEv
+  function 0xcecdc479 _ZN6Weapon12getZoomScaleEv
+  function 0xcecdc4a1 _ZN6Weapon12getZoomLabelEv
+  function 0xcecdc5b5 _ZN6Weapon15changeZoomLevelEv
+  function 0xcecdc64d _ZN6Weapon13isMeleeWeaponEv
+  function 0xcecdc65d _ZN6Weapon16getRoundsPerFireEv
+  function 0xcecdc66d _ZN6Weapon11getArmAngleEv
+  function 0xcecdc67d _ZN6Weapon14getBulletSpeedEv
+  function 0xcecdc68d _ZN6Weapon11isDualWieldEv
+  function 0xcecdc69d _ZN6Weapon15isDualWieldOnlyEv
+  function 0xcecdc6ad _ZN6Weapon22isDualWieldPrimaryOnlyEv
+  function 0xcecdc6bd _ZN6Weapon20getRandomFiringAngleEv
+  function 0xcecdc75d _ZN6Weapon12pickupAsDualEv
+  function 0xcecdc76d _ZN6Weapon15setPickupAsDualEb
+  function 0xcecdc785 _ZN6Weapon12setFireAngleEf
+  function 0xcecdc809 _ZN6Weapon13weaponDidFireEv
+  function 0xcecdc839 _ZN6Weapon12produceShellEv
+  function 0xcecdc861 _ZN6Weapon6doFireEf6cpVectS0_iSs
+  function 0xcecdc961 _ZN6Weapon12doRemoteFireEf6cpVectS0_iSs
+  function 0xcecdc9d1 _ZN6Weapon15getWeightFactorEv
+  function 0xcecdc9e1 _ZN6Weapon14setAccuracyModEf
+  function 0xcecdc9f5 _ZN6Weapon20getDesignFiringPointEv
+  function 0xcecdc0a9 _ZN6Weapon8detonateEPN7cocos2d8CCObjectE
+  variable 0xcf2b2640 _ZTIN7cocos2d7CCFloatE
+  function 0xcead9cfd _ZN7cocos2d7CCFloatD1Ev
+  function 0xcead9d39 _ZN7cocos2d7CCFloatD0Ev
+  function 0xcead9cfd _ZN7cocos2d7CCFloatD2Ev
+  function 0xcee7da15 _ZN7cocos2d8CCObjectD2Ev
+  variable 0xcf2b264c _ZTIN7cocos2d9CCIntegerE
+  function 0xcead9d55 _ZN7cocos2d9CCIntegerD1Ev
+  function 0xcead9d91 _ZN7cocos2d9CCIntegerD0Ev
+  function 0xcead9d55 _ZN7cocos2d9CCIntegerD2Ev
+  variable 0xcf2ecd20 _ZTVN10__cxxabiv120__si_class_type_infoE
+  variable 0xcf1281b4 _ZTS4AK47
+  variable 0xcf2cb8d4 _ZTI6Weapon
+  variable 0xcf128220 _ZTSN7cocos2d7CCFloatE
+  variable 0xcf2da1fc _ZTIN7cocos2d8CCObjectE
+  variable 0xcf128234 _ZTSN7cocos2d9CCIntegerE
+  function 0xcead9f49 _ZN7cocos2d6CCMenuC2Ev
+  function 0xcee93991 _ZN7cocos2d11CCLayerRGBAC2Ev
+  variable 0xcf2e0048 _ZTVN7cocos2d6CCMenuE
+  function 0xcead9f49 _ZN7cocos2d6CCMenuC1Ev
+  function 0xcead9fb5 _ZN7cocos2d6CCMenuD2Ev
+  function 0xcee93a4d _ZN7cocos2d11CCLayerRGBAD2Ev
+  function 0xcead9fb5 _ZN7cocos2d6CCMenuD1Ev
+  function 0xceada029 _ZThn228_N7cocos2d6CCMenuD1Ev
+  function 0xceada031 _ZN7cocos2d6CCMenuD0Ev
+  function 0xceada04d _ZThn228_N7cocos2d6CCMenuD0Ev
+  function 0xceada055 _ZN7cocos2d6CCMenu19setOpacityModifyRGBEb
+  function 0xceada065 _ZThn264_N7cocos2d6CCMenu19setOpacityModifyRGBEb
+  function 0xceada06d _ZN7cocos2d6CCMenu18isOpacityModifyRGBEv
+  function 0xceada079 _ZThn264_N7cocos2d6CCMenu18isOpacityModifyRGBEv
+  function 0xceada081 _ZN7cocos2d6CCMenu9isEnabledEv
+  function 0xceada091 _ZN7cocos2d6CCMenu10setEnabledEb
+  function 0xceadb991 _ZN5AMenuC2Ev
+  variable 0xcf2b2658 _ZTV5AMenu
+  function 0xceadb991 _ZN5AMenuC1Ev
+  function 0xceadb9f5 _ZN5AMenuD2Ev
+  function 0xceadb9f5 _ZN5AMenuD1Ev
+  function 0xceadba69 _ZThn228_N5AMenuD1Ev
+  function 0xceadba71 _ZN5AMenuD0Ev
+  function 0xceadba8d _ZThn228_N5AMenuD0Ev
+  function 0xceadba95 _ZN5AMenu12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE
+  function 0xcee9c48d _ZN7cocos2d6CCMenu12itemForTouchEPNS_7CCTouchE
+  function 0xceadbb69 _ZThn228_N5AMenu12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE
+  variable 0xcf2b292c _ZTI5AMenu
+  function 0xcee9b0c9 _ZN7cocos2d6CCMenu4initEv
+  function 0xcee9b291 _ZN7cocos2d6CCMenu8addChildEPNS_6CCNodeE
+  function 0xcee9b2a9 _ZN7cocos2d6CCMenu8addChildEPNS_6CCNodeEi
+  function 0xcee9b2c5 _ZN7cocos2d6CCMenu8addChildEPNS_6CCNodeEii
+  function 0xcee9b369 _ZN7cocos2d6CCMenu11removeChildEPNS_6CCNodeEb
+  function 0xcee936c1 _ZN7cocos2d7CCLayer7onEnterEv
+  function 0xcee937c1 _ZN7cocos2d7CCLayer26onEnterTransitionDidFinishEv
+  function 0xcee9b319 _ZN7cocos2d6CCMenu6onExitEv
+  function 0xcee9b5ad _ZN7cocos2d6CCMenu12ccTouchMovedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee9b50d _ZN7cocos2d6CCMenu12ccTouchEndedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee9b569 _ZN7cocos2d6CCMenu16ccTouchCancelledEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee938d1 _ZN7cocos2d7CCLayer14ccTouchesBeganEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee93901 _ZN7cocos2d7CCLayer14ccTouchesMovedEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee93931 _ZN7cocos2d7CCLayer14ccTouchesEndedEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee93961 _ZN7cocos2d7CCLayer18ccTouchesCancelledEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee934c5 _ZN7cocos2d7CCLayer13didAccelerateEPNS_14CCAccelerationE
+  function 0xcee9b405 _ZN7cocos2d6CCMenu27registerWithTouchDispatcherEv
+  function 0xcee931e5 _ZN7cocos2d7CCLayer26registerScriptTouchHandlerEibib
+  function 0xcee93231 _ZN7cocos2d7CCLayer28unregisterScriptTouchHandlerEv
+  function 0xcee932bd _ZN7cocos2d7CCLayer14isTouchEnabledEv
+  function 0xcee932cd _ZN7cocos2d7CCLayer15setTouchEnabledEb
+  function 0xcee93339 _ZN7cocos2d7CCLayer12setTouchModeENS_13ccTouchesModeE
+  function 0xcee933e1 _ZN7cocos2d7CCLayer12getTouchModeEv
+  function 0xcee93385 _ZN7cocos2d7CCLayer16setTouchPriorityEi
+  function 0xcee933d1 _ZN7cocos2d7CCLayer16getTouchPriorityEv
+  function 0xcee933f1 _ZN7cocos2d7CCLayer22isAccelerometerEnabledEv
+  function 0xcee93401 _ZN7cocos2d7CCLayer23setAccelerometerEnabledEb
+  function 0xcee93479 _ZN7cocos2d7CCLayer24setAccelerometerIntervalEd
+  function 0xcee9355d _ZN7cocos2d7CCLayer15isKeypadEnabledEv
+  function 0xcee9356d _ZN7cocos2d7CCLayer16setKeypadEnabledEb
+  function 0xcee93645 _ZN7cocos2d7CCLayer14keyBackClickedEv
+  function 0xcee93689 _ZN7cocos2d7CCLayer14keyMenuClickedEv
+  function 0xcee93b6d _ZN7cocos2d11CCLayerRGBA10getOpacityEv
+  function 0xcee93b85 _ZN7cocos2d11CCLayerRGBA19getDisplayedOpacityEv
+  function 0xcee93b9d _ZN7cocos2d11CCLayerRGBA10setOpacityEh
+  function 0xcee93d79 _ZN7cocos2d11CCLayerRGBA22updateDisplayedOpacityEh
+  function 0xcee94001 _ZN7cocos2d11CCLayerRGBA23isCascadeOpacityEnabledEv
+  function 0xcee94019 _ZN7cocos2d11CCLayerRGBA24setCascadeOpacityEnabledEb
+  function 0xcee93c5d _ZN7cocos2d11CCLayerRGBA8getColorEv
+  function 0xcee93c75 _ZN7cocos2d11CCLayerRGBA17getDisplayedColorEv
+  function 0xcee93c8d _ZN7cocos2d11CCLayerRGBA8setColorERKNS_10_ccColor3BE
+  function 0xcee93e91 _ZN7cocos2d11CCLayerRGBA20updateDisplayedColorERKNS_10_ccColor3BE
+  function 0xcee94039 _ZN7cocos2d11CCLayerRGBA21isCascadeColorEnabledEv
+  function 0xcee94051 _ZN7cocos2d11CCLayerRGBA22setCascadeColorEnabledEb
+  function 0xcee9b621 _ZThn228_N7cocos2d6CCMenu12ccTouchMovedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee9b561 _ZThn228_N7cocos2d6CCMenu12ccTouchEndedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee9b5a5 _ZThn228_N7cocos2d6CCMenu16ccTouchCancelledEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee938f9 _ZThn228_N7cocos2d7CCLayer14ccTouchesBeganEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee93929 _ZThn228_N7cocos2d7CCLayer14ccTouchesMovedEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee93959 _ZThn228_N7cocos2d7CCLayer14ccTouchesEndedEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee93989 _ZThn228_N7cocos2d7CCLayer18ccTouchesCancelledEPNS_5CCSetEPNS_7CCEventE
+  function 0xcee934f9 _ZThn232_N7cocos2d7CCLayer13didAccelerateEPNS_14CCAccelerationE
+  function 0xcee93681 _ZThn236_N7cocos2d7CCLayer14keyBackClickedEv
+  function 0xcee936b9 _ZThn236_N7cocos2d7CCLayer14keyMenuClickedEv
+  function 0xcee93d6d _ZThn264_N7cocos2d11CCLayerRGBA8setColorERKNS_10_ccColor3BE
+  function 0xcee93c6d _ZThn264_N7cocos2d11CCLayerRGBA8getColorEv
+  function 0xcee93c85 _ZThn264_N7cocos2d11CCLayerRGBA17getDisplayedColorEv
+  function 0xcee93b95 _ZThn264_N7cocos2d11CCLayerRGBA19getDisplayedOpacityEv
+  function 0xcee93b7d _ZThn264_N7cocos2d11CCLayerRGBA10getOpacityEv
+  function 0xcee93c55 _ZThn264_N7cocos2d11CCLayerRGBA10setOpacityEh
+  function 0xcee94049 _ZThn264_N7cocos2d11CCLayerRGBA21isCascadeColorEnabledEv
+  function 0xcee94069 _ZThn264_N7cocos2d11CCLayerRGBA22setCascadeColorEnabledEb
+  function 0xcee93ff9 _ZThn264_N7cocos2d11CCLayerRGBA20updateDisplayedColorERKNS_10_ccColor3BE
+  function 0xcee94011 _ZThn264_N7cocos2d11CCLayerRGBA23isCascadeOpacityEnabledEv
+  function 0xcee94031 _ZThn264_N7cocos2d11CCLayerRGBA24setCascadeOpacityEnabledEb
+  function 0xcee93e89 _ZThn264_N7cocos2d11CCLayerRGBA22updateDisplayedOpacityEh
+  variable 0xcf1284fc _ZTS5AMenu
+  variable 0xcf2e031c _ZTIN7cocos2d6CCMenuE
+  function 0xceadbd31 _ZN7cocos2d10CCDirector15getRunningSceneEv
+  function 0xceadbd61 _ZN11AMessageBox6createEv
+  function 0xceadd761 _ZN11AMessageBoxC1Ev
+  function 0xceadd6b9 _ZN11AMessageBox9showAlertEPFviPN7cocos2d8CCObjectES2_ESsSsPNS0_7CCArrayES2_S2_
+  function 0xceadd8ed _ZN11AMessageBox15setupMessageBoxEPFviPN7cocos2d8CCObjectES2_ESsSsPNS0_7CCArrayES2_S2_
+  function 0xceadd761 _ZN11AMessageBoxC2Ev
+  function 0xcee92eb5 _ZN7cocos2d7CCLayerC2Ev
+  variable 0xcf2b2938 _ZTV11AMessageBox
+  function 0xceadd7b9 _ZN11AMessageBoxD2Ev
+  function 0xceec64c5 _ZN7cocos2d20CCNotificationCenter18removeAllObserversEPNS_8CCObjectE
+  function 0xcee92fad _ZN7cocos2d7CCLayerD2Ev
+  function 0xceadd7b9 _ZN11AMessageBoxD1Ev
+  function 0xceadd861 _ZThn228_N11AMessageBoxD1Ev
+  function 0xceadd869 _ZN11AMessageBoxD0Ev
+  function 0xceadd885 _ZThn228_N11AMessageBoxD0Ev
+  function 0xceadd88d _ZN11AMessageBox4initEv
+  function 0xcee93059 _ZN7cocos2d7CCLayer4initEv
+  function 0xcee81f65 _ZN7cocos2d10CCDirector10getWinSizeEv
+  function 0xceebdb11 _ZN7cocos2d8CCSprite6createEPKc
+  function 0xced30041 _ZN7cocos2d9extension14CCScale9Sprite6createEPKc
+  function 0xcee91e69 _ZN7cocos2d10CCLabelTTF6createEPKcS2_f
+  function 0xcee91e99 _ZN7cocos2d10CCLabelTTF6createEPKcS2_fRKNS_6CCSizeENS_15CCTextAlignmentE
+  function 0xcee9afad _ZN7cocos2d6CCMenu6createEv
+  function 0xcee78ced _ZN7cocos2d6CCSizeC1ERKS0_
+  function 0xced303d1 _ZN7cocos2d9extension14CCScale9Sprite25createWithSpriteFrameNameEPKc
+  function 0xcee9d7d5 _ZN7cocos2d15CCMenuItemLabel6createEPNS_6CCNodeEPNS_8CCObjectEMS3_FvS4_E
+  function 0xcee7fd89 _ZNK7cocos2d7CCArray5countEv
+  function 0xcee9b8f1 _ZN7cocos2d6CCMenu33alignItemsHorizontallyWithPaddingEf
+  function 0xcee5552d _ZN7cocos2d11CCScheduler16scheduleSelectorEMNS_8CCObjectEFvfEPS1_fb
+  function 0xceade01d _ZN11AMessageBox15onButtonClickedEPN7cocos2d8CCObjectE
+  function 0xceaddeed _ZN11AMessageBox10updateStepEf
+  function 0xceadddcd _ZN11AMessageBox12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE
+  function 0xceaddddd _ZThn228_N11AMessageBox12ccTouchBeganEPN7cocos2d7CCTouchEPNS0_7CCEventE
+  function 0xceaddde5 _ZN11AMessageBox7onEnterEv
+  function 0xceee57ed _ZN7cocos2d17CCTouchDispatcher11setPriorityEiPNS_15CCTouchDelegateE
+  function 0xceadde31 _ZN11AMessageBox6onExitEv
+  function 0xceee5555 _ZN7cocos2d17CCTouchDispatcher14removeDelegateEPNS_15CCTouchDelegateE
+  function 0xceeb3061 _ZN7cocos2d15CCAccelerometer11setDelegateEPNS_23CCAccelerometerDelegateE
+  function 0xcee8adc1 _ZN7cocos2d18CCKeypadDispatcher14removeDelegateEPNS_16CCKeypadDelegateE
+  function 0xceaddead _ZN11AMessageBox7cleanupEv
+  function 0xceaddeb5 _ZN11AMessageBox27registerWithTouchDispatcherEv
+  function 0xceee53a1 _ZN7cocos2d17CCTouchDispatcher19addTargetedDelegateEPNS_15CCTouchDelegateEib
+  function 0xceaddf01 _ZN11AMessageBox13attachToSceneEv
+  function 0xceaddf69 _ZN11AMessageBox7dismissEv
+  function 0xcee5889d _ZN7cocos2d11CCScheduler22unscheduleAllForTargetEPNS_8CCObjectE
+  function 0xceade065 _ZN11AMessageBox9playSoundEv
+  function 0xcee9373d _ZN7cocos2d7CCLayer6onExitEv
+  function 0xcecad409 _ZN5Sound9playSoundEi
+  variable 0xcf2b2b8c _ZTI11AMessageBox
+  function 0xcee93841 _ZN7cocos2d7CCLayer12ccTouchMovedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee93871 _ZN7cocos2d7CCLayer12ccTouchEndedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee938a1 _ZN7cocos2d7CCLayer16ccTouchCancelledEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee93869 _ZThn228_N7cocos2d7CCLayer12ccTouchMovedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee93899 _ZThn228_N7cocos2d7CCLayer12ccTouchEndedEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee938c9 _ZThn228_N7cocos2d7CCLayer16ccTouchCancelledEPNS_7CCTouchEPNS_7CCEventE
+  variable 0xcf128888 _ZTS11AMessageBox
+  variable 0xcf2dbd8c _ZTIN7cocos2d7CCLayerE
+  function 0xceadfb4d _ZN10AboutLayer6createEv
+  function 0xceadfbbd _ZN10AboutLayerC1Ev
+  function 0xceadfbbd _ZN10AboutLayerC2Ev
+  variable 0xcf2b2b98 _ZTV10AboutLayer
+  function 0xceadfc15 _ZN10AboutLayer5sceneEv
+  function 0xcee95925 _ZN7cocos2d7CCScene6createEv
+  function 0xceadfc49 _ZN10AboutLayer4initEv
+  function 0xced06371 _ZN9ZYWebView11showWebViewEPKcffff
+  function 0xcee9e20d _ZN7cocos2d16CCMenuItemSprite6createEPNS_6CCNodeES2_PNS_8CCObjectEMS3_FvS4_E
+  function 0xcee9afbd _ZN7cocos2d6CCMenu6createEPNS_10CCMenuItemEz
+  function 0xcee8b131 _ZN7cocos2d12CCLabelAtlas6createEPKcS2_jjj
+  function 0xcee8bb45 _ZN7cocos2d12CCLabelAtlas12setDrawWidthEi
+  function 0xced0ac69 _ZN20ApplicationInterface14removeAdBannerEv
+  variable 0xcf301490 webView
+  function 0xceae0151 _ZN10AboutLayer6onBackEPN7cocos2d8CCObjectE
+  function 0xceae0099 _ZN10AboutLayerD2Ev
+  function 0xced15c19 _ZN9ZYWebView13removeWebViewEv
+  function 0xceae0099 _ZN10AboutLayerD1Ev
+  function 0xceae0125 _ZThn228_N10AboutLayerD1Ev
+  function 0xceae012d _ZN10AboutLayerD0Ev
+  function 0xceae0149 _ZThn228_N10AboutLayerD0Ev
+  function 0xcebc5e21 _ZN9MenuLayer5sceneEv
+  function 0xcee97225 _ZN7cocos2d20CCTransitionSlideInL6createEfPNS_7CCSceneE
+  function 0xcee82065 _ZN7cocos2d10CCDirector12replaceSceneEPNS_7CCSceneE
+  variable 0xcf2b2dec _ZTI10AboutLayer
+  function 0xcee93801 _ZN7cocos2d7CCLayer12ccTouchBeganEPNS_7CCTouchEPNS_7CCEventE
+  function 0xcee93139 _ZN7cocos2d7CCLayer27registerWithTouchDispatcherEv
+  function 0xcee93839 _ZThn228_N7cocos2d7CCLayer12ccTouchBeganEPNS_7CCTouchEPNS_7CCEventE
+  variable 0xcf128c14 _ZTS10AboutLayer
+  function 0xceae1c59 _ZN7AdLayer6createEv
+  function 0xceae1cc9 _ZN7AdLayerC1Ev
+  function 0xceae1cc9 _ZN7AdLayerC2Ev
+  variable 0xcf2b2df8 _ZTV7AdLayer
+  function 0xceae1d21 _ZN7AdLayer9sceneToQPEv
+  function 0xceae1d51 _ZN7AdLayer9sceneToCGEv
+  function 0xceae1d89 _ZN7AdLayer4initEv
+  variable 0xcf301d08 CC_AD_SHOWN
+  variable 0xcf301d07 ZRR_AD_SHOWN
+  function 0xceae26e5 _ZN7AdLayer4onAdEPN7cocos2d8CCObjectE
+  function 0xceae264d _ZN7AdLayer7onLobbyEPN7cocos2d8CCObjectE
+  function 0xceec7e09 _ZN7cocos2d13CCUserDefault16getIntegerForKeyEPKci
+  function 0xceae2579 _ZN7AdLayerD2Ev
+  function 0xceae2579 _ZN7AdLayerD1Ev
+  function 0xceae2621 _ZThn228_N7AdLayerD1Ev
+  function 0xceae2629 _ZN7AdLayerD0Ev
+  function 0xceae2645 _ZThn228_N7AdLayerD0Ev
+  function 0xceb9bcd1 _ZN10LobbyLayer5sceneEv
+  function 0xcee98bdd _ZN7cocos2d16CCTransitionFade6createEfPNS_7CCSceneE
+  function 0xceb26e35 _ZN17CustomServerLayer5sceneEv
+  function 0xced0b111 _ZN20ApplicationInterface17openCrashCartLinkEv
+  function 0xced0b0b9 _ZN20ApplicationInterface23openDoodleArmyBCAppLinkEv
+  variable 0xcf2b304c _ZTI7AdLayer
+  variable 0xcf128fa0 _ZTS7AdLayer
+  function 0xceae41e1 _ZN9AmmoMeterC2Ev
+  function 0xcee751d1 _ZN7cocos2d6CCNodeC2Ev
+  function 0xcee788fd _ZN7cocos2d7CCPointC1Ev
+  function 0xcee753dd _ZN7cocos2d6CCNodeD2Ev
+  variable 0xcf2b3058 _ZTV9AmmoMeter
+  function 0xceae41e1 _ZN9AmmoMeterC1Ev
+  function 0xceae4231 _ZN9AmmoMeter4initEv
+  function 0xcee755e5 _ZN7cocos2d6CCNode4initEv
+  function 0xceec638d _ZN7cocos2d20CCNotificationCenter11addObserverEPNS_8CCObjectEMS1_FvS2_EPKcS2_
+  function 0xceae4f11 _ZN9AmmoMeter15onWeaponChangedEPN7cocos2d8CCObjectE
+  function 0xceae4f2d _ZN9AmmoMeter16onGrenadeChangedEPN7cocos2d8CCObjectE
+  function 0xceae46e1 _ZN9AmmoMeterD2Ev
+  function 0xceae46e1 _ZN9AmmoMeterD1Ev
+  function 0xceae4761 _ZN9AmmoMeterD0Ev
+  function 0xceae477d _ZN9AmmoMeter14setWeaponStateEi
+  function 0xceae4a09 _ZN9AmmoMeter10updateStepEf
+  variable 0xcf304f74 hostSoldier
+  function 0xceae4dc1 _ZN9AmmoMeter10setGrenadeEP6Weapon
+  function 0xceae4e65 _ZN9AmmoMeter9setWeaponEP6Weapon
+  function 0xceae4f49 _ZN9AmmoMeter9setLengthEdd
+  variable 0xcf2b31fc _ZTI9AmmoMeter
+  variable 0xcf129390 _ZTS9AmmoMeter
+  variable 0xcf2da124 _ZTIN7cocos2d6CCNodeE
+  function 0xceae5061 _ZdlPvS_
+  function 0xceae6a01 _ZN11AppDelegateC2Ev
+  function 0xceeb31cd _ZN7cocos2d13CCApplicationC2Ev
+  function 0xceeb3205 _ZN7cocos2d13CCApplicationD2Ev
+  variable 0xcf2b3208 _ZTV11AppDelegate
+  function 0xceae6a71 _ZN11AppDelegateD2Ev
+  function 0xceae6a71 _ZN11AppDelegateD1Ev
+  function 0xceae6ac1 _ZThn4_N11AppDelegateD1Ev
+  function 0xceae6ac9 _ZN11AppDelegateD0Ev
+  function 0xceae6ae5 _ZThn4_N11AppDelegateD0Ev
+  function 0xceaea0ed _ZN11AppDelegate16onConnectionLostEPN7cocos2d8CCObjectE
+  function 0xceaea091 _ZN11AppDelegate14onDisconnectedEPN7cocos2d8CCObjectE
+  function 0xceae6aed _ZN11AppDelegate29applicationDidFinishLaunchingEv
+  function 0xceeb3671 _ZN7cocos2d11CCFileUtils15sharedFileUtilsEv
+  function 0xceec8091 _ZN7cocos2d13CCUserDefault15getStringForKeyEPKcRKSs
+  function 0xcecfb2f9 _ZN20ApplicationInterface11restoreFileEPKcS1_
+  function 0xcecf9c61 _ZN20ApplicationInterface17getDeviceIdentityEv
+  function 0xceaea5d9 _ZNSt6vectorISsSaISsEEixEj
+  function 0xcee819b1 _ZN7cocos2d10CCDirector13setOpenGLViewEPNS_9CCEGLViewE
+  function 0xcecf9e09 _ZN20ApplicationInterface15isTabletDisplayEv
+  function 0xceaea5f1 _ZSt3minIfERKT_S2_S2_
+  function 0xcee82aa1 _ZN7cocos2d10CCDirector21setContentScaleFactorEf
+  function 0xceaea619 _ZNSt6vectorISsSaISsEE5beginEv
+  function 0xceaea635 _ZNSt6vectorISsSaISsEE3endEv
+  variable 0xcf301d14 chatMask
+  variable 0xcf2f2408 SHOWBLOOD
+  variable 0xcf301d1c FLASH_NEWS
+  variable 0xcf2f2409 RETINA_MODE
+  variable 0xcf301d22 TOS_ACCEPTED
+  variable 0xcf301d20 VIEW_2X_MODE
+  variable 0xcf301d21 SCORE_SYNC
+  variable 0xcf301d24 RD_REMAIN
+  function 0xceaea699 _ZNK9__gnu_cxx17__normal_iteratorIPSsSt6vectorISsSaISsEEEdeEv
+  function 0xceaea681 _ZN9__gnu_cxx17__normal_iteratorIPSsSt6vectorISsSaISsEEEppEv
+  function 0xceaea655 _ZN9__gnu_cxxneIPSsSt6vectorISsSaISsEEEEbRKNS_17__normal_iteratorIT_T0_EESA_
+  function 0xcee81d61 _ZN7cocos2d10CCDirector12setDepthTestEb
+  function 0xcee81ac1 _ZN7cocos2d10CCDirector13setProjectionENS_20ccDirectorProjectionE
+  function 0xcee78d2d _ZN7cocos2d6CCSizeaSERKS0_
+  function 0xceae9b4d _ZN11AppDelegate34initializePlatformStartupVariablesEv
+  function 0xcef3efd9 cpInitChipmunk
+  function 0xceaea3f5 _ZN11AppDelegate12loadTexturesEv
+  function 0xcee78f91 _ZN7cocos2d6CCRectaSERKS0_
+  variable 0xcf301708 qHeads
+  variable 0xcf301828 qBodies
+  variable 0xcf301948 qArms
+  variable 0xcf301a68 qLegs
+  variable 0xcf301ce4 teamColors
+  function 0xceaea6b5 _ZNSt6vectorIN7cocos2d6CCRectESaIS1_EE9push_backERKS1_
+  function 0xcee7cfed _ZN7cocos2d12CCDictionary6createEv
+  function 0xcee7a575 _ZN7cocos2d12CCDictionary9setObjectEPNS_8CCObjectERKSs
+  variable 0xcf301cfc teamNames
+  variable 0xcf301b88 daRank
+  variable 0xcf301cd8 daOS
+  variable 0xcf301dfc mapNames
+  variable 0xcf301df8 multiplayerMaps
+  function 0xced06339 _ZN9ZYWebViewC1Ev
+  function 0xced06365 _ZN9ZYWebView4initEv
+  function 0xcecaf779 _ZN11SplashLayer5sceneEv
+  function 0xcee82041 _ZN7cocos2d10CCDirector12runWithSceneEPNS_7CCSceneE
+  function 0xced0acc9 _ZN20ApplicationInterface19prepareInterstitialEv
+  function 0xced0b7b1 _ZN20ApplicationInterface22enableBlueToothMonitorEv
+  variable 0xcf301d00 playerTeam
+  variable 0xcf301dcc defaultFirePadScl
+  variable 0xcf301dd0 defaultMovePadScl
+  variable 0xcf301dd4 defaultGrenadeScl
+  variable 0xcf301dd8 defaultPunchScl
+  variable 0xcf301de0 defaultZoomScl
+  variable 0xcf301ddc defaultReloadScl
+  variable 0xcf301d94 defaultRightPadPos
+  variable 0xcf301d9c defaultLeftPadPos
+  variable 0xcf301da4 defaultGrenadePos
+  variable 0xcf301dac defaultPunchPos
+  variable 0xcf301dbc defaultReloadPos
+  variable 0xcf301db4 defaultZoomPos
+  variable 0xcf301dc4 defaultPickPos
+  function 0xceae9f11 _ZN11AppDelegate17messageBoxHandlerEiPN7cocos2d8CCObjectES2_
+  function 0xcebe76d5 _ZN14NetworkManager8endMatchEv
+  function 0xceae9f89 _ZN11AppDelegate17showFailedMessageEv
+  function 0xcebe79b9 _ZN14NetworkManager8isInGameEv
+  variable 0xcf2f242c gameType
+  function 0xceaea451 _ZN11AppDelegate18endMatchAfterSleepEf
+  function 0xceaea119 _ZN11AppDelegate27applicationWillResignActiveEv
+  function 0xcebe74b1 _ZN14NetworkManager17onlineMatchExistsEv
+  function 0xcee55565 _ZN7cocos2d11CCScheduler16scheduleSelectorEMNS_8CCObjectEFvfEPS1_fjfb
+  function 0xceaea1a5 _ZN11AppDelegate29applicationDidEnterBackgroundEv
+  function 0xceaea1b1 _ZN11AppDelegate34applicationWillResignActiveAndroidEPN7cocos2d8CCObjectE
+  function 0xceaea1cd _ZN11AppDelegate36applicationDidEnterBackgroundAndroidEPN7cocos2d8CCObjectE
+  function 0xcecfae49 _ZN20ApplicationInterface20saveRewardedTimeLeftEv
+  function 0xcec7e485 _ZN11ScoreKeeper17sharedScoreKeeperEv
+  function 0xcec7edf5 _ZN11ScoreKeeper12applyPenaltyEv
+  function 0xcecad2d1 _ZN5Sound14isPlayingMusicEv
+  function 0xceaea479 _ZN11AppDelegate25showConnectionClosedAlertEf
+  function 0xceaea281 _ZN11AppDelegate30applicationWillEnterForegroundEv
+  function 0xcee824c9 _ZN7cocos2d10CCDirector6resumeEv
+  function 0xceee70b1 _ZN13CocosDenshion17SimpleAudioEngine24isBackgroundMusicPlayingEv
+  function 0xceaea36d _ZN11AppDelegate26applicationDidBecomeActiveEv
+  function 0xcee56231 _ZN7cocos2d11CCScheduler18unscheduleSelectorEMNS_8CCObjectEFvfEPS1_
+  function 0xceaea3d1 _ZN11AppDelegate14unloadTexturesEv
+  function 0xceec2445 _ZN7cocos2d18CCSpriteFrameCache22sharedSpriteFrameCacheEv
+  function 0xceec3591 _ZN7cocos2d18CCSpriteFrameCache18removeSpriteFramesEv
+  function 0xceed9269 _ZN7cocos2d14CCTextureCache18sharedTextureCacheEv
+  function 0xceeda415 _ZN7cocos2d14CCTextureCache17removeAllTexturesEv
+  function 0xceec325d _ZN7cocos2d18CCSpriteFrameCache23addSpriteFramesWithFileEPKc
+  function 0xceaea42d _ZN11AppDelegate32applicationSignificantTimeChangeEv
+  function 0xcee81aa9 _ZN7cocos2d10CCDirector20setNextDeltaTimeZeroEb
+  function 0xceaea449 _ZN11AppDelegate34applicationDidReceiveMemoryWarningEv
+  function 0xceaea581 _ZN11AppDelegate24applicationWillTerminateEv
+  function 0xceaea6f5 _ZN9__gnu_cxx17__normal_iteratorIPSsSt6vectorISsSaISsEEEC1ERKS1_
+  function 0xceaea70d _ZNK9__gnu_cxx17__normal_iteratorIPSsSt6vectorISsSaISsEEE4baseEv
+  function 0xceaea6a9 _ZSt7forwardIRKN7cocos2d6CCRectEEOT_RNSt16remove_referenceIS4_E4typeE
+  function 0xceaea719 _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE9constructIS1_IRKS1_EEEDTcl12_S_constructfp_fp0_spcl7forwardIT0_Efp1_EEERS2_PT_DpOS7_
+  function 0xceaea73d _ZNSt6vectorIN7cocos2d6CCRectESaIS1_EE19_M_emplace_back_auxIIRKS1_EEEvDpOT_
+  function 0xceaea6f5 _ZN9__gnu_cxx17__normal_iteratorIPSsSt6vectorISsSaISsEEEC2ERKS1_
+  function 0xceaea865 _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE12_S_constructIS1_IRKS1_EEENSt9enable_ifIXsrNS3_18__construct_helperIT_IDpT0_EEE5valueEvE4typeERS2_PS9_DpOSA_
+  function 0xceaea719 _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE9constructIS1_JRKS1_EEEDTcl12_S_constructfp_fp0_spcl7forwardIT0_Efp1_EEERS2_PT_DpOS7_
+  function 0xceaea889 _ZNKSt6vectorIN7cocos2d6CCRectESaIS1_EE12_M_check_lenEjPKc
+  function 0xceaea915 _ZNSt12_Vector_baseIN7cocos2d6CCRectESaIS1_EE11_M_allocateEj
+  function 0xceaea93d _ZNKSt6vectorIN7cocos2d6CCRectESaIS1_EE4sizeEv
+  function 0xceaea955 _ZNSt12_Vector_baseIN7cocos2d6CCRectESaIS1_EE19_M_get_Tp_allocatorEv
+  function 0xceaea961 _ZSt34__uninitialized_move_if_noexcept_aIPN7cocos2d6CCRectES2_SaIS1_EET0_T_S5_S4_RT1_
+  function 0xceaea9a9 _ZSt8_DestroyIPN7cocos2d6CCRectES1_EvT_S3_RSaIT0_E
+  function 0xceaea9c1 _ZNSt12_Vector_baseIN7cocos2d6CCRectESaIS1_EE13_M_deallocateEPS1_j
+  function 0xceaea991 _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE7destroyIS1_EEvRS2_PT_
+  function 0xceaea73d _ZNSt6vectorIN7cocos2d6CCRectESaIS1_EE19_M_emplace_back_auxIJRKS1_EEEvDpOT_
+  function 0xceaea9e5 _ZN9__gnu_cxx13new_allocatorIN7cocos2d6CCRectEE9constructIS2_IRKS2_EEEvPT_DpOT0_
+  function 0xceaea865 _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE12_S_constructIS1_JRKS1_EEENSt9enable_ifIXsrNS3_18__construct_helperIT_JDpT0_EEE5valueEvE4typeERS2_PS9_DpOSA_
+  function 0xceaeaa25 _ZNKSt6vectorIN7cocos2d6CCRectESaIS1_EE8max_sizeEv
+  function 0xceaeaa45 _ZN9__gnu_cxx13new_allocatorIN7cocos2d6CCRectEE8allocateEjPKv
+  function 0xceaeaa81 _ZSt32__make_move_if_noexcept_iteratorIPN7cocos2d6CCRectES2_ET0_T_
+  function 0xceaeaa8d _ZSt22__uninitialized_copy_aIPN7cocos2d6CCRectES2_S1_ET0_T_S4_S3_RSaIT1_E
+  function 0xceaeaaad _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE10_S_destroyIS1_EENSt9enable_ifIXsrNS3_16__destroy_helperIT_EE5valueEvE4typeERS2_PS7_
+  function 0xceaeaac5 _ZSt8_DestroyIPN7cocos2d6CCRectEEvT_S3_
+  function 0xceaeaadd _ZN9__gnu_cxx13new_allocatorIN7cocos2d6CCRectEE10deallocateEPS2_j
+  function 0xceaea9e5 _ZN9__gnu_cxx13new_allocatorIN7cocos2d6CCRectEE9constructIS2_JRKS2_EEEvPT_DpOT0_
+  function 0xceaeab0d _ZNKSt12_Vector_baseIN7cocos2d6CCRectESaIS1_EE19_M_get_Tp_allocatorEv
+  function 0xceaeaaf5 _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE8max_sizeERKS2_
+  function 0xceaeab19 _ZNK9__gnu_cxx13new_allocatorIN7cocos2d6CCRectEE8max_sizeEv
+  function 0xceaeab29 _ZSt18uninitialized_copyIPN7cocos2d6CCRectES2_ET0_T_S4_S3_
+  function 0xceaeab49 _ZN9__gnu_cxx13new_allocatorIN7cocos2d6CCRectEE7destroyIS2_EEvPT_
+  function 0xceaeab55 _ZNSt12_Destroy_auxILb1EE9__destroyIPN7cocos2d6CCRectEEEvT_S5_
+  function 0xceaeab61 _ZNSt16allocator_traitsISaIN7cocos2d6CCRectEEE11_S_max_sizeIKS2_EENSt9enable_ifIXsrNS3_16__maxsize_helperIT_EE5valueEjE4typeERS8_
+  function 0xceaeab79 _ZNSt20__uninitialized_copyILb0EE13__uninit_copyIPN7cocos2d6CCRectES4_EET0_T_S6_S5_
+  function 0xceaeabd5 _ZSt11__addressofIN7cocos2d6CCRectEEPT_RS2_
+  function 0xceaeabed _ZSt10_ConstructIN7cocos2d6CCRectEIRS1_EEvPT_DpOT0_
+  function 0xceaeabe1 _ZSt7forwardIRN7cocos2d6CCRectEEOT_RNSt16remove_referenceIS3_E4typeE
+  function 0xceaeabed _ZSt10_ConstructIN7cocos2d6CCRectEJRS1_EEvPT_DpOT0_
+  variable 0xcf2b33f0 _ZTI11AppDelegate
+  function 0xceeb3299 _ZN7cocos2d13CCApplication20setAnimationIntervalEd
+  function 0xceeb3309 _ZN7cocos2d13CCApplication18getCurrentLanguageEv
+  function 0xceeb34a9 _ZN7cocos2d13CCApplication17getTargetPlatformEv
+  variable 0xcf2ecc10 _ZTVN10__cxxabiv121__vmi_class_type_infoE
+  variable 0xcf129f74 _ZTS11AppDelegate
+  variable 0xcf2e4adc _ZTIN7cocos2d13CCApplicationE
+  function 0xceaec765 _ZN11SoldierView6createEv
+  function 0xceca6999 _ZN11SoldierViewC1Ev
+  function 0xceaec7d5 _ZN7cocos2d9extension20CCScrollViewDelegateD2Ev
+  variable 0xcf2b3680 _ZTVN7cocos2d9extension20CCScrollViewDelegateE
+  function 0xceaec7d5 _ZN7cocos2d9extension20CCScrollViewDelegateD1Ev
+  function 0xceaec809 _ZN7cocos2d9extension20CCScrollViewDelegateD0Ev
+  function 0xceaec825 _ZN7cocos2d9extension19CCTableViewDelegate18tableCellHighlightEPNS0_11CCTableViewEPNS0_15CCTableViewCellE
+  function 0xceaec831 _ZN7cocos2d9extension19CCTableViewDelegate20tableCellUnhighlightEPNS0_11CCTableViewEPNS0_15CCTableViewCellE
+  function 0xceaec83d _ZN7cocos2d9extension19CCTableViewDelegate20tableCellWillRecycleEPNS0_11CCTableViewEPNS0_15CCTableViewCellE
+  function 0xceaec849 _ZN7cocos2d9extension21CCTableViewDataSourceD2Ev
+  variable 0xcf2b3638 _ZTVN7cocos2d9extension21CCTableViewDataSourceE
+  function 0xceaec849 _ZN7cocos2d9extension21CCTableViewDataSourceD1Ev
+  function 0xceaec87d _ZN7cocos2d9extension21CCTableViewDataSourceD0Ev
+  function 0xceaec899 _ZN7cocos2d9extension21CCTableViewDataSource21tableCellSizeForIndexEPNS0_11CCTableViewEj
+  function 0xceaec8c1 _ZN7cocos2d9extension21CCTableViewDataSource16cellSizeForTableEPNS0_11CCTableViewE
+  function 0xceaec8e5 _ZN7cocos2d9extension11CCTableView11setDelegateEPNS0_19CCTableViewDelegateE
+  function 0xceaec8f9 _ZN13AvatarCreator19scrollViewDidScrollEPN7cocos2d9extension12CCScrollViewE
+  function 0xceaec905 _ZThn228_N13AvatarCreator19scrollViewDidScrollEPN7cocos2d9extension12CCScrollViewE
+  function 0xceaec90d _ZN13AvatarCreator17scrollViewDidZoomEPN7cocos2d9extension12CCScrollViewE
+  function 0xceaec919 _ZThn228_N13AvatarCreator17scrollViewDidZoomEPN7cocos2d9extension12CCScrollViewE
+  function 0xceaec921 _ZN13AvatarCreator16tableCellAtIndexEPN7cocos2d9extension11CCTableViewEj
+  function 0xceaec931 _ZThn232_N13AvatarCreator16tableCellAtIndexEPN7cocos2d9extension11CCTableViewEj
+  function 0xceaec939 _ZN13AvatarCreator24numberOfCellsInTableViewEPN7cocos2d9extension11CCTableViewE
+  function 0xceaec949 _ZThn232_N13AvatarCreator24numberOfCellsInTableViewEPN7cocos2d9extension11CCTableViewE
+  function 0xceaec951 _ZN7cocos2d9extension20CCScrollViewDelegateC2Ev
+  function 0xceaec951 _ZN7cocos2d9extension20CCScrollViewDelegateC1Ev
+  function 0xceaec975 _ZN7cocos2d9extension19CCTableViewDelegateC2Ev
+  variable 0xcf2b3658 _ZTVN7cocos2d9extension19CCTableViewDelegateE
+  function 0xceaec975 _ZN7cocos2d9extension19CCTableViewDelegateC1Ev
+  function 0xceaec9a1 _ZN7cocos2d9extension19CCTableViewDelegateD2Ev
+  function 0xceaec9a1 _ZN7cocos2d9extension19CCTableViewDelegateD1Ev
+  function 0xceaec9dd _ZN7cocos2d9extension19CCTableViewDelegateD0Ev
+  function 0xceaec9f9 _ZN7cocos2d9extension21CCTableViewDataSourceC2Ev
+  function 0xceaec9f9 _ZN7cocos2d9extension21CCTableViewDataSourceC1Ev
+  function 0xceaeca1d _ZN13AvatarCreatorC2Ev
+  variable 0xcf2b3410 _ZTV13AvatarCreator
+  function 0xceaeca1d _ZN13AvatarCreatorC1Ev
+  function 0xceaeca79 _ZN13PartTableViewC2Ev
+  function 0xcebcfe89 _ZN13MenuTableViewC2Ev
+  variable 0xcf2b7008 _ZTV13PartTableView
+  function 0xceaeca79 _ZN13PartTableViewC1Ev
+  function 0xceaecaed _ZN13HeadTableViewC2Ev
+  variable 0xcf2b6ab8 _ZTV13HeadTableView
+  function 0xceaecaed _ZN13HeadTableViewC1Ev
+  function 0xceaecb61 _ZN18SkinColorTableViewC2Ev
+  variable 0xcf2b6d60 _ZTV18SkinColorTableView
+  function 0xceaecb61 _ZN18SkinColorTableViewC1Ev
+  function 0xceaecbd5 _ZN18HairColorTableViewC2Ev
+  variable 0xcf2b6018 _ZTV18HairColorTableView
+  function 0xceaecbd5 _ZN18HairColorTableViewC1Ev
+  function 0xceaecc49 _ZN13BrowTableViewC2Ev
+  variable 0xcf2b6568 _ZTV13BrowTableView
+  function 0xceaecc49 _ZN13BrowTableViewC1Ev
+  function 0xceaeccbd _ZN12EyeTableViewC2Ev
+  variable 0xcf2b6810 _ZTV12EyeTableView
+  function 0xceaeccbd _ZN12EyeTableViewC1Ev
+  function 0xceaecd31 _ZN14MouthTableViewC2Ev
+  variable 0xcf2b62c0 _ZTV14MouthTableView
+  function 0xceaecd31 _ZN14MouthTableViewC1Ev
+  function 0xceaecda5 _ZN13HairTableViewC2Ev
+  variable 0xcf2b5d70 _ZTV13HairTableView
+  function 0xceaecda5 _ZN13HairTableViewC1Ev
+  function 0xceaece19 _ZN17BackHairTableViewC2Ev
+  variable 0xcf2b5ac8 _ZTV17BackHairTableView
+  function 0xceaece19 _ZN17BackHairTableViewC1Ev
+  function 0xceaece8d _ZN13BurnTableViewC2Ev
+  variable 0xcf2b5820 _ZTV13BurnTableView
+  function 0xceaece8d _ZN13BurnTableViewC1Ev
+  function 0xceaecf01 _ZN14BeardTableViewC2Ev
+  variable 0xcf2b5578 _ZTV14BeardTableView
+  function 0xceaecf01 _ZN14BeardTableViewC1Ev
+  function 0xceaecf75 _ZN15StacheTableViewC2Ev
+  variable 0xcf2b52d0 _ZTV15StacheTableView
+  function 0xceaecf75 _ZN15StacheTableViewC1Ev
+  function 0xceaecfe9 _ZN16EyeWareTableViewC2Ev
+  variable 0xcf2b5028 _ZTV16EyeWareTableView
+  function 0xceaecfe9 _ZN16EyeWareTableViewC1Ev
+  function 0xceaed05d _ZN12HatTableViewC2Ev
+  variable 0xcf2b4d80 _ZTV12HatTableView
+  function 0xceaed05d _ZN12HatTableViewC1Ev
+  function 0xceaed0d1 _ZN13BodyTableViewC2Ev
+  variable 0xcf2b4ad8 _ZTV13BodyTableView
+  function 0xceaed0d1 _ZN13BodyTableViewC1Ev
+  function 0xceaed145 _ZN14ShirtTableViewC2Ev
+  variable 0xcf2b4830 _ZTV14ShirtTableView
+  function 0xceaed145 _ZN14ShirtTableViewC1Ev
+  function 0xceaed1b9 _ZN12LegTableViewC2Ev
+  variable 0xcf2b4588 _ZTV12LegTableView
+  function 0xceaed1b9 _ZN12LegTableViewC1Ev
+  function 0xceaed22d _ZN13FootTableViewC2Ev
+  variable 0xcf2b42e0 _ZTV13FootTableView
+  function 0xceaed22d _ZN13FootTableViewC1Ev
+  function 0xceaed2a1 _ZN13HandTableViewC2Ev
+  variable 0xcf2b4038 _ZTV13HandTableView
+  function 0xceaed2a1 _ZN13HandTableViewC1Ev
+  function 0xceaed315 _ZN13VestTableViewC2Ev
+  variable 0xcf2b3d90 _ZTV13VestTableView
+  function 0xceaed315 _ZN13VestTableViewC1Ev
+  function 0xceaed389 _ZN13AvatarCreator4initEv
+  function 0xcebcff11 _ZN13MenuTableView16initWithViewSizeEN7cocos2d6CCSizeEPNS0_6CCNodeE
+  function 0xceca7b51 _ZN11SoldierView10updateStepEf
+  function 0xceaf88cd _ZN14AvatarRenderer20sharedAvatarRendererEv
+  function 0xceafe111 _ZN14AvatarRenderer25getCustomAvatarPropertiesEv
+  function 0xceafda79 _ZN14AvatarRenderer14getHeadTextureEPN7cocos2d7CCArrayEi
+  function 0xceafdbd9 _ZN14AvatarRenderer14getBodyTextureEPN7cocos2d7CCArrayEi
+  function 0xceafdd39 _ZN14AvatarRenderer13getArmTextureEPN7cocos2d7CCArrayEi
+  function 0xceafde99 _ZN14AvatarRenderer13getLegTextureEPN7cocos2d7CCArrayEi
+  function 0xceafdff9 _ZN14AvatarRenderer11getBodyTypeEPN7cocos2d7CCArrayEi
+  function 0xceca91f9 _ZN11SoldierView13setPlayerSkinEiPN7cocos2d11CCTexture2DES2_S2_S2_
+  function 0xceaee7d9 _ZN13AvatarCreatorD2Ev
+  function 0xceaee7d9 _ZN13AvatarCreatorD1Ev
+  function 0xceaee95d _ZThn228_N13AvatarCreatorD1Ev
+  function 0xceaee965 _ZThn232_N13AvatarCreatorD1Ev
+  function 0xceaee96d _ZN13AvatarCreatorD0Ev
+  function 0xceaee989 _ZThn228_N13AvatarCreatorD0Ev
+  function 0xceaee991 _ZThn232_N13AvatarCreatorD0Ev
+  function 0xceaee999 _ZN13AvatarCreator13setTableViewsEi
+  function 0xced128c1 _ZN19InAppPurchaseBridge18isProductPurchasedESs
+  function 0xceaeee35 _ZN13AvatarCreator15intAtArrayIndexEPN7cocos2d7CCArrayEi
+  function 0xcee7f439 _ZNK7cocos2d8CCString8intValueEv
+  function 0xceaeee89 _ZN13AvatarCreator13getSelectionsEv
+  function 0xceaef131 _ZN13AvatarCreator13setSelectionsEPN7cocos2d7CCArrayE
+  function 0xceaef309 _ZN13AvatarCreator16tableCellTouchedEPN7cocos2d9extension11CCTableViewEPNS1_15CCTableViewCellE
+  function 0xced380d5 _ZN7cocos2d9extension15CCTableViewCell6getIdxEv
+  function 0xcebcff69 _ZN13MenuTableView11cellTouchedEj
+  function 0xceaef3d1 _ZThn228_N13AvatarCreator16tableCellTouchedEPN7cocos2d9extension11CCTableViewEPNS1_15CCTableViewCellE
+  variable 0xcf2b3610 _ZTI13AvatarCreator
+  variable 0xcf2b3698 _ZTIN7cocos2d9extension21CCTableViewDataSourceE
+  function 0xcf0d0498 __cxa_pure_virtual
+  variable 0xcf2b36a0 _ZTIN7cocos2d9extension19CCTableViewDelegateE
+  variable 0xcf2b36ac _ZTIN7cocos2d9extension20CCScrollViewDelegateE
+  variable 0xcf12a320 _ZTS13AvatarCreator
+  variable 0xcf12a398 _ZTSN7cocos2d9extension21CCTableViewDataSourceE
+  variable 0xcf2ecd60 _ZTVN10__cxxabiv117__class_type_infoE
+  variable 0xcf12a3c4 _ZTSN7cocos2d9extension19CCTableViewDelegateE
+  variable 0xcf12a3f0 _ZTSN7cocos2d9extension20CCScrollViewDelegateE
+  function 0xceaef575 _ZNK7cocos2d9CCInteger8getValueEv
+  function 0xceaf0e8d _ZN7cocos2d9extension17CCEditBoxDelegateD2Ev
+  variable 0xcf2b3958 _ZTVN7cocos2d9extension17CCEditBoxDelegateE
+  function 0xceaf0e8d _ZN7cocos2d9extension17CCEditBoxDelegateD1Ev
+  function 0xceaf0ec1 _ZN7cocos2d9extension17CCEditBoxDelegateD0Ev
+  function 0xceaf0edd _ZN7cocos2d9extension17CCEditBoxDelegate22editBoxEditingDidBeginEPNS0_9CCEditBoxE
+  function 0xceaf0ee9 _ZN7cocos2d9extension17CCEditBoxDelegate20editBoxEditingDidEndEPNS0_9CCEditBoxE
+  function 0xceaf0ef5 _ZN7cocos2d9extension17CCEditBoxDelegate18editBoxTextChangedEPNS0_9CCEditBoxERKSs
+  function 0xceaf0f01 _ZN11AvatarLayer6createEv
+  function 0xceaf0f95 _ZN11AvatarLayerC1Ev
+  function 0xceaf0f71 _ZN7cocos2d9extension17CCEditBoxDelegateC2Ev
+  function 0xceaf0f71 _ZN7cocos2d9extension17CCEditBoxDelegateC1Ev
+  function 0xceaf0f95 _ZN11AvatarLayerC2Ev
+  variable 0xcf2b36b8 _ZTV11AvatarLayer
+  function 0xceaf1045 _ZN11AvatarLayer5sceneEv
+  function 0xceaf1079 _ZN11AvatarLayer4initEv
+  function 0xcee7f9d5 _ZN7cocos2d7CCArray6createEv
+  variable 0xcf301d06 DA_INSTALLED
+  variable 0xcf301d04 ZRR_INSTALLED
+  variable 0xcf301d05 CC_INSTALLED
+  variable 0xcf301d0c playerSkin
+  function 0xceaf3239 _ZN11AvatarLayer6onDoneEPN7cocos2d8CCObjectE
+  function 0xceaf3309 _ZN11AvatarLayer7onAwardEPN7cocos2d8CCObjectE
+  function 0xceaf32a1 _ZN11AvatarLayer8onCustomEPN7cocos2d8CCObjectE
+  function 0xceaf3769 _ZN11AvatarLayer12onNextVisualEPN7cocos2d8CCObjectE
+  function 0xceaf3939 _ZN11AvatarLayer12onPrevVisualEPN7cocos2d8CCObjectE
+  function 0xceaf35a9 _ZN11AvatarLayer12onPlayerNameEPN7cocos2d8CCObjectE
+  function 0xced00c49 _ZN17LeaderBoardBridge23sharedLeaderBoardBridgeEv
+  function 0xced00f71 _ZN17LeaderBoardBridge13calcPlayerExpEv
+  function 0xceebdb8d _ZN7cocos2d8CCSprite6createEPKcRKNS_6CCRectE
+  function 0xced00ca5 _ZN17LeaderBoardBridge15calcPlayerSkillEv
+  function 0xced013f9 _ZN17LeaderBoardBridge12getScoreDataE16ELeaderboardType
+  function 0xced38a39 _ZN7cocos2d9extension9CCEditBox6createERKNS_6CCSizeEPNS0_14CCScale9SpriteES6_S6_
+  function 0xced38bf9 _ZN7cocos2d9extension9CCEditBox7setTextEPKc
+  function 0xced38ff1 _ZN7cocos2d9extension9CCEditBox12setInputFlagENS0_16EditBoxInputFlagE
+... truncated, shown 1000 of 36225
+[5/7] Enumerating imports
+
+[Imports] count=361
+  function /system/lib/libc.so!__cxa_finalize -> 0xf0564ff5
+  function /system/lib/libc.so!__cxa_atexit -> 0xf0564ee9
+  function /system/lib/libm.so!atanf -> 0xefed518c
+  function /system/lib/libm.so!cosf -> 0xefed6618
+  function /system/lib/libm.so!floorf -> 0xefed9570
+  function /system/lib/libm.so!sinf -> 0xefedc200
+  function /system/lib/libm.so!atan2 -> 0xefeccca0
+  function /system/lib/libc.so!strlen -> 0xf052a0c9
+  function /system/lib/libc.so!memcpy -> 0xf0528ea8
+  function /system/lib/libc.so!isalnum -> 0xf0552cdd
+  function /system/lib/libc.so!toupper -> 0xf0552ef5
+  function /system/lib/libc.so!tolower -> 0xf0552ed9
+  function /system/lib/libc.so!memset -> 0xf0528f98
+  function /system/lib/libc.so!__stack_chk_fail -> 0xf0559c75
+  variable undefined!__stack_chk_guard -> undefined
+  function /system/lib/libc.so!localtime -> 0xf055be59
+  function /system/lib/libc.so!strftime -> 0xf055df2d
+  function /system/lib/liblog.so!__android_log_print -> 0xf04a94c9
+  function /system/lib/libc.so!strtod -> 0xf05459c9
+  function /system/lib/libc.so!lrand48 -> 0xf054c0a1
+  function /system/lib/libm.so!pow -> 0xefed2980
+  function /system/lib/libc.so!time -> 0xf0552e91
+  function /system/lib/libc.so!memmove -> 0xf052a1a0
+  function /system/lib/libc.so!memcmp -> 0xf0528778
+  function /system/lib/libc.so!pthread_mutex_lock -> 0xf0558f5b
+  function /system/lib/libc.so!pthread_mutex_unlock -> 0xf05591fd
+  function /system/lib/libc.so!printf -> 0xf056325d
+  function /system/lib/libm.so!cos -> 0xefed6180
+  function /system/lib/libm.so!sin -> 0xefedbd68
+  function /system/lib/libc.so!malloc -> 0xf0527619
+  function /system/lib/libc.so!realloc -> 0xf0527669
+  function /system/lib/libc.so!free -> 0xf05275d9
+  function /system/lib/libc.so!atoi -> 0xf05568bd
+  function /system/lib/libc.so!setjmp -> 0xf0528afc
+  function /system/lib/libc.so!longjmp -> 0xf0528cb8
+  function /system/lib/libc.so!snprintf -> 0xf0563425
+  function /system/lib/libc.so!puts -> 0xf0555cf9
+  function /system/lib/libc.so!srand48 -> 0xf054c239
+  function /system/lib/libc.so!strcmp -> 0xf05299c5
+  function /system/lib/libc.so!calloc -> 0xf05275c5
+  function /system/lib/libm.so!ceil -> 0xefed5bf8
+  function /system/lib/libc.so!strtol -> 0xf05570ab
+  function /system/lib/libc.so!pthread_create -> 0xf05585a1
+  function /system/lib/libc.so!fopen -> 0xf0562731
+  function /system/lib/libc.so!fwrite -> 0xf05553c1
+  function /system/lib/libc.so!fclose -> 0xf0562b05
+  function /system/lib/libc.so!umask -> 0xf055b648
+  function /system/lib/libc.so!mkdir -> 0xf052f1cf
+  function /system/lib/libc.so!__errno -> 0xf052a4b5
+  function /system/lib/libc.so!pthread_mutex_init -> 0xf0558f19
+  function /system/lib/libc.so!remove -> 0xf0563345
+  function /system/lib/libm.so!atan2f -> 0xefeccfac
+  function /system/lib/libm.so!sqrt -> 0xefede560
+  function /system/lib/libm.so!sqrtf -> 0xefede570
+  function /system/lib/libGLESv2.so!glGetUniformLocation -> 0xf1058ecc
+  function /system/lib/libGLESv2.so!glActiveTexture -> 0xf10588e8
+  function /system/lib/libGLESv2.so!glUniform1i -> 0xf1059508
+  function /system/lib/libGLESv2.so!glVertexAttribPointer -> 0xf1059724
+  function /system/lib/libGLESv2.so!glDrawArrays -> 0xf1058c14
+  function /system/lib/libGLESv2.so!glEnable -> 0xf1058c3c
+  function /system/lib/libGLESv2.so!glDisable -> 0xf1058bec
+  function /system/lib/libc.so!pthread_cond_wait -> 0xf0558135
+  function /system/lib/libc.so!pthread_mutex_destroy -> 0xf05593e1
+  function /system/lib/libc.so!pthread_cond_destroy -> 0xf05580bf
+  function /system/lib/libc.so!pthread_exit -> 0xf0558943
+  function /system/lib/libc.so!pthread_cond_signal -> 0xf0558129
+  function /system/lib/libc.so!pthread_cond_init -> 0xf05580ad
+  function /system/lib/libc.so!pthread_detach -> 0xf05588a7
+  function /system/lib/libc.so!sprintf -> 0xf0563535
+  function /system/lib/libc.so!strcpy -> 0xf0529bf9
+  function /system/lib/libc.so!fread -> 0xf0561d99
+  function /system/lib/libc.so!strcat -> 0xf05293e9
+  function /system/lib/libc.so!putchar -> 0xf0563311
+  function /system/lib/libc.so!strncpy -> 0xf054dd63
+  function /system/lib/libc.so!strstr -> 0xf055781d
+  function /system/lib/libc.so!strncmp -> 0xf054dd43
+  function /system/lib/libc.so!fseek -> 0xf0562e5b
+  function /system/lib/libc.so!ftell -> 0xf0562ebd
+  function /system/lib/libc.so!unlink -> 0xf0533737
+  function /system/lib/libc.so!vsnprintf -> 0xf056346d
+  function /system/lib/libc.so!gettimeofday -> 0xf05284a9
+  function /system/lib/libc.so!ioctl -> 0xf052e1ed
+  function /system/lib/libc.so!__srget -> 0xf0555da9
+  variable undefined!__sF -> undefined
+  function /system/lib/libc.so!fgets -> 0xf05549bd
+  function /system/lib/libc.so!strpbrk -> 0xf0557797
+  function /system/lib/libc.so!atol -> 0xf05568bd
+  function /system/lib/libc.so!strtoul -> 0xf05571fd
+  function /system/lib/libc.so!strcasecmp -> 0xf05576c5
+  function /system/lib/libc.so!strncasecmp -> 0xf05576f5
+  function /system/lib/libc.so!fflush -> 0xf05547d5
+  function /system/lib/libc.so!fprintf -> 0xf056305d
+  function /system/lib/libc.so!gethostname -> 0xf052d219
+  function /system/lib/libc.so!gethostbyname -> 0xf053a669
+  function /system/lib/libc.so!getsockopt -> 0xf055a9d0
+  function /system/lib/libc.so!setsockopt -> 0xf055b390
+  function /system/lib/libc.so!sendto -> 0xf05309c1
+  function /system/lib/libc.so!fcntl -> 0xf05654cd
+  function /system/lib/libc.so!getsockname -> 0xf055a9b0
+  function /system/lib/libc.so!inet_addr -> 0xf052a879
+  function /system/lib/libc.so!socket -> 0xf05310e5
+  function /system/lib/libc.so!bind -> 0xf055a49c
+  function /system/lib/libc.so!close -> 0xf052b45d
+  function /system/lib/libc.so!recvfrom -> 0xf055af80
+  function /system/lib/libc.so!inet_ntoa -> 0xf0553e7d
+  function /system/lib/libc.so!strtoull -> 0xf055731d
+  function /system/lib/libc.so!pthread_cond_timedwait -> 0xf05581d1
+  function /system/lib/libc.so!fputs -> 0xf0554f1d
+  function /system/lib/libc.so!pthread_attr_init -> 0xf0557ae9
+  function /system/lib/libc.so!pthread_attr_setschedparam -> 0xf0557b57
+  function /system/lib/libc.so!pthread_attr_setstacksize -> 0xf0557b67
+  function /system/lib/libc.so!pthread_attr_setdetachstate -> 0xf0557b1f
+  function /system/lib/libc.so!wcslen -> 0xf0542f95
+  function /system/lib/libc.so!wcscpy -> 0xf0542eb9
+  function /system/lib/libc.so!wcscat -> 0xf0542e6d
+  function /system/lib/libc.so!wcscmp -> 0xf0542ea1
+  function /system/lib/libc.so!pthread_mutexattr_init -> 0xf0557e15
+  function /system/lib/libc.so!pthread_mutexattr_destroy -> 0xf0558ebb
+  function /system/lib/libc.so!pthread_cond_broadcast -> 0xf05580cd
+  function /system/lib/libc.so!listen -> 0xf055ab40
+  function /system/lib/libc.so!shutdown -> 0xf055b420
+  function /system/lib/libc.so!connect -> 0xf052b479
+  function /system/lib/libc.so!select -> 0xf052fbc1
+  function /system/lib/libc.so!accept -> 0xf052a7dd
+  function /system/lib/libc.so!send -> 0xf05309ab
+  function /system/lib/libc.so!recv -> 0xf05304bf
+  function /system/lib/libc.so!strncat -> 0xf054dd11
+  function /system/lib/libc.so!strrchr -> 0xf0528771
+  function /system/lib/libc.so!opendir -> 0xf052b589
+  function /system/lib/libc.so!readdir -> 0xf052b5a3
+  function /system/lib/libc.so!fnmatch -> 0xf0552685
+  function /system/lib/libc.so!stat -> 0xf05310f1
+  function /system/lib/libc.so!closedir -> 0xf052b679
+  function /system/lib/libc.so!getaddrinfo -> 0xf0538079
+  function /system/lib/libc.so!gai_strerror -> 0xf0538045
+  function /system/lib/libc.so!perror -> 0xf0555c69
+  function /system/lib/libc.so!freeaddrinfo -> 0xf0538059
+  function /system/lib/libc.so!write -> 0xf055b748
+  function /system/lib/libc.so!read -> 0xf055aef8
+  function /system/lib/libc.so!strchr -> 0xf0528751
+  function /system/lib/libc.so!poll -> 0xf052fb09
+  variable undefined!_ctype_ -> undefined
+  function /system/lib/libc.so!getnameinfo -> 0xf053b695
+  function /system/lib/libc.so!sscanf -> 0xf0563589
+  function /system/lib/libc.so!pthread_equal -> 0xf0558909
+  function /system/lib/libc.so!pthread_getspecific -> 0xf0558df5
+  function /system/lib/libc.so!pthread_setspecific -> 0xf0558e45
+  function /system/lib/libc.so!pthread_key_delete -> 0xf0558da5
+  function /system/lib/libc.so!pthread_key_create -> 0xf0558d35
+  function /system/lib/libc.so!vasprintf -> 0xf0556379
+  function /system/lib/libc.so!pthread_self -> 0xf05599cd
+  function /system/lib/libc.so!pthread_setname_np -> 0xf0559ab5
+  function /system/lib/libc.so!localtime_r -> 0xf055beb1
+  function /system/lib/libc.so!strerror -> 0xf053125b
+  function /system/lib/libc.so!sched_yield -> 0xf055b130
+  function /system/lib/libc.so!lseek -> 0xf055abc0
+  function /system/lib/libc.so!nanosleep -> 0xf055ad90
+  function /system/lib/libc.so!open -> 0xf052f7b1
+  function /system/lib/libdl.so!dlsym -> 0xee1ea0f3
+  function /system/lib/libGLESv2.so!glGetString -> 0xf105c570
+  function /system/lib/libGLESv2.so!glGetIntegerv -> 0xf105c6a8
+  function /system/lib/libc.so!exit -> 0xf05272e1
+  function /system/lib/libc.so!isnanf -> 0xf052ce41
+  function /system/lib/libm.so!powf -> 0xefed315c
+  function /system/lib/libm.so!acosf -> 0xefecc4c0
+  function /system/lib/libm.so!asinf -> 0xefeccb50
+  function /system/lib/libm.so!logf -> 0xefed272c
+  function /system/lib/libm.so!expf -> 0xefecd8f4
+  function /system/lib/libm.so!fmodf -> 0xefecdea4
+  function /system/lib/libm.so!tanf -> 0xefedc9c8
+  function /system/lib/libGLESv2.so!glClearColor -> 0xf1058a2c
+  function /system/lib/libGLESv2.so!glClear -> 0xf1058a18
+  function /system/lib/libGLESv2.so!glClearDepthf -> 0xf1058a40
+  function /system/lib/libGLESv2.so!glDepthFunc -> 0xf1058b9c
+  function /system/lib/libGLESv2.so!glDeleteBuffers -> 0xf1058b24
+  function /system/lib/libGLESv2.so!glGenBuffers -> 0xf1058cc8
+  function /system/lib/libGLESv2.so!glBindBuffer -> 0xf1058924
+  function /system/lib/libGLESv2.so!glBufferData -> 0xf10589d8
+  function /system/lib/libGLESv2.so!glEnableVertexAttribArray -> 0xf1058c50
+  function /system/lib/libGLESv2.so!glGenFramebuffers -> 0xf1058d20
+  function /system/lib/libGLESv2.so!glBindFramebuffer -> 0xf1058938
+  function /system/lib/libGLESv2.so!glFramebufferTexture2D -> 0xf1058ca0
+  function /system/lib/libGLESv2.so!glCheckFramebufferStatus -> 0xf1058a00
+  function /system/lib/libGLESv2.so!glGetFloatv -> 0xf105c64c
+  function /system/lib/libGLESv2.so!glDeleteFramebuffers -> 0xf1058b38
+  function /system/lib/libGLESv2.so!glViewport -> 0xf1059738
+  function /system/lib/libGLESv2.so!glDrawElements -> 0xf1058c28
+  function /system/lib/libGLESv2.so!glIsEnabled -> 0xf1058f4c
+  function /system/lib/libGLESv2.so!glStencilMask -> 0xf10590e0
+  function /system/lib/libGLESv2.so!glGetBooleanv -> 0xf105c5f4
+  function /system/lib/libGLESv2.so!glDepthMask -> 0xf1058bb0
+  function /system/lib/libGLESv2.so!glStencilFunc -> 0xf10590b8
+  function /system/lib/libGLESv2.so!glStencilOp -> 0xf1059108
+  function /system/lib/libGLESv2.so!glDeleteRenderbuffers -> 0xf1058b60
+  function /system/lib/libGLESv2.so!glGenRenderbuffers -> 0xf1058d34
+  function /system/lib/libGLESv2.so!glBindRenderbuffer -> 0xf105894c
+  function /system/lib/libGLESv2.so!glRenderbufferStorage -> 0xf1059054
+  function /system/lib/libGLESv2.so!glFramebufferRenderbuffer -> 0xf1058c8c
+  function /system/lib/libGLESv2.so!glClearStencil -> 0xf1058a54
+  function /system/lib/libGLESv2.so!glPixelStorei -> 0xf1059004
+  function /system/lib/libGLESv2.so!glReadPixels -> 0xf105902c
+  function /system/lib/libGLESv2.so!glBufferSubData -> 0xf10589ec
+  function /system/lib/libm.so!ceilf -> 0xefed5d48
+  function /system/lib/libGLESv2.so!glScissor -> 0xf105907c
+  function /system/lib/libGLESv2.so!glCreateProgram -> 0xf1058ae0
+  function /system/lib/libGLESv2.so!glAttachShader -> 0xf10588fc
+  function /system/lib/libGLESv2.so!glCreateShader -> 0xf1058af8
+  function /system/lib/libGLESv2.so!glShaderSource -> 0xf10590a4
+  function /system/lib/libGLESv2.so!glCompileShader -> 0xf1058a7c
+  function /system/lib/libGLESv2.so!glGetShaderiv -> 0xf1058e2c
+  function /system/lib/libGLESv2.so!glGetShaderSource -> 0xf1058e68
+  function /system/lib/libc.so!abort -> 0xf052a4e9
+  function /system/lib/libGLESv2.so!glBindAttribLocation -> 0xf1058910
+  function /system/lib/libGLESv2.so!glLinkProgram -> 0xf1058ff0
+  function /system/lib/libGLESv2.so!glDeleteShader -> 0xf1058b74
+  function undefined!glGetShaderInfoLog -> undefined
+  function undefined!glGetProgramiv -> undefined
+  function undefined!glGetProgramInfoLog -> undefined
+  function /system/lib/libGLESv2.so!glUniform2i -> 0xf1059558
+  function /system/lib/libGLESv2.so!glUniform3i -> 0xf10595a8
+  function /system/lib/libGLESv2.so!glUniform4i -> 0xf10595f8
+  function /system/lib/libGLESv2.so!glUniform2iv -> 0xf105956c
+  function /system/lib/libGLESv2.so!glUniform3iv -> 0xf10595bc
+  function /system/lib/libGLESv2.so!glUniform4iv -> 0xf105960c
+  function /system/lib/libGLESv2.so!glUniform1f -> 0xf10594e0
+  function /system/lib/libGLESv2.so!glUniform2f -> 0xf1059530
+  function /system/lib/libGLESv2.so!glUniform3f -> 0xf1059580
+  function /system/lib/libGLESv2.so!glUniform4f -> 0xf10595d0
+  function /system/lib/libGLESv2.so!glUniform2fv -> 0xf1059544
+  function /system/lib/libGLESv2.so!glUniform3fv -> 0xf1059594
+  function /system/lib/libGLESv2.so!glUniform4fv -> 0xf10595e4
+  function /system/lib/libGLESv2.so!glUniformMatrix4fv -> 0xf1059648
+  function /system/lib/libGLESv2.so!glDeleteProgram -> 0xf1058b4c
+  function /system/lib/libGLESv2.so!glUseProgram -> 0xf105965c
+  function /system/lib/libGLESv2.so!glBlendFunc -> 0xf10589b0
+  function /system/lib/libGLESv2.so!glBlendEquation -> 0xf1058988
+  function /system/lib/libGLESv2.so!glBindTexture -> 0xf1058960
+  function /system/lib/libGLESv2.so!glDeleteTextures -> 0xf1058b88
+  function /system/lib/libGLESv2.so!glDisableVertexAttribArray -> 0xf1058c00
+  function /system/lib/libc.so!isspace -> 0xf0552df5
+  function /system/lib/libc.so!isalpha -> 0xf0552cfd
+  function /system/lib/libc.so!vfprintf -> 0xf054dd91
+  function /system/lib/libGLESv2.so!glGenTextures -> 0xf1058d48
+  function /system/lib/libGLESv2.so!glTexParameteri -> 0xf105932c
+  function /system/lib/libGLESv2.so!glTexImage2D -> 0xf1059144
+  function /system/lib/libGLESv2.so!glGenerateMipmap -> 0xf1058cf0
+  function /system/lib/libGLESv2.so!glCompressedTexImage2D -> 0xf1058a90
+  function /system/lib/libGLESv2.so!glGetError -> 0xf1058dc4
+  function /system/lib/libc.so!bsearch -> 0xf054bf15
+  function /system/lib/libc.so!fstat -> 0xf055a790
+  function /system/lib/libc.so!strtoll -> 0xf0556ee1
+  function /system/lib/libc.so!memchr -> 0xf054dc25
+  function /system/lib/libc.so!clock_gettime -> 0xf0528495
+  function /system/lib/libc.so!siglongjmp -> 0xf0528cb8
+  function /system/lib/libc.so!inet_ntop -> 0xf0553ef9
+  variable undefined!_tolower_tab_ -> undefined
+  function /system/lib/libc.so!sigsetjmp -> 0xf0528b0c
+  function /system/bin/app_process32!sigaction -> 0xf1d7c4b9
+  function /system/lib/libc.so!alarm -> 0xf0552591
+  function /system/lib/libc.so!basename -> 0xf052e865
+  function /system/lib/libc.so!strtok_r -> 0xf0557869
+  function /system/lib/libc.so!memrchr -> 0xf054dc3d
+  function /system/lib/libc.so!inet_pton -> 0xf05541a5
+  function /system/lib/libc.so!qsort -> 0xf054282d
+  function /system/lib/libc.so!if_nametoindex -> 0xf052f491
+  function /system/lib/libc.so!getenv -> 0xf0556935
+  function /system/lib/libc.so!fputc -> 0xf05630e9
+  function /system/lib/libc.so!geteuid -> 0xf055a830
+  function /system/lib/libc.so!getpwuid -> 0xf052d3dd
+  function /system/lib/libc.so!strdup -> 0xf055774b
+  function /system/lib/libc.so!getpeername -> 0xf055a8b0
+  function /system/lib/libc.so!strerror_r -> 0xf05312fd
+  function /system/lib/libc.so!gmtime_r -> 0xf055beb5
+  function /system/lib/libc.so!waitpid -> 0xf0533751
+  function /system/lib/libc.so!kill -> 0xf055aab8
+  function /system/lib/libc.so!access -> 0xf052a829
+  function /system/lib/libc.so!socketpair -> 0xf055b460
+  function /system/lib/libc.so!fork -> 0xf0527ff5
+  function /system/lib/libc.so!dup2 -> 0xf052b71d
+  function /system/lib/libc.so!execl -> 0xf052b9f9
+  variable undefined!_toupper_tab_ -> undefined
+  function /system/lib/libc.so!getpid -> 0xf052d28d
+  function /system/lib/libc.so!vprintf -> 0xf0563661
+  function /system/lib/libm.so!exp -> 0xefecd630
+  function /system/lib/libm.so!floor -> 0xefede580
+  function /system/lib/libm.so!fmod -> 0xefecdb4c
+  function /system/lib/libm.so!acos -> 0xefecc1d8
+  function /system/lib/libc.so!syslog -> 0xf0531965
+  function /system/lib/libc.so!initgroups -> 0xf0561ac9
+  function /system/lib/libc.so!setuid -> 0xf055b3d8
+  function /system/lib/libc.so!setgid -> 0xf055b1f0
+  function /system/bin/app_process32!bsd_signal -> 0xf1d7c695
+  function /system/bin/app_process32!sigprocmask -> 0xf1d7c799
+  function /system/lib/libc.so!pipe -> 0xf052fb01
+  function /system/lib/libm.so!frexp -> 0xefed9e80
+  function /system/lib/libm.so!modf -> 0xefedaa38
+  function /system/lib/libc.so!gmtime -> 0xf055bf9d
+  function /system/lib/libm.so!log -> 0xefed2468
+  function /system/lib/libc.so!getopt -> 0xf0541e75
+  variable undefined!optarg -> undefined
+  variable undefined!optind -> undefined
+  function /system/lib/libc.so!munmap -> 0xf055ad70
+  function /system/lib/libc.so!mmap -> 0xf0534561
+  function /system/lib/libc.so!__assert2 -> 0xf052a9e5
+  function /system/lib/libm.so!log10 -> 0xefed1d40
+  function /system/lib/libc.so!pthread_join -> 0xf0558bf1
+  function /system/lib/libc.so!memmem -> 0xf052f139
+  function /system/lib/libc.so!pthread_once -> 0xf055940b
+  function /system/lib/libc.so!__aeabi_memcpy -> 0xf0527f87
+  function /system/lib/libc.so!__aeabi_memset -> 0xf0527f8f
+  function /system/lib/libm.so!exp2f -> 0xefed8cc8
+  function /system/lib/libc.so!rmdir -> 0xf05304e3
+  function /system/lib/libc.so!pthread_mutex_trylock -> 0xf05592bf
+  function /system/lib/libc.so!pthread_mutexattr_settype -> 0xf0558ed7
+  function /system/lib/libc.so!getcwd -> 0xf052d135
+  function /system/lib/libc.so!gettid -> 0xf052d2b1
+  function /system/lib/libc.so!pthread_attr_destroy -> 0xf0557b11
+  function /system/lib/libc.so!setpriority -> 0xf055b2b0
+  function /system/lib/libc.so!usleep -> 0xf0541e19
+  function /system/lib/libm.so!log10f -> 0xefed1f5c
+  function /system/lib/libdl.so!dlclose -> 0xee1ea10f
+  function /system/lib/libdl.so!dlopen -> 0xee1ea0e1
+  function /system/lib/liblog.so!__android_log_write -> 0xf04a92bd
+  function /system/lib/libc.so!__aeabi_memmove -> 0xf0527f8b
+  function /system/lib/libc.so!setvbuf -> 0xf0555dd9
+  function /system/lib/libc.so!fdopen -> 0xf0562851
+  function /system/lib/libc.so!chmod -> 0xf052b229
+  function /system/lib/libc.so!getuid -> 0xf055a9f8
+  function /system/lib/libc.so!getgid -> 0xf055a850
+  function /system/lib/libc.so!getegid -> 0xf055a810
+  function /system/lib/libc.so!syscall -> 0xf0528e34
+  function /system/lib/libc.so!wmemchr -> 0xf054317f
+  function /system/lib/libc.so!wmemcpy -> 0xf05578bd
+  function /system/lib/libc.so!setlocale -> 0xf052ea61
+  function /system/lib/libc.so!vsprintf -> 0xf056357d
+  function /system/lib/libc.so!wcsftime -> 0xf055f50d
+  function /system/lib/libc.so!getwc -> 0xf0563249
+  function /system/lib/libc.so!putwc -> 0xf0563331
+  function /system/lib/libc.so!getc -> 0xf05630a9
+  function /system/lib/libc.so!ungetc -> 0xf05561a5
+  function /system/lib/libc.so!ungetwc -> 0xf0556347
+  function /system/lib/libc.so!putc -> 0xf05630ed
+  function /system/lib/libc.so!wmemset -> 0xf05431d3
+  function /system/lib/libc.so!wcrtomb -> 0xf05338b5
+  function /system/lib/libc.so!mbrtowc -> 0xf053377d
+  function /system/lib/libc.so!sysconf -> 0xf05281ad
+  function /system/lib/libc.so!wmemmove -> 0xf05431c5
+  function /system/lib/libc.so!wmemcmp -> 0xf054319b
+  function /system/lib/libc.so!strcoll -> 0xf054c2dd
+  function /system/lib/libc.so!strxfrm -> 0xf054c2e1
+  function /system/lib/libc.so!wcscoll -> 0xf0553239
+  function /system/lib/libc.so!wcsxfrm -> 0xf0553ae9
+  function /system/lib/libc.so!writev -> 0xf055b768
+  function /system/lib/libc.so!wctype -> 0xf053441d
+  function /system/lib/libc.so!towupper -> 0xf05343a9
+  function /system/lib/libc.so!towlower -> 0xf053433d
+  function /system/lib/libc.so!iswctype -> 0xf05342ed
+  function /system/lib/libc.so!wctob -> 0xf0553af5
+  function /system/lib/libc.so!btowc -> 0xf055315d
+  function /system/lib/libc.so!raise -> 0xf0530471
+  function /system/lib/libc.so!__gnu_Unwind_Find_exidx -> 0xf0527f35
+[6/7] Symbol dump enabled: true
+[6/7] Enumerating symbols
+
+[Symbols] count=0
+[7/7] Done
+[Remote::Gadget ]-> Connection terminated
+
+Thank you for using Frida!

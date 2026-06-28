@@ -1,0 +1,15 @@
+     ____
+    / _  |   Frida 16.6.6 - A world-class dynamic instrumentation toolkit
+   | (_| |
+    > _  |   Commands:
+   /_/ |_|       help      -> Displays the help system
+   . . . .       object?   -> Display information about 'object'
+   . . . .       exit/quit -> Exit
+   . . . .
+   . . . .   More info at https://frida.re/docs/home/
+   . . . .
+   . . . .   Connected to 127.0.0.1:27042 (id=socket@127.0.0.1:27042)
+Attaching...
+Failed to load script: timeout was reached
+
+Thank you for using Frida!

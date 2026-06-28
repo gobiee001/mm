@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="@null" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:gravity="center" android:id="@id/top" android:background="#00804d" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="0.25">
+        <ImageView android:id="@id/app_icon" android:background="@null" android:layout_width="@dimen/topvpn_icon_size" android:layout_height="@dimen/topvpn_icon_size" android:layout_marginBottom="5.0dp" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="@dimen/topvpn_app_name_size" android:textStyle="bold" android:textColor="@android:color/white" android:gravity="center" android:id="@id/app_name" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/topvpn_app_name_placeholder" android:layout_below="@id/app_icon" android:layout_centerHorizontal="true" />
+        <TextView android:textSize="@dimen/topvpn_welcome_size" android:textColor="@android:color/white" android:gravity="center" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/topvpn_welcome_choose_your_usage_plan" android:layout_below="@id/app_name" android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+    <RadioGroup android:gravity="center" android:id="@id/radio_group" android:background="#00ad68" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="0.75">
+        <TextView android:id="@id/free_txt" android:background="@null" android:text="@string/topvpn_free" style="@style/topvpn_options_txt" />
+        <RelativeLayout android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageView android:id="@id/peer_more" android:background="@null" android:layout_width="15.0dp" android:layout_height="15.0dp" android:layout_marginLeft="5.0dp" android:src="@drawable/topvpn_info" android:layout_toRightOf="@id/free_desc_txt" android:layout_marginStart="5.0dp" android:layout_toEndOf="@id/free_desc_txt" />
+            <TextView android:textColor="@android:color/black" android:gravity="center|bottom" android:id="@id/free_desc_txt" android:background="@null" android:layout_height="@dimen/topvpn_peer_text_h" android:text="@string/topvpn_use_app_name_and_be_a_peer" style="@style/topvpn_desc_txt" />
+        </RelativeLayout>
+        <RadioButton android:layout_gravity="center" android:id="@id/free_radio" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView android:gravity="center" android:id="@id/ads_txt" android:background="@null" android:layout_marginTop="@dimen/topvpn_options_space" android:text="@string/topvpn_advertisement" style="@style/topvpn_options_txt" />
+        <TextView android:id="@id/ads_desc_txt" android:background="@null" android:text="@string/topvpn_use_app_name_with_some_advertisements" style="@style/topvpn_desc_txt" />
+        <RadioButton android:layout_gravity="center" android:id="@id/ads_radio" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView android:id="@id/sub_txt" android:background="@null" android:layout_marginTop="15.0dp" android:text="@string/topvpn_subscription" style="@style/topvpn_options_txt" />
+        <TextView android:id="@id/sub_desc_txt" android:background="@null" android:text="@string/topvpn_use_app_name_for_subscription" style="@style/topvpn_desc_txt" />
+        <RadioButton android:layout_gravity="center" android:id="@id/sub_radio" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <Button android:textSize="18.0sp" android:textStyle="bold" android:textColor="#4d4d4d" android:gravity="center" android:id="@id/got_it_btn" android:paddingLeft="45.0dp" android:paddingRight="45.0dp" android:layout_width="180.0dp" android:layout_height="56.0dp" android:layout_marginTop="@dimen/topvpn_got_it_margin_top" android:text="@string/topvpn_start" android:drawableRight="@drawable/topvpn_go_dark" android:drawableEnd="@drawable/topvpn_go_dark" android:fontFamily="sans-serif" />
+    </RadioGroup>
+</LinearLayout>

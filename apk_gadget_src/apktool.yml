@@ -1,0 +1,20 @@
+version: 3.0.2
+apkFileName: base.apk
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: 16
+  targetSdkVersion: 23
+versionInfo:
+  versionCode: 242
+  versionName: 4.0.42
+resourcesInfo:
+  packageId: 127
+  keepRawValues: true
+doNotCompress:
+- arsc
+- mp3
+- png
+- assets/da2sound16.ckb
+- res/raw/amazon_gc_prototype.zip

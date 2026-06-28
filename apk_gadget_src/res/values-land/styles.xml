@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="topvpn_welcome_text" parent="@style/topvpn_text">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:maxWidth">450.0dp</item>
+    </style>
+</resources>

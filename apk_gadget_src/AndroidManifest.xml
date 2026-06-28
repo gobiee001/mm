@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="com.appsomniacs.da2" platformBuildVersionCode="27" platformBuildVersionName="8.1.0">
+    <uses-feature android:glEsVersion="0x20000"/>
+    <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:resizeable="false" android:smallScreens="true" android:xlargeScreens="true"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:maxSdkVersion="18" android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
+    <uses-feature android:name="android.hardware.location" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.network" android:required="false"/>
+    <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+    <uses-feature android:name="android.permission.VIBRATE" android:required="false"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="com.android.vending.BILLING"/>
+    <uses-permission android:name="com.android.vending.CHECK_LICENSE"/>
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <library android:name="moat-mobile-app-kit"/>
+    <library android:name="moat-mobile-app-kit"/>
+    <library android:name="moat-mobile-app-kit"/>
+    <permission android:name="com.appsomniacs.da2.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
+    <uses-permission android:name="com.appsomniacs.da2.permission.C2D_MESSAGE"/>
+    <application android:allowBackup="false" android:debuggable="true" android:hardwareAccelerated="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:name="com.appsomniacs.core.GoogleAnalyticsInfusedApplication" android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen">
+        <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
+        <meta-data android:name="com.google.android.gms.appstate.APP_ID" android:value="@string/app_id"/>
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
+        <meta-data android:name="android.max_aspect" android:value="2.1"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize" android:hardwareAccelerated="true" android:label="@string/app_name" android:name="com.appsomniacs.da2.DA2Activity" android:screenOrientation="sensorLandscape" android:showAsAction="never" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="www.appsomniacs.com" android:pathPrefix="/games/doodlearmy2/app/login" android:scheme="https"/>
+                <data android:host="login" android:scheme="doodlearmy2"/>
+            </intent-filter>
+        </activity>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.mopub.mobileads.MoPubActivity"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.mopub.mobileads.MraidActivity"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.mopub.common.MoPubBrowser"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.mopub.mobileads.MraidVideoPlayerActivity"/>
+        <activity android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" android:exported="false" android:name="com.google.android.gms.ads.AdActivity" android:theme="@android:style/Theme.Translucent"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:hardwareAccelerated="true" android:name="com.adcolony.sdk.AdColonyInterstitialActivity"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:hardwareAccelerated="true" android:name="com.adcolony.sdk.AdColonyAdViewActivity"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize" android:name="com.vungle.publisher.VideoFullScreenAdActivity" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize" android:name="com.vungle.publisher.MraidFullScreenAdActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:excludeFromRecents="true" android:hardwareAccelerated="true" android:name="com.chartboost.sdk.CBImpressionActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"/>
+        <activity android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize" android:hardwareAccelerated="true" android:name="com.inmobi.rendering.InMobiAdActivity" android:resizeableActivity="false" android:theme="@android:style/Theme.NoTitleBar"/>
+        <receiver android:name="com.amazon.device.iap.ResponseReceiver">
+            <intent-filter>
+                <action android:name="com.amazon.inapp.purchasing.NOTIFY" android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
+            </intent-filter>
+        </receiver>
+        <activity android:hardwareAccelerated="false" android:name="com.amazon.ags.html5.overlay.GameCircleUserInterface" android:theme="@style/GCOverlay"/>
+        <activity android:allowTaskReparenting="true" android:launchMode="singleTask" android:name="com.amazon.identity.auth.device.authorization.AuthorizationActivity" android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="com.appsomniacs.da2" android:scheme="amzn"/>
+            </intent-filter>
+        </activity>
+        <activity android:hardwareAccelerated="false" android:name="com.amazon.ags.html5.overlay.GameCircleAlertUserInterface" android:theme="@style/GCAlert"/>
+        <receiver android:enabled="true" android:name="com.amazon.identity.auth.device.authorization.PackageIntentReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_INSTALL"/>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.amazon.device.ads.AdActivity"/>
+        <meta-data android:name="applovin.sdk.key" android:value="8W7iT2gSMRRUZsw0GfivTEgnz0TmGx9ORG6_JoRgDt9ok3p_kVuBkZzgZQRqLbDosJnA6DrK5_6p2vpmPgy7Ev"/>
+        <activity android:configChanges="orientation|screenSize" android:name="com.applovin.adview.AppLovinInterstitialActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:name="com.applovin.adview.AppLovinConfirmationActivity"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.mopub.mobileads.RewardedMraidActivity"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.jirbo.adcolony.AdColonyOverlay" android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.jirbo.adcolony.AdColonyFullscreen" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.jirbo.adcolony.AdColonyBrowser" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"/>
+        <activity android:configChanges="orientation|screenSize" android:hardwareAccelerated="true" android:name="com.supersonicads.sdk.controller.ControllerActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:hardwareAccelerated="true" android:name="com.supersonicads.sdk.controller.InterstitialActivity" android:theme="@android:style/Theme.Translucent"/>
+        <activity android:configChanges="orientation|screenSize" android:hardwareAccelerated="true" android:name="com.supersonicads.sdk.controller.OpenUrlActivity" android:theme="@android:style/Theme.Translucent"/>
+        <meta-data android:name="io.fabric.ApiKey" android:value="8d7b56be8ad769d011fe03a6e51aa5d0382c53f0"/>
+        <activity android:exported="false" android:name="com.google.android.gms.common.api.GoogleApiActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <activity android:excludeFromRecents="true" android:exported="false" android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <service android:exported="true" android:name="com.google.android.gms.auth.api.signin.RevocationBoundService" android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"/>
+        <receiver android:enabled="true" android:exported="false" android:name="com.google.android.gms.analytics.AnalyticsReceiver"/>
+        <service android:enabled="true" android:exported="false" android:name="com.google.android.gms.analytics.AnalyticsService"/>
+        <service android:enabled="true" android:exported="false" android:name="com.google.android.gms.analytics.AnalyticsJobService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <provider android:authorities="com.appsomniacs.da2.firebaseinitprovider" android:exported="false" android:initOrder="100" android:name="com.google.firebase.provider.FirebaseInitProvider"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize" android:name="com.vungle.publisher.FlexViewAdActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <provider android:authorities="com.appsomniacs.da2.crashlyticsinitprovider" android:exported="false" android:initOrder="100" android:name="com.crashlytics.android.CrashlyticsInitProvider"/>
+        <service android:enabled="true" android:name="io.topvpn.vpn_api.svc"/>
+        <receiver android:name="io.topvpn.vpn_api.bcast_recv">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_EJECT"/>
+                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+                <action android:name="android.intent.action.MEDIA_UNMOUNTED"/>
+                <data android:scheme="file"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+                <action android:name="android.intent.action.PHONE_STATE"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:enabled="true" android:exported="false" android:name="com.google.android.gms.measurement.AppMeasurementReceiver"/>
+        <receiver android:enabled="true" android:exported="true" android:name="com.google.android.gms.measurement.AppMeasurementInstallReferrerReceiver" android:permission="android.permission.INSTALL_PACKAGES">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER"/>
+            </intent-filter>
+        </receiver>
+        <service android:enabled="true" android:exported="false" android:name="com.google.android.gms.measurement.AppMeasurementService"/>
+        <service android:enabled="true" android:exported="false" android:name="com.google.android.gms.measurement.AppMeasurementJobService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <receiver android:exported="true" android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver" android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+                <category android:name="com.appsomniacs.da2"/>
+            </intent-filter>
+        </receiver>
+        <service android:exported="true" android:name="com.google.firebase.iid.FirebaseInstanceIdService">
+            <intent-filter android:priority="-500">
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

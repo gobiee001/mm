@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@null" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:background="@null" android:clipChildren="false" android:layout_width="match_parent" android:layout_height="match_parent">
+        <RelativeLayout android:gravity="center_horizontal" android:id="@id/top" android:background="@color/topvpn_colorPrimaryDark" android:clipChildren="false" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="0.7">
+            <TextView android:textSize="24.0sp" android:textColor="#fff" android:id="@id/welcome" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10.0dp" android:text="Welcome to" android:layout_centerHorizontal="true" style="@style/topvpn_text" />
+            <TextView android:textSize="@dimen/topvpn_app_name_size" android:textStyle="bold" android:textColor="@android:color/white" android:gravity="center" android:id="@id/app_name" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5.0dp" android:text="@string/topvpn_app_name_placeholder" android:layout_below="@id/welcome" android:layout_centerHorizontal="true" />
+            <ImageView android:id="@id/app_icon" android:background="@null" android:layout_width="@dimen/topvpn_icon_size" android:layout_height="@dimen/topvpn_icon_size" android:layout_marginTop="10.0dp" android:layout_marginBottom="5.0dp" android:layout_below="@id/app_name" android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+        <RelativeLayout android:id="@id/radio_group" android:background="#003d5b" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.2">
+            <RelativeLayout android:gravity="center" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_above="@id/got_it_btn" android:layout_alignParentTop="true" android:layout_centerHorizontal="true">
+                <TextView android:textColor="#fff" android:id="@id/peer_txt" android:background="@null" android:padding="5.0dp" android:paddingTop="0.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/topvpn_peer_msg" android:layout_centerHorizontal="true" android:textAlignment="center" style="@style/topvpn_welcome_text" />
+                <TextView android:textColor="#009cd7" android:id="@id/more_txt" android:background="@null" android:padding="7.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="25.0dp" android:layout_marginRight="25.0dp" android:text="[Link to TOS]" android:layout_below="@id/peer_txt" android:layout_centerHorizontal="true" android:textAlignment="center" />
+            </RelativeLayout>
+            <Button android:textSize="18.0sp" android:textStyle="bold" android:textColor="#4d4d4d" android:gravity="center" android:id="@id/got_it_btn" android:background="@null" android:layout_width="180.0dp" android:layout_height="56.0dp" android:layout_marginTop="@dimen/topvpn_got_it_margin_top" android:layout_marginBottom="17.0dp" android:text="@string/topvpn_i_got_it" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" android:fontFamily="sans-serif" />
+        </RelativeLayout>
+    </LinearLayout>
+    <FrameLayout android:id="@id/more_popover" android:background="#fff" android:padding="20.0dp" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_margin="20.0dp" android:layout_centerInParent="true">
+        <TextView android:textColor="#000" android:id="@id/more_popover_txt" android:background="@null" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/topvpn_read_more_msg" />
+    </FrameLayout>
+</RelativeLayout>

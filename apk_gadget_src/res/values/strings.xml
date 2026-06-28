@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="abc_action_bar_home_description">Navigate home</string>
+    <string name="abc_action_bar_up_description">Navigate up</string>
+    <string name="abc_action_menu_overflow_description">More options</string>
+    <string name="abc_action_mode_done">Done</string>
+    <string name="abc_activity_chooser_view_see_all">See all</string>
+    <string name="abc_activitychooserview_choose_application">Choose an app</string>
+    <string name="abc_capital_off">OFF</string>
+    <string name="abc_capital_on">ON</string>
+    <string name="abc_search_hint">Search…</string>
+    <string name="abc_searchview_description_clear">Clear query</string>
+    <string name="abc_searchview_description_query">Search query</string>
+    <string name="abc_searchview_description_search">Search</string>
+    <string name="abc_searchview_description_submit">Submit query</string>
+    <string name="abc_searchview_description_voice">Voice search</string>
+    <string name="abc_shareactionprovider_share_with">Share with</string>
+    <string name="abc_shareactionprovider_share_with_application">Share with <g example="Mail" id="application_name">%s</g></string>
+    <string name="abc_toolbar_collapse_description">Collapse</string>
+    <string name="common_google_play_services_enable_button">Enable</string>
+    <string name="common_google_play_services_enable_text"><g id="app_name">%1$s</g>" won't work unless you enable Google Play services."</string>
+    <string name="common_google_play_services_enable_title">Enable Google Play services</string>
+    <string name="common_google_play_services_install_button">Install</string>
+    <string name="common_google_play_services_install_text"><g id="app_name">%1$s</g>" won't run without Google Play services, which are missing from your device."</string>
+    <string name="common_google_play_services_install_title">Get Google Play services</string>
+    <string name="common_google_play_services_notification_channel_name">Google Play services availability</string>
+    <string name="common_google_play_services_notification_ticker">Google Play services error</string>
+    <string name="common_google_play_services_unknown_issue"><g id="app_name">%1$s</g> is having trouble with Google Play services. Please try again.</string>
+    <string name="common_google_play_services_unsupported_text"><g id="app_name">%1$s</g>" won't run without Google Play services, which are not supported by your device."</string>
+    <string name="common_google_play_services_update_button">Update</string>
+    <string name="common_google_play_services_update_text"><g id="app_name">%1$s</g>" won't run unless you update Google Play services."</string>
+    <string name="common_google_play_services_update_title">Update Google Play services</string>
+    <string name="common_google_play_services_updating_text"><g id="app_name">%1$s</g>" won't run without Google Play services, which are currently updating."</string>
+    <string name="common_google_play_services_wear_update_text">New version of Google Play services needed. It will update itself shortly.</string>
+    <string name="common_open_on_phone">Open on phone</string>
+    <string name="common_signin_button_text">Sign in</string>
+    <string name="common_signin_button_text_long">Sign in with Google</string>
+    <string name="gcm_fallback_notification_channel_label">Miscellaneous</string>
+    <string name="s1">Save image</string>
+    <string name="s2">Allow Ad to store image in Picture gallery?</string>
+    <string name="s3">Accept</string>
+    <string name="s4">Decline</string>
+    <string name="s5">Create calendar event</string>
+    <string name="s6">Allow Ad to create a calendar event?</string>
+    <string name="s7">Test Ad</string>
+    <string name="search_menu_title">Search</string>
+    <string name="status_bar_notification_info_overflow">999+</string>
+    <string name="topvpn_ads">ads</string>
+    <string name="topvpn_advertisement">Advertisement</string>
+    <string name="topvpn_don_t_use_my_resources">"Don't use my resources"</string>
+    <string name="topvpn_donate">donate</string>
+    <string name="topvpn_for_futher_information">for further information.</string>
+    <string name="topvpn_free">Free</string>
+    <string name="topvpn_hola_sla">the Hola SLA.</string>
+    <string name="topvpn_i_agree">I Agree</string>
+    <string name="topvpn_i_disagree">I Disagree</string>
+    <string name="topvpn_i_dont_agree">"I Don't agree"</string>
+    <string name="topvpn_i_got_it">I GOT IT!</string>
+    <string name="topvpn_limited">limited</string>
+    <string name="topvpn_mylib_name">topvpn</string>
+    <string name="topvpn_no_ads">no ads</string>
+    <string name="topvpn_no_donate">no donate</string>
+    <string name="topvpn_peer_msg">"Your use of \"%1$s\" is free of charge in exchange for safely using some of your device's resources (WiFi and very limited cellular data)"</string>
+    <string name="topvpn_peer_msg_read_more">"Your use of \"%1$s\" is free of charge in exchange for safely using some of your device's resources (WiFi and very limited cellular data), and only when you are not using your device. You may turn this from the settings menu. Please see our TOS for further information."</string>
+    <string name="topvpn_please_see_our">Please see our</string>
+    <string name="topvpn_premium">premium</string>
+    <string name="topvpn_read_more">Read more</string>
+    <string name="topvpn_read_more_msg">In return for some of the premium features of \"%1$s\", you may choose to be a peer on the Luminati network. By doing so you agree to have read and accepted the terms of service of</string>
+    <string name="topvpn_start">START</string>
+    <string name="topvpn_subscription">Subscription</string>
+    <string name="topvpn_tos">TOS</string>
+    <string name="topvpn_use_app_name_and_be_a_peer">Use \"%1$s\" and be a peer</string>
+    <string name="topvpn_use_app_name_for_subscription">Use \"%1$s\" for a periodic subscription</string>
+    <string name="topvpn_use_app_name_with_some_advertisements">Use \"%1$s\" with some advertisements</string>
+    <string name="topvpn_use_my_idle_resources">Use my idle resources</string>
+    <string name="topvpn_welcome_choose_your_usage_plan">Welcome! Choose your usage plan:</string>
+    <string name="topvpn_welcome_to">Welcome to</string>
+    <string name="abc_font_family_body_1_material">sans-serif</string>
+    <string name="abc_font_family_body_2_material">sans-serif-medium</string>
+    <string name="abc_font_family_button_material">sans-serif-medium</string>
+    <string name="abc_font_family_caption_material">sans-serif</string>
+    <string name="abc_font_family_display_1_material">sans-serif</string>
+    <string name="abc_font_family_display_2_material">sans-serif</string>
+    <string name="abc_font_family_display_3_material">sans-serif</string>
+    <string name="abc_font_family_display_4_material">sans-serif-light</string>
+    <string name="abc_font_family_headline_material">sans-serif</string>
+    <string name="abc_font_family_menu_material">sans-serif</string>
+    <string name="abc_font_family_subhead_material">sans-serif</string>
+    <string name="abc_font_family_title_material">sans-serif-medium</string>
+    <string name="achievements_exception">There was an issue communicating with Google achievements.</string>
+    <string name="app_id">351666831778</string>
+    <string name="app_name">Mini Militia</string>
+    <string name="com.crashlytics.android.build_id">1d5376b1-1b22-4b36-9c52-e59b29c2153c</string>
+    <string name="cuebiq_appkey">aAPSaps</string>
+    <string name="default_web_client_id">351666831778-1s40mnrf8ku2llk8rku4rgcnfmds8o4f.apps.googleusercontent.com</string>
+    <string name="firebase_database_url">https://api-project-351666831778.firebaseio.com</string>
+    <string name="gcm_defaultSenderId">351666831778</string>
+    <string name="google_api_key">AIzaSyA7W0R_FQJmfEP79YRQF90mQ0_JD_bJvUU</string>
+    <string name="google_app_id">1:351666831778:android:a63b52d8b395fdc7</string>
+    <string name="google_crash_reporting_api_key">AIzaSyA7W0R_FQJmfEP79YRQF90mQ0_JD_bJvUU</string>
+    <string name="google_storage_bucket">api-project-351666831778.appspot.com</string>
+    <string name="leaderboards_exception">There was an issue communicating with Google leaderboards.</string>
+    <string name="project_id">api-project-351666831778</string>
+    <string name="signin_failure">Cannot sign into Google Play Games Service</string>
+    <string name="signin_other_error">There was an issue with Google Play Games sign-in, please try again later.</string>
+    <string name="status_exception_error">GPGS %1$s (status %2$d). %3$s.</string>
+    <string name="topvpn_app_name_placeholder">APP NAME PLACEHOLDER</string>
+</resources>

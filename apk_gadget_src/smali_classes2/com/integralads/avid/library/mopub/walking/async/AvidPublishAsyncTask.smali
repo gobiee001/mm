@@ -1,0 +1,213 @@
+.class public Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;
+.super Lcom/integralads/avid/library/mopub/walking/async/AbstractAvidPublishAsyncTask;
+.source "AvidPublishAsyncTask.java"
+
+
+# direct methods
+.method public constructor <init>(Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;Lcom/integralads/avid/library/mopub/registration/AvidAdSessionRegistry;Ljava/util/HashSet;Lorg/json/JSONObject;D)V
+    .locals 1
+    .param p1, "stateProvider"    # Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;
+    .param p2, "adSessionRegistry"    # Lcom/integralads/avid/library/mopub/registration/AvidAdSessionRegistry;
+    .param p4, "state"    # Lorg/json/JSONObject;
+    .param p5, "timestamp"    # D
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;",
+            "Lcom/integralads/avid/library/mopub/registration/AvidAdSessionRegistry;",
+            "Ljava/util/HashSet",
+            "<",
+            "Ljava/lang/String;",
+            ">;",
+            "Lorg/json/JSONObject;",
+            "D)V"
+        }
+    .end annotation
+
+    .prologue
+    .line 17
+    .local p3, "sessionIds":Ljava/util/HashSet;, "Ljava/util/HashSet<Ljava/lang/String;>;"
+    invoke-direct/range {p0 .. p6}, Lcom/integralads/avid/library/mopub/walking/async/AbstractAvidPublishAsyncTask;-><init>(Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;Lcom/integralads/avid/library/mopub/registration/AvidAdSessionRegistry;Ljava/util/HashSet;Lorg/json/JSONObject;D)V
+
+    .line 18
+    return-void
+.end method
+
+.method private injectCommand(Ljava/lang/String;)V
+    .locals 4
+    .param p1, "command"    # Ljava/lang/String;
+
+    .prologue
+    .line 39
+    iget-object v1, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->adSessionRegistry:Lcom/integralads/avid/library/mopub/registration/AvidAdSessionRegistry;
+
+    invoke-virtual {v1}, Lcom/integralads/avid/library/mopub/registration/AvidAdSessionRegistry;->getInternalAvidAdSessions()Ljava/util/Collection;
+
+    move-result-object v1
+
+    invoke-interface {v1}, Ljava/util/Collection;->iterator()Ljava/util/Iterator;
+
+    move-result-object v1
+
+    :cond_0
+    :goto_0
+    invoke-interface {v1}, Ljava/util/Iterator;->hasNext()Z
+
+    move-result v2
+
+    if-eqz v2, :cond_1
+
+    invoke-interface {v1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+
+    move-result-object v0
+
+    check-cast v0, Lcom/integralads/avid/library/mopub/session/internal/InternalAvidAdSession;
+
+    .line 40
+    .local v0, "adSession":Lcom/integralads/avid/library/mopub/session/internal/InternalAvidAdSession;
+    iget-object v2, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->sessionIds:Ljava/util/HashSet;
+
+    invoke-virtual {v0}, Lcom/integralads/avid/library/mopub/session/internal/InternalAvidAdSession;->getAvidAdSessionId()Ljava/lang/String;
+
+    move-result-object v3
+
+    invoke-virtual {v2, v3}, Ljava/util/HashSet;->contains(Ljava/lang/Object;)Z
+
+    move-result v2
+
+    if-eqz v2, :cond_0
+
+    .line 41
+    iget-wide v2, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->timestamp:D
+
+    invoke-virtual {v0, p1, v2, v3}, Lcom/integralads/avid/library/mopub/session/internal/InternalAvidAdSession;->publishNativeViewStateCommand(Ljava/lang/String;D)V
+
+    goto :goto_0
+
+    .line 44
+    .end local v0    # "adSession":Lcom/integralads/avid/library/mopub/session/internal/InternalAvidAdSession;
+    :cond_1
+    return-void
+.end method
+
+
+# virtual methods
+.method protected bridge synthetic doInBackground([Ljava/lang/Object;)Ljava/lang/Object;
+    .locals 1
+
+    .prologue
+    .line 14
+    invoke-virtual {p0, p1}, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->doInBackground([Ljava/lang/Object;)Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method
+
+.method protected varargs doInBackground([Ljava/lang/Object;)Ljava/lang/String;
+    .locals 4
+    .param p1, "params"    # [Ljava/lang/Object;
+
+    .prologue
+    .line 22
+    iget-object v1, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->state:Lorg/json/JSONObject;
+
+    iget-object v2, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->stateProvider:Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;
+
+    invoke-interface {v2}, Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;->getPreviousState()Lorg/json/JSONObject;
+
+    move-result-object v2
+
+    invoke-static {v1, v2}, Lcom/integralads/avid/library/mopub/utils/AvidJSONUtil;->equalStates(Lorg/json/JSONObject;Lorg/json/JSONObject;)Z
+
+    move-result v1
+
+    if-eqz v1, :cond_0
+
+    .line 23
+    const/4 v1, 0x0
+
+    .line 27
+    :goto_0
+    return-object v1
+
+    .line 25
+    :cond_0
+    iget-object v1, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->stateProvider:Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;
+
+    iget-object v2, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->state:Lorg/json/JSONObject;
+
+    invoke-interface {v1, v2}, Lcom/integralads/avid/library/mopub/walking/async/AvidAsyncTask$StateProvider;->setPreviousState(Lorg/json/JSONObject;)V
+
+    .line 26
+    iget-object v1, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->state:Lorg/json/JSONObject;
+
+    iget-wide v2, p0, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->timestamp:D
+
+    invoke-static {v1, v2, v3}, Lcom/integralads/avid/library/mopub/utils/AvidJSONUtil;->getTreeJSONObject(Lorg/json/JSONObject;D)Lorg/json/JSONObject;
+
+    move-result-object v1
+
+    instance-of v2, v1, Lorg/json/JSONObject;
+
+    if-nez v2, :cond_1
+
+    invoke-virtual {v1}, Lorg/json/JSONObject;->toString()Ljava/lang/String;
+
+    move-result-object v0
+
+    .line 27
+    .local v0, "viewState":Ljava/lang/String;
+    :goto_1
+    invoke-static {v0}, Lcom/integralads/avid/library/mopub/utils/AvidCommand;->setNativeViewState(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v1
+
+    goto :goto_0
+
+    .line 26
+    .end local v0    # "viewState":Ljava/lang/String;
+    :cond_1
+    check-cast v1, Lorg/json/JSONObject;
+
+    invoke-static {v1}, Lcom/newrelic/agent/android/instrumentation/JSONObjectInstrumentation;->toString(Lorg/json/JSONObject;)Ljava/lang/String;
+
+    move-result-object v0
+
+    goto :goto_1
+.end method
+
+.method protected bridge synthetic onPostExecute(Ljava/lang/Object;)V
+    .locals 0
+
+    .prologue
+    .line 14
+    check-cast p1, Ljava/lang/String;
+
+    invoke-virtual {p0, p1}, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->onPostExecute(Ljava/lang/String;)V
+
+    return-void
+.end method
+
+.method protected onPostExecute(Ljava/lang/String;)V
+    .locals 1
+    .param p1, "result"    # Ljava/lang/String;
+
+    .prologue
+    .line 32
+    invoke-static {p1}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
+
+    move-result v0
+
+    if-nez v0, :cond_0
+
+    .line 33
+    invoke-direct {p0, p1}, Lcom/integralads/avid/library/mopub/walking/async/AvidPublishAsyncTask;->injectCommand(Ljava/lang/String;)V
+
+    .line 35
+    :cond_0
+    invoke-super {p0, p1}, Lcom/integralads/avid/library/mopub/walking/async/AbstractAvidPublishAsyncTask;->onPostExecute(Ljava/lang/String;)V
+
+    .line 36
+    return-void
+.end method

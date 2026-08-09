@@ -1,9 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Set script file to respawn_hook.js by default
-set "SCRIPT_FILE=%~dp0core\blockAudio.js"
-if not "%~1"=="" set "SCRIPT_FILE=%~1"
+:: Set script file to blockAudio.js
+set "SCRIPT_FILE=%~dp0blockAudio.js"
 
 :: Step 1: Forward the port
 echo Setting up ADB port forwarding...
@@ -15,8 +14,8 @@ if errorlevel 1 (
 )
 
 :: Step 2: Determine Python path
-:: Check relative path from this batch script
-set "PYTHON_PATH=%~dp0..\python\.venv-frida-16\Scripts\python.exe"
+:: Check relative path from this batch script (up two levels to the project root's python dir)
+set "PYTHON_PATH=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
 if not exist "!PYTHON_PATH!" (
     :: Fallback to the current working project location
     set "PYTHON_PATH=C:\Users\sathi\PycharmProjects\mm\python\.venv-frida-16\Scripts\python.exe"
@@ -32,8 +31,8 @@ if not exist "!PYTHON_PATH!" (
 
 :: Step 3: Run python script
 echo Connecting to Frida Gadget using: !PYTHON_PATH!
-echo Running helper script: "%~dp0run_hook.py"
+echo Running helper script: "%~dp0..\run_hook.py"
 
-"!PYTHON_PATH!" "%~dp0run_hook.py" "%SCRIPT_FILE%"
+"!PYTHON_PATH!" "%~dp0..\run_hook.py" "%SCRIPT_FILE%"
 
 pause

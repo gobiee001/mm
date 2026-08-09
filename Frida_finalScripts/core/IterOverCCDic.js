@@ -12,7 +12,7 @@ const getObject = new NativeFunction(
     ["pointer"]
 );
 
-function getDictionaryObjects(dictPtr) {
+export function getDictionaryObjects(dictPtr) {
     dictPtr = ptr(dictPtr);
 
     if (dictPtr.isNull())

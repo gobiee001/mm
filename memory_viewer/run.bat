@@ -6,5 +6,5 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-"C:\Users\sathi\Desktop\mm\python\.venv-frida-16\Scripts\python.exe" main.py
+"C:\Users\sathi\PycharmProjects\mm\python\.venv-frida-16\Scripts\python.exe" main.py
 pause

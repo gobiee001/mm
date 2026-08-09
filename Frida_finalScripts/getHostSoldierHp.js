@@ -33,28 +33,40 @@
         );
 
         const hpAddr = Module.findExportByName(
-                    "libcocos2dcpp.so",
-                    "_ZN21SoldierHostController5getHPEv"
-                );
+            "libcocos2dcpp.so",
+            "_ZN21SoldierHostController5getHPEv"
+        );
 
         const getHPFunc = new NativeFunction(
-    hpAddr,
-    'int',
-    ['pointer']
-);
-        // Hook Local Player update loop
-       console.log( 'hostSoldierUpdate' + addr );
-        
+            hpAddr,
+            'int',
+            ['pointer']
+        );
 
-       let hostSoldier = 0
+        const setHpAddr = Module.findExportByName(
+            "libcocos2dcpp.so",
+            "_ZN21SoldierHostController5setHPEi"
+        );
+
+        const setHPFunc = new NativeFunction(
+            setHpAddr,
+            'void',
+            ['pointer', 'int']
+        );
+
+        // Hook Local Player update loop
+        console.log('hostSoldierUpdate: ' + addr);
+
+        let hostSoldier = 0;
         Interceptor.attach(addr, {
             onEnter: function (args) {
-                // 
-                hostSoldier = args[0]
+                hostSoldier = args[0];
                 
-                // listener.detach();
-                const hp = getHPFunc(hostSoldier);
-                console.log(" SoldierHostController: "+args[0] +"  "+ hp)
+                // Set HP to 100
+                setHPFunc(hostSoldier, 100);
+                
+                //const hp = getHPFunc(hostSoldier);
+                //console.log(" SoldierHostController: " + args[0] + "  HP: " + hp);
             }
         });
 

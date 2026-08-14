@@ -1,0 +1,198 @@
+# AGY Implementation Plan: Integrating Cheat-Engine-Style Memory Scanner into Memory Viewer
+
+## Executive Summary
+This plan outlines the architecture, component design, and phased integration strategy to incorporate the Cheat-Engine-style Frida Memory Scanner specified in `plan.md` into the existing `memory_viewer` project. 
+
+The existing codebase consists of a PySide6 GUI (`ui/main_window.py`, `ui/hex_view.py`) and a basic Frida backend (`frida_backend/reader.py`, `frida_backend/agent.js`). The integration will transform the project into a comprehensive memory analysis tool, featuring both a standalone interactive CLI (`memscan`) and a rich GUI Scanner tab, powered by a modular high-performance Frida JavaScript engine.
+
+---
+
+## Key Architectural Principles & Requirements
+1. **Zero Mass Memory Transfer**: All memory scanning, candidate filtering, and comparisons must occur natively inside the target process via the Frida JS agent. Python will only receive match address batches and summary statistics.
+2. **64-bit Precision Safety**: 64-bit integers (`int64`/`uint64`) and native pointers must be handled using Frida's `Int64`/`UInt64`/`NativePointer` abstractions and string representations to prevent JavaScript `Number` precision degradation.
+3. **Modular JS Agent**: The Frida agent will be modularized into discrete JS files (`agent.js`, `ranges.js`, `types.js`, `scanner.js`, `memory.js`) and concatenated/bundled at runtime for injection.
+4. **Dual Interface**: A full interactive CLI (`memscan`) will be provided alongside an upgraded PySide6 GUI interface that exposes memory scanning controls, candidate lists, and hex dumping.
+5. **Non-Blocking Execution & Cancellation**: Long scans will run asynchronously with periodic JS cancellation checks and progress updates back to Python via Frida messaging.
+
+---
+
+## Target Project Structure
+```text
+memory_viewer/
+├── pyproject.toml                     # [NEW] Package & CLI dependencies configuration
+├── main.py                            # GUI Launcher
+├── cli_main.py                        # [NEW] CLI Launcher (memscan entrypoint)
+├── agent/                             # [NEW] Modular Frida JS Agent
+│   ├── agent.js                       # Main RPC dispatcher & agent entrypoint
+│   ├── types.js                       # JS type encoders/readers/comparers (int8..uint64, float, double, char, string, utf16)
+│   ├── ranges.js                      # Memory range enumerator & protection filters
+│   ├── scanner.js                     # First scan & candidate filtering engine
+│   └── memory.js                      # Reading, writing, & module resolution
+├── src/                               # [NEW/REFACTORED] Core Python backend logic
+│   └── memscan/
+│       ├── __init__.py
+│       ├── cli.py                     # Interactive CLI REPL & command handlers
+│       ├── session.py                 # ScanSession state tracking & candidate management
+│       ├── scanner.py                 # High-level Frida IPC wrapper & batch orchestrator
+│       ├── types.py                   # Python datatype definitions & encoders
+│       ├── models.py                  # Candidate, MemoryRange, ModuleInfo data models
+│       ├── formatters.py              # CLI & table output formatters
+│       └── errors.py                  # Custom exceptions & error handling
+├── frida_backend/                     # Existing backend (refactored to delegate to memscan core)
+│   ├── reader.py                      # Extended Frida memory reader
+│   └── agent.js                       # Bundled/generated agent JS loader
+├── ui/                                # Existing PySide6 GUI
+│   ├── main_window.py                 # Enhanced GUI with Scanner Tab & memory tools
+│   └── hex_view.py                    # Hex viewer component
+├── tests/                             # [NEW] Automated tests & native test target
+│   ├── target/
+│   │   └── test_app.cpp               # C++ native target process with target variables
+│   ├── test_types.py                  # Python type encoding unit tests
+│   ├── test_patterns.py               # Pattern generator unit tests
+│   └── test_comparisons.py            # Comparison logic unit tests
+├── plan.md                            # Original specification document
+└── agy.plan                           # This implementation plan
+```
+
+---
+
+## Detailed Component Design & Integration Strategy
+
+### Component 1: Frida JS Agent (`agent/`)
+- **`types.js`**: Implements standard reading and comparative logic (`exact`, `not_equal`, `greater`, `less`, `greater_equal`, `less_equal`, `changed`, `unchanged`, `increased`, `decreased`, `increased_by`, `decreased_by`) for all supported types (`int8`, `uint8`, `int16`, `uint16`, `int32`, `uint32`, `int64`, `uint64`, `float`, `double`, `char`, `string`, `utf16`). Float comparisons support optional epsilon tolerance.
+- **`ranges.js`**: Uses `Process.enumerateRanges()` to query active memory protection (`r--`, `rw-`, `r-x`) and map addresses to module bases using `Process.enumerateModules()`.
+- **`scanner.js`**: 
+  - **First Scan**: Scans enumerated ranges using `Memory.scanSync` or byte matching. For unknown initial values, samples allocated pages in chunked arrays.
+  - **Next Scan**: Takes a candidate address list from Python, reads current memory in batches (e.g. 5,000 candidates/batch), runs type-aware comparison functions in JS, and returns only surviving candidate records.
+  - **Cancellation**: Periodically checks a `shouldCancel` global flag updated via RPC.
+  - **Progress**: Emits `send({type: 'progress', percentage: P, matches: M})` periodically without IPC flooding.
+- **`memory.js`**: `readMemory(addr, size)`, `writeMemory(addr, type, val)`, `getRegionInfo(addr)`, `resolveModule(addr)`.
+
+### Component 2: Python Backend Engine (`src/memscan/`)
+- **`types.py` & `models.py`**: Python dataclasses for `ScanCandidate` (address, type, current value, previous value, protection, module, module_offset), `ScanSession`, and `MemoryRange`.
+- **`scanner.py`**: Interacts with Frida via `frida.Script`. Enforces batch size limits for RPC calls to prevent IPC buffer overruns. Handles Frida messages for progress bars and cancellation.
+- **`session.py`**: Maintains active process session, candidate history (for undo/next scan stages), target architecture details (x86, x64, arm, arm64), and pointer sizes.
+
+### Component 3: CLI Interface (`cli_main.py` & `src/memscan/cli.py`)
+- Command line arguments: `--list` (list processes), `--attach <pid|name>`, `--verbose`, `--debug`.
+- Interactive REPL shell (`memscan> `) supporting commands:
+  - `help`, `info`, `ranges`
+  - `scan <type> <value|unknown>` (e.g., `scan int32 100`, `scan float 10.5`, `scan string "PLAYER"`)
+  - `next <mode> [value]` (e.g., `next exact 120`, `next increased`, `next decreased_by 10`)
+  - `results [limit] [--all]`
+  - `read <address> <type>`
+  - `dump <address> <size>`
+  - `write <address> <type> <value>` (with prompt confirmation `Are you sure? [y/N]`)
+  - `cancel`, `clear`, `quit`
+- Signal handling for `Ctrl+C` to cancel running scans without exiting the CLI shell.
+
+### Component 4: PySide6 GUI Integration (`ui/main_window.py`)
+- Integrate a new **Memory Scanner Tab** inside `MainWindow`:
+  - Scan Type dropdown (`int8` through `utf16`), Comparison Mode dropdown (`exact`, `increased`, etc.), Scan Value input field.
+  - "First Scan", "Next Scan", "Reset Scan", and "Cancel" push buttons.
+  - QProgressBar showing live scan completion percentage and match counts.
+  - Candidate QTableWidget listing (#, Address, Value, Type, Location module+offset).
+  - Context menu on candidates: "Read Memory", "Dump in Hex Viewer", "Write New Value", "Add to Watchlist".
+
+### Component 5: Native Test Target & Automated Test Suite (`tests/`)
+- **`tests/target/test_app.cpp`**: Portable C++ source code defining global test variables (`int32_t`, `uint16_t`, `float`, `double`, `char`, ASCII `string`, `UTF-16 string`) with interactive console prompts to modify values at runtime.
+- **`tests/test_types.py`**, **`tests/test_patterns.py`**, **`tests/test_comparisons.py`**: Unit tests using `pytest` verifying type encoding/decoding and pattern generation.
+
+---
+
+## Phased Implementation Sequence
+
+```mermaid
+graph TD
+    P1[Phase 1: Architecture & Frida RPC Foundation] --> P2[Phase 2: Memory Ranges & Module Resolver]
+    P2 --> P3[Phase 3: int32 Core Scanner & Candidate Storage]
+    P3 --> P4[Phase 4: Generic Numeric & Floating Point Types]
+    P4 --> P5[Phase 5: Character & String Scanning]
+    P5 --> P6[Phase 6: Comprehensive Comparison Modes]
+    P6 --> P7[Phase 7: Unknown Initial Value Scanning]
+    P7 --> P8[Phase 8: Batch Processing, Progress & Cancellation]
+    P8 --> P9[Phase 9: Memory Read/Dump/Write Tools]
+    P9 --> P10[Phase 10: CLI Shell & GUI Scanner Tab Integration]
+    P10 --> P11[Phase 11: C++ Test Target & Unit Test Suite]
+```
+
+### Phase Details & Checkpoints
+1. **Phase 1: Architecture & Frida RPC Foundation**
+   - Setup `pyproject.toml` and directory structures.
+   - Refactor `frida_backend/reader.py` to support multi-file JS agent loading.
+   - Implement process listing (`--list`) and attach logic by PID/Name with arch detection (`Process.arch`, `Process.pointerSize`).
+
+2. **Phase 2: Memory Range Management & Module Resolver**
+   - Implement JS `Process.enumerateRanges()` with protection filters (`r--`, `rw-`, `r-x`).
+   - Implement module resolution: calculating `native_ptr.sub(module.base)` for clean `lib.so+0x123` formatting.
+
+3. **Phase 3: int32 Core Scanner & Candidate Storage (Milestone Verification)**
+   - Build `int32` scanner end-to-end first.
+   - JS pattern generator for 32-bit integers (little-endian).
+   - JS candidate read & filter loop.
+   - Verify: Run `scan int32 <val>`, alter target value, run `next exact <new_val>`, verify candidate count drops to exact address.
+
+4. **Phase 4: Generic Numeric & Floating Point Types**
+   - Add `int8`, `uint8`, `int16`, `uint16`, `uint32`, `int64`, `uint64`, `float`, `double`.
+   - Implement IEEE-754 binary conversion using JS `DataView`.
+   - Add float approximate scanning (`next approx 101.5 0.01`).
+
+5. **Phase 5: Character & String Types**
+   - Add `char` (ASCII / numeric representation).
+   - Add UTF-8 string & UTF-16 string byte sequence generators.
+   - JS `readUtf8String()` / `readUtf16String()` candidate matchers.
+
+6. **Phase 6: Comprehensive Comparison Modes**
+   - Implement comparison matrix: `exact`, `not_equal`, `greater`, `less`, `greater_equal`, `less_equal`, `changed`, `unchanged`, `increased`, `decreased`, `increased_by`, `decreased_by`.
+
+7. **Phase 7: Unknown Initial Value Scanning**
+   - Implement page chunk sampling for unknown initial values.
+   - Store baseline snapshot in JS memory / typed arrays without transferring millions of entries to Python.
+
+8. **Phase 8: Performance, Batch Processing, Progress & Cancellation**
+   - Batch RPC transfer (chunk size 5,000 candidates).
+   - Periodic JS loop cancellation checks (`shouldCancel` flag).
+   - IPC progress throttling (send progress update every 100ms or 5% progress).
+
+9. **Phase 9: Memory Read, Dump & Safe Write**
+   - Implement `read <addr> <type>`, `dump <addr> <size>`, `write <addr> <type> <val>`.
+   - Enforce memory protection check (`Memory.protect` if required) and safe error handling.
+
+10. **Phase 10: CLI Shell & GUI Scanner Tab Integration**
+    - Implement `cli.py` interactive REPL with formatted color tables and command parser.
+    - Add Memory Scanner Tab in PySide6 GUI (`main_window.py`) connecting to the shared `memscan` engine.
+
+11. **Phase 11: Native Test Target & Automated Test Suite**
+    - Create `tests/target/test_app.cpp`.
+    - Create pytest suite covering type encoders, comparison functions, and address string parsers.
+
+---
+
+## Verification Plan
+
+### Automated Verification
+1. **Pytest Unit Test Suite**:
+   ```bash
+   pytest tests/
+   ```
+   Tests type encoding (`int8` through `utf16`), pattern generation, and candidate comparison logic across edge cases.
+
+2. **CLI Automated Workflow Test**:
+   Run CLI non-interactively or with scripted input against `test_app`:
+   ```bash
+   python cli_main.py --attach test_app
+   ```
+
+### Manual Verification Workflow
+Following the Definition of Done in `plan.md`:
+1. Compile and run the native test application (`test_app.exe` / `test_app`).
+2. Launch `memscan --attach test_app`.
+3. Verify process info displays correct architecture (x64 / arm64) and pointer size.
+4. Execute `scan int32 123456`. Confirm matches are found.
+5. In `test_app`, trigger value change to `654321`.
+6. In `memscan`, execute `next exact 654321`. Confirm candidate count drops to candidate address.
+7. Execute `results 20`. Verify address shows `test_app.exe+0x...` module offset.
+8. Execute `read <address> int32`. Confirm value reads `654321`.
+9. Execute `dump <address> 64`. Confirm hex view matches.
+10. Execute `write <address> int32 999999`. Verify prompt confirmation and verify that `test_app` reflects the updated value `999999`.
+11. Repeat full flow in PySide6 GUI Scanner tab.

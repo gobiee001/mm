@@ -1,25 +1,62 @@
 import logging
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Any
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QLineEdit, QPushButton, QComboBox, QTableWidget,
     QTableWidgetItem, QGroupBox, QRadioButton, QButtonGroup,
     QMessageBox, QSplitter, QListWidget, QStatusBar, QHeaderView,
-    QAbstractItemView, QCheckBox, QSpinBox
+    QAbstractItemView, QCheckBox, QSpinBox, QTabWidget, QMenu,
+    QProgressBar, QInputDialog
 )
-from PySide6.QtCore import Qt, Slot, QObject, Signal, QTimer
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtCore import Qt, Slot, QObject, Signal, QTimer, QThread
+from PySide6.QtGui import QFont, QIcon, QAction, QCursor
 
 from frida_backend.reader import FridaMemoryReader
 from ui.hex_view import HexViewWidget
 from utils.formatter import format_hex_line, format_size
 from models.memory_region import MemoryRegion
+from src.memscan.types import TYPES
 
 logger = logging.getLogger("MainWindow")
 
 class FridaSignalBridge(QObject):
     # Signals to safely communicate from Frida thread to Qt GUI thread
     detached = Signal(str, str)
+
+class ScanWorker(QThread):
+    progress = Signal(int, int, int) # index, total, count
+    finished = Signal(int, str) # count, error_message
+    
+    def __init__(self, scanner, scan_mode, data_type, value_str, options):
+        super().__init__()
+        self.scanner = scanner
+        self.scan_mode = scan_mode
+        self.data_type = data_type
+        self.value_str = value_str
+        self.options = options
+        
+    def run(self):
+        try:
+            if self.scan_mode == "first":
+                count = self.scanner.first_scan(
+                    self.data_type,
+                    self.value_str,
+                    options=self.options,
+                    progress_callback=self._on_progress
+                )
+            else:
+                count = self.scanner.next_scan(
+                    self.data_type, # operation
+                    self.value_str,
+                    options=self.options,
+                    progress_callback=self._on_progress
+                )
+            self.finished.emit(count, "")
+        except Exception as e:
+            self.finished.emit(0, str(e))
+            
+    def _on_progress(self, index, total, count):
+        self.progress.emit(index, total, count)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -35,6 +72,7 @@ class MainWindow(QMainWindow):
         self.last_data = None
         self.last_read_address = None
         self.last_read_size = None
+        self.scan_worker = None
         
         # Auto Update Timer
         self.auto_update_timer = QTimer(self)
@@ -170,11 +208,20 @@ class MainWindow(QMainWindow):
         
         workspace_splitter.addWidget(modules_group)
         
-        # Right Panel: Memory Controls, Hex View, Region Info, Search
+        # Right Panel: Memory Controls, Hex View, Region Info, Search, and Scanner Tabs
         right_panel = QWidget(self)
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(10)
+        
+        # Create Tab Widget
+        self.right_tab_widget = QTabWidget(self)
+        
+        # -------------------- Tab 1: Hex Viewer --------------------
+        hex_tab_widget = QWidget(self)
+        hex_tab_layout = QVBoxLayout(hex_tab_widget)
+        hex_tab_layout.setContentsMargins(0, 0, 0, 0)
+        hex_tab_layout.setSpacing(10)
         
         # Memory Controls
         controls_group = QGroupBox("Memory Controls", self)
@@ -227,7 +274,7 @@ class MainWindow(QMainWindow):
         self.interval_spin.valueChanged.connect(self.update_timer_interval)
         controls_grid.addWidget(self.interval_spin, 2, 2)
         
-        right_layout.addWidget(controls_group)
+        hex_tab_layout.addWidget(controls_group)
         
         # Hex Viewer Component
         hex_group = QGroupBox("Memory Hex Viewer", self)
@@ -262,7 +309,7 @@ class MainWindow(QMainWindow):
         nav_layout.addWidget(self.btn_jump)
         
         hex_layout.addLayout(nav_layout)
-        right_layout.addWidget(hex_group)
+        hex_tab_layout.addWidget(hex_group)
         
         # Bottom row inside Right layout: Region Info and Search
         bottom_splitter = QSplitter(Qt.Horizontal, self)
@@ -310,8 +357,104 @@ class MainWindow(QMainWindow):
         search_layout.addWidget(self.search_results_list)
         
         bottom_splitter.addWidget(search_group)
-        right_layout.addWidget(bottom_splitter)
+        hex_tab_layout.addWidget(bottom_splitter)
         
+        self.right_tab_widget.addTab(hex_tab_widget, "Hex Viewer")
+        
+        # -------------------- Tab 2: Memory Scanner --------------------
+        scanner_tab_widget = QWidget(self)
+        scanner_tab_layout = QVBoxLayout(scanner_tab_widget)
+        scanner_tab_layout.setContentsMargins(10, 10, 10, 10)
+        scanner_tab_layout.setSpacing(10)
+        
+        # Scanner Controls Group
+        scan_inputs_group = QGroupBox("Memory Scanner Options", self)
+        scan_inputs_grid = QGridLayout(scan_inputs_group)
+        scan_inputs_grid.setSpacing(10)
+        
+        scan_inputs_grid.addWidget(QLabel("Data Type:", self), 0, 0)
+        self.scan_type_combo = QComboBox(self)
+        self.scan_type_combo.addItems(list(TYPES.keys()))
+        self.scan_type_combo.setCurrentText("int32")
+        self.scan_type_combo.currentTextChanged.connect(self.on_scan_type_changed)
+        scan_inputs_grid.addWidget(self.scan_type_combo, 0, 1)
+        
+        scan_inputs_grid.addWidget(QLabel("Scan Type:", self), 0, 2)
+        self.scan_compare_combo = QComboBox(self)
+        self.scan_compare_combo.addItems([
+            "exact", "not_equal", "greater", "less", "greater_equal", "less_equal",
+            "changed", "unchanged", "increased", "decreased"
+        ])
+        scan_inputs_grid.addWidget(self.scan_compare_combo, 0, 3)
+        
+        scan_inputs_grid.addWidget(QLabel("Value:", self), 1, 0)
+        self.scan_val_input = QLineEdit("123456", self)
+        self.scan_val_input.setPlaceholderText("value / unknown")
+        scan_inputs_grid.addWidget(self.scan_val_input, 1, 1)
+        
+        self.chk_aligned = QCheckBox("Aligned Search", self)
+        self.chk_aligned.setChecked(True)
+        scan_inputs_grid.addWidget(self.chk_aligned, 1, 2)
+        
+        self.lbl_epsilon = QLabel("Epsilon:", self)
+        self.scan_epsilon_input = QLineEdit("0.0001", self)
+        scan_inputs_grid.addWidget(self.lbl_epsilon, 1, 3)
+        self.lbl_epsilon.setVisible(False)
+        self.scan_epsilon_input.setVisible(False)
+        
+        scanner_tab_layout.addWidget(scan_inputs_group)
+        
+        # Scan actions layout
+        scan_actions_layout = QHBoxLayout()
+        self.btn_first_scan = QPushButton("First Scan", self)
+        self.btn_first_scan.clicked.connect(self.start_first_scan)
+        scan_actions_layout.addWidget(self.btn_first_scan)
+        
+        self.btn_next_scan = QPushButton("Next Scan", self)
+        self.btn_next_scan.setEnabled(False)
+        self.btn_next_scan.clicked.connect(self.start_next_scan)
+        scan_actions_layout.addWidget(self.btn_next_scan)
+        
+        self.btn_cancel_scan = QPushButton("Cancel Scan", self)
+        self.btn_cancel_scan.setEnabled(False)
+        self.btn_cancel_scan.clicked.connect(self.cancel_active_scan)
+        scan_actions_layout.addWidget(self.btn_cancel_scan)
+        
+        self.btn_clear_scan = QPushButton("Reset / Clear", self)
+        self.btn_clear_scan.clicked.connect(self.clear_scan_triggered)
+        scan_actions_layout.addWidget(self.btn_clear_scan)
+        
+        scanner_tab_layout.addLayout(scan_actions_layout)
+        
+        # Progress Bar and matches
+        progress_layout = QHBoxLayout()
+        self.scan_progress_bar = QProgressBar(self)
+        self.scan_progress_bar.setRange(0, 100)
+        self.scan_progress_bar.setValue(0)
+        self.scan_progress_bar.setTextVisible(True)
+        progress_layout.addWidget(self.scan_progress_bar)
+        
+        self.lbl_matches_count = QLabel("Matches: 0", self)
+        self.lbl_matches_count.setFont(QFont("Consolas", 10, QFont.Bold))
+        progress_layout.addWidget(self.lbl_matches_count)
+        scanner_tab_layout.addLayout(progress_layout)
+        
+        # Candidates matches table
+        self.scan_results_table = QTableWidget(self)
+        self.scan_results_table.setColumnCount(4)
+        self.scan_results_table.setHorizontalHeaderLabels(["Address", "Value", "Previous Value", "Location"])
+        self.scan_results_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.scan_results_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.scan_results_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.scan_results_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.scan_results_table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.scan_results_table.customContextMenuRequested.connect(self.show_candidate_context_menu)
+        self.scan_results_table.doubleClicked.connect(self.on_candidate_double_clicked)
+        scanner_tab_layout.addWidget(self.scan_results_table)
+        
+        self.right_tab_widget.addTab(scanner_tab_widget, "Memory Scanner")
+        
+        right_layout.addWidget(self.right_tab_widget)
         workspace_splitter.addWidget(right_panel)
         workspace_splitter.setSizes([300, 800])
         main_layout.addWidget(workspace_splitter)
@@ -424,6 +567,43 @@ class MainWindow(QMainWindow):
             QLabel {
                 color: #b0b0b0;
             }
+            QTabWidget::pane {
+                border: 1px solid #2d2d2d;
+                background-color: #121212;
+                border-radius: 6px;
+            }
+            QTabBar::tab {
+                background-color: #1a1a1a;
+                border: 1px solid #2d2d2d;
+                border-bottom: none;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                padding: 6px 12px;
+                color: #a0a0a0;
+            }
+            QTabBar::tab:selected {
+                background-color: #121212;
+                border-color: #3f8bfd;
+                border-bottom-color: #121212;
+                color: #ffffff;
+                font-weight: bold;
+            }
+            QTabBar::tab:hover {
+                background-color: #222222;
+                color: #ffffff;
+            }
+            QProgressBar {
+                border: 1px solid #2d2d2d;
+                border-radius: 4px;
+                background-color: #1a1a1a;
+                text-align: center;
+                color: #ffffff;
+            }
+            QProgressBar::chunk {
+                background-color: #3f8bfd;
+                width: 10px;
+                margin: 0.5px;
+            }
         """)
 
     def update_connection_mode(self):
@@ -460,6 +640,17 @@ class MainWindow(QMainWindow):
         self.search_hex_radio.setEnabled(attached)
         self.search_ascii_radio.setEnabled(attached)
         
+        # Scanner controls
+        self.btn_first_scan.setEnabled(attached)
+        self.btn_next_scan.setEnabled(attached and self.reader.get_candidate_count() > 0)
+        self.btn_cancel_scan.setEnabled(False)
+        self.btn_clear_scan.setEnabled(attached)
+        self.scan_type_combo.setEnabled(attached)
+        self.scan_compare_combo.setEnabled(attached)
+        self.scan_val_input.setEnabled(attached)
+        self.chk_aligned.setEnabled(attached)
+        self.scan_epsilon_input.setEnabled(attached)
+        
         self.chk_auto_update.setEnabled(attached)
         self.interval_spin.setEnabled(attached)
         
@@ -469,6 +660,13 @@ class MainWindow(QMainWindow):
             self.modules_table.setRowCount(0)
             self.module_combo.clear()
             self.search_results_list.clear()
+            self.scan_results_table.setRowCount(0)
+            self.lbl_matches_count.setText("Matches: 0")
+            self.scan_progress_bar.setValue(0)
+            try:
+                self.reader.clear_candidates()
+            except Exception:
+                pass
 
     def parse_address(self, text: str) -> Optional[int]:
         text = text.strip()
@@ -841,6 +1039,196 @@ class MainWindow(QMainWindow):
     def update_timer_interval(self, value):
         if self.auto_update_timer.isActive():
             self.auto_update_timer.start(value)
+
+    def on_scan_type_changed(self, text):
+        is_float = text in ("float", "double")
+        self.lbl_epsilon.setVisible(is_float)
+        self.scan_epsilon_input.setVisible(is_float)
+
+    def start_first_scan(self):
+        data_type = self.scan_type_combo.currentText()
+        value_str = self.scan_val_input.text().strip()
+        if not value_str:
+            QMessageBox.warning(self, "Scan Error", "Please specify a scan value (or 'unknown').")
+            return
+            
+        options = {
+            "unaligned": not self.chk_aligned.isChecked(),
+            "protection": "r--",
+            "writableOnly": True
+        }
+        
+        self.btn_first_scan.setEnabled(False)
+        self.btn_next_scan.setEnabled(False)
+        self.btn_cancel_scan.setEnabled(True)
+        self.btn_clear_scan.setEnabled(False)
+        self.scan_progress_bar.setValue(0)
+        self.statusBar().showMessage("First Scan started...")
+        
+        self.scan_worker = ScanWorker(self.reader, "first", data_type, value_str, options)
+        self.scan_worker.progress.connect(self.scan_progress_received)
+        self.scan_worker.finished.connect(self.scan_finished_received)
+        self.scan_worker.start()
+
+    def start_next_scan(self):
+        op = self.scan_compare_combo.currentText()
+        value_str = self.scan_val_input.text().strip()
+        if not value_str and op in ("exact", "not_equal", "greater", "less", "greater_equal", "less_equal", "increased_by", "decreased_by"):
+            QMessageBox.warning(self, "Scan Error", f"Comparison mode '{op}' requires a comparison value.")
+            return
+            
+        options = {
+            "epsilon": self.scan_epsilon_input.text().strip()
+        }
+        
+        self.btn_first_scan.setEnabled(False)
+        self.btn_next_scan.setEnabled(False)
+        self.btn_cancel_scan.setEnabled(True)
+        self.btn_clear_scan.setEnabled(False)
+        self.scan_progress_bar.setValue(0)
+        self.statusBar().showMessage("Next Scan started...")
+        
+        self.scan_worker = ScanWorker(self.reader, "next", op, value_str, options)
+        self.scan_worker.progress.connect(self.scan_progress_received)
+        self.scan_worker.finished.connect(self.scan_finished_received)
+        self.scan_worker.start()
+
+    def cancel_active_scan(self):
+        if self.scan_worker and self.scan_worker.isRunning():
+            self.statusBar().showMessage("Sending cancel request...")
+            self.reader.cancel_scan()
+
+    @Slot(int, int, int)
+    def scan_progress_received(self, index, total, count):
+        percent = int((index / total) * 100) if total > 0 else 100
+        self.scan_progress_bar.setValue(percent)
+        self.lbl_matches_count.setText(f"Matches: {count}")
+
+    @Slot(int, str)
+    def scan_finished_received(self, count, err_msg):
+        self.btn_first_scan.setEnabled(True)
+        self.btn_next_scan.setEnabled(count > 0)
+        self.btn_cancel_scan.setEnabled(False)
+        self.btn_clear_scan.setEnabled(True)
+        self.scan_progress_bar.setValue(100)
+        
+        if err_msg:
+            self.statusBar().showMessage(f"Scan failed: {err_msg}")
+            QMessageBox.critical(self, "Scan Error", f"Scan failed:\n{err_msg}")
+            return
+            
+        self.statusBar().showMessage(f"Scan finished. Matches: {count}")
+        self.lbl_matches_count.setText(f"Matches: {count}")
+        self.populate_candidates_table()
+
+    def populate_candidates_table(self):
+        self.scan_results_table.setRowCount(0)
+        count = self.reader.get_candidate_count()
+        if count == 0:
+            return
+            
+        # Display first 200 candidates to prevent GUI lag
+        limit = min(count, 200)
+        try:
+            candidates = self.reader.get_candidates_batch(0, limit)
+            self.scan_results_table.setRowCount(len(candidates))
+            
+            for idx, c in enumerate(candidates):
+                self.scan_results_table.setItem(idx, 0, QTableWidgetItem(c["address"]))
+                self.scan_results_table.setItem(idx, 1, QTableWidgetItem(c["value"]))
+                self.scan_results_table.setItem(idx, 2, QTableWidgetItem(c["prevValue"]))
+                
+                loc = f"{c['module']}+{c['moduleOffset']}" if c['module'] != "anonymous" else "anonymous"
+                self.scan_results_table.setItem(idx, 3, QTableWidgetItem(loc))
+        except Exception as e:
+            QMessageBox.warning(self, "Table Error", f"Failed to populate candidates table:\n{e}")
+
+    def clear_scan_triggered(self):
+        try:
+            self.reader.clear_candidates()
+            self.scan_results_table.setRowCount(0)
+            self.lbl_matches_count.setText("Matches: 0")
+            self.scan_progress_bar.setValue(0)
+            self.btn_next_scan.setEnabled(False)
+            self.statusBar().showMessage("Scan session reset.")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to reset scan session:\n{e}")
+
+    def show_candidate_context_menu(self, pos):
+        item = self.scan_results_table.itemAt(pos)
+        if not item:
+            return
+            
+        row = self.scan_results_table.row(item)
+        addr_str = self.scan_results_table.item(row, 0).text()
+        
+        menu = QMenu(self)
+        
+        action_jump = QAction("Jump to Hex Viewer", self)
+        action_jump.triggered.connect(lambda: self.jump_to_candidate_address(addr_str))
+        menu.addAction(action_jump)
+        
+        action_write = QAction("Write Value...", self)
+        action_write.triggered.connect(lambda: self.write_candidate_value(addr_str))
+        menu.addAction(action_write)
+        
+        action_copy = QAction("Copy Address", self)
+        action_copy.triggered.connect(lambda: self.copy_candidate_address(addr_str))
+        menu.addAction(action_copy)
+        
+        menu.exec(QCursor.pos())
+
+    def jump_to_candidate_address(self, addr_str):
+        addr = self.parse_address(addr_str)
+        if addr is not None:
+            self.current_address = addr
+            self.abs_address_input.setText(f"0x{self.current_address:X}")
+            self.module_combo.setCurrentIndex(0)
+            self.offset_input.setText("0x0")
+            
+            # Switch to Hex Viewer tab
+            self.right_tab_widget.setCurrentIndex(0)
+            self.read_and_display_memory()
+
+    def on_candidate_double_clicked(self, index):
+        row = index.row()
+        addr_str = self.scan_results_table.item(row, 0).text()
+        self.jump_to_candidate_address(addr_str)
+
+    def write_candidate_value(self, addr_str):
+        addr = self.parse_address(addr_str)
+        if addr is None:
+            return
+            
+        data_type = self.scan_type_combo.currentText()
+        val, ok = QInputDialog.getText(
+            self, 
+            "Write Memory Value", 
+            f"Enter new value of type '{data_type}' for address {addr_str}:"
+        )
+        if ok and val.strip():
+            # Confirm write
+            reply = QMessageBox.question(
+                self, 
+                "Confirm Write",
+                f"Are you sure you want to write '{val}' to {addr_str}?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                try:
+                    self.reader.write_memory(addr, data_type, val.strip())
+                    self.statusBar().showMessage(f"Successfully wrote {val} to {addr_str}")
+                    # Refresh table display values
+                    QTimer.singleShot(500, self.populate_candidates_table)
+                except Exception as e:
+                    QMessageBox.critical(self, "Write Error", f"Failed to write value:\n{e}")
+
+    def copy_candidate_address(self, addr_str):
+        from PySide6.QtGui import QClipboard
+        from PySide6.QtWidgets import QApplication
+        clipboard = QApplication.clipboard()
+        clipboard.setText(addr_str)
+        self.statusBar().showMessage(f"Copied {addr_str} to clipboard.")
 
     def closeEvent(self, event):
         self.detach_process()

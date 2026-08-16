@@ -24,79 +24,110 @@ if (moduleBase === null) {
         "_ZN9WormDrone15getBodyVelocityEv"
     );
 
-    const getBodyVelocity = new NativeFunction(
+    const getBodyVelocity = getBodyVelocityAddr ? new NativeFunction(
         getBodyVelocityAddr,
         'pointer',
         ['pointer', 'pointer']
-    );
+    ) : null;
 
-    const getBodyPositionAddr = Module.findExportByName(
+    const getPositionAddr = Module.findExportByName(
         moduleName,
-        "_ZN9WormDrone15getBodyPositionEv"
+        "_ZN7cocos2d6CCNode11getPositionEPfS1_"
     );
 
-    const getBodyPosition = new NativeFunction(
-        getBodyPositionAddr,
-        'pointer',
-        ['pointer', 'pointer']
+    const getNodePosition = getPositionAddr ? new NativeFunction(
+        getPositionAddr,
+        'void',
+        ['pointer', 'pointer', 'pointer']
+    ) : null;
+
+    const convertToWorldSpaceAddr = Module.findExportByName(
+        moduleName,
+        "_ZN7cocos2d6CCNode19convertToWorldSpaceERKNS_7CCPointE"
     );
+
+    const convertToWorldSpace = convertToWorldSpaceAddr ? new NativeFunction(
+        convertToWorldSpaceAddr,
+        'pointer',
+        ['pointer', 'pointer', 'pointer']
+    ) : null;
 
     const getBodyRotationAddr = Module.findExportByName(
         moduleName,
         "_ZN9WormDrone15getBodyRotationEv"
     );
 
-    const getBodyRotation = new NativeFunction(
+    const getBodyRotation = getBodyRotationAddr ? new NativeFunction(
         getBodyRotationAddr,
         'float',
         ['pointer']
-    );
+    ) : null;
 
     const getWormHPAddr = Module.findExportByName(
         moduleName,
         "_ZN9WormDrone5getHPEv"
     );
 
-    const getWormHP = new NativeFunction(
+    const getWormHP = getWormHPAddr ? new NativeFunction(
         getWormHPAddr,
         'int',
         ['pointer']
-    );
+    ) : null;
+
+    // Pre-allocate CCPoint buffers for coordinate conversion
+    const zeroPoint = Memory.alloc(8);
+    zeroPoint.writeFloat(0.0);
+    zeroPoint.add(4).writeFloat(0.0);
+
+    const screenOutPoint = Memory.alloc(8);
+    const mapXBuf = Memory.alloc(4);
+    const mapYBuf = Memory.alloc(4);
 
     // Modularized helper functions for reading and logging attributes
     function logWormVelocity(outBuffer, wormPtr) {
-        getBodyVelocity(outBuffer, wormPtr);
-        const vel_x = outBuffer.readFloat();
-        const vel_y = outBuffer.add(4).readFloat();
-        const vel_z = outBuffer.add(8).readFloat();
-        const vel_w = outBuffer.add(12).readFloat();
-        console.log(`        Velocity: vel_x=${vel_x.toFixed(2)}, vel_y=${vel_y.toFixed(2)}, vel_z=${vel_z.toFixed(2)}, vel_w=${vel_w.toFixed(2)}`);
+        if (getBodyVelocity !== null) {
+            getBodyVelocity(outBuffer, wormPtr);
+            const vel_x = outBuffer.readFloat();
+            const vel_y = outBuffer.add(4).readFloat();
+            const vel_z = outBuffer.add(8).readFloat();
+            const vel_w = outBuffer.add(12).readFloat();
+            console.log(`        Velocity: vel_x=${vel_x.toFixed(2)}, vel_y=${vel_y.toFixed(2)}, vel_z=${vel_z.toFixed(2)}, vel_w=${vel_w.toFixed(2)}`);
+        }
     }
 
-    function logWormPosition(outBuffer, wormPtr) {
-        getBodyPosition(outBuffer, wormPtr);
-        const pos_x = outBuffer.readFloat();
-        const pos_y = outBuffer.add(4).readFloat();
-        const pos_z = outBuffer.add(8).readFloat();
-        const pos_w = outBuffer.add(12).readFloat();
-        console.log(`        Position: pos_x=${pos_x.toFixed(2)}, pos_y=${pos_y.toFixed(2)}, pos_z=${pos_z.toFixed(2)}, pos_w=${pos_w.toFixed(2)}`);
+    function logWormPosition(wormPtr) {
+        if (getNodePosition !== null && !wormPtr.isNull()) {
+            getNodePosition(wormPtr, mapXBuf, mapYBuf);
+            const mapX = mapXBuf.readFloat();
+            const mapY = mapYBuf.readFloat();
+
+            let screenX = null, screenY = null;
+            if (convertToWorldSpace !== null) {
+                convertToWorldSpace(screenOutPoint, wormPtr, zeroPoint);
+                screenX = screenOutPoint.readFloat();
+                screenY = screenOutPoint.add(4).readFloat();
+            }
+
+            const screenStr = screenX !== null ? `(${screenX.toFixed(2)}, ${screenY.toFixed(2)})` : "N/A";
+            console.log(`        Position: Map=(${mapX.toFixed(2)}, ${mapY.toFixed(2)}) | Screen=${screenStr}`);
+        }
     }
 
     function logWormRotation(wormPtr) {
-        const rotation = getBodyRotation(wormPtr);
-        console.log(`        Rotation: ${rotation.toFixed(2)} rad`);
+        if (getBodyRotation !== null) {
+            const rotation = getBodyRotation(wormPtr);
+            console.log(`        Rotation: ${rotation.toFixed(2)} rad`);
+        }
     }
 
-    // ...
     function logWormHP(wormPtr) {
-        const hp = getWormHP(wormPtr);
-        console.log(`        HP: ${hp}`);
+        if (getWormHP !== null) {
+            const hp = getWormHP(wormPtr);
+            console.log(`        HP: ${hp}`);
+        }
     }
 
-    if (initEnemiesAddr !== null && updateStepAddr !== null && 
-        getBodyVelocityAddr !== null && getBodyPositionAddr !== null && 
-        getBodyRotationAddr !== null && getWormHPAddr !== null) {
-        
+    if (initEnemiesAddr !== null && updateStepAddr !== null && getNodePosition !== null) {
         console.log("[+] WormDrone.js: Successfully resolved exports.");
 
         let enemyManagerPtr = ptr(0);
@@ -109,7 +140,7 @@ if (moduleBase === null) {
             }
         });
 
-        // Pre-allocate 16-byte output buffer for position and velocity vectors (struct return)
+        // Pre-allocate 16-byte output buffer for velocity vectors
         const out = Memory.alloc(16);
         let frameCount = 0;
 
@@ -137,10 +168,10 @@ if (moduleBase === null) {
                                 const wormPtr = worms[i];
                                 if (!wormPtr.isNull()) {
                                     console.log(`    WormDrone [${i}]: ${wormPtr}`);
-                                    logWormVelocity(out, wormPtr);
-                                    logWormPosition(out, wormPtr);
-                                    logWormRotation(wormPtr);
-                                    logWormHP(wormPtr);
+                                    logWormPosition(wormPtr);
+                                    // logWormVelocity(out, wormPtr);
+                                    // logWormRotation(wormPtr);
+                                    // logWormHP(wormPtr);
                                 }
                             }
                         }

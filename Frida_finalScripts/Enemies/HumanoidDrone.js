@@ -24,95 +24,147 @@ if (moduleBase === null) {
         "_ZN13HumanoidDrone15getBodyVelocityEv"
     );
 
-    const getBodyVelocity = new NativeFunction(
+    const getBodyVelocity = getBodyVelocityAddr ? new NativeFunction(
         getBodyVelocityAddr,
         'pointer',
         ['pointer', 'pointer']
-    );
+    ) : null;
 
-    const getBodyPositionAddr = Module.findExportByName(
+    const getAISoldierViewAddr = Module.findExportByName(
         moduleName,
-        "_ZN13HumanoidDrone15getBodyPositionEv"
+        "_ZN19SoldierAIController14getSoldierViewEv"
     );
 
-    const getBodyPosition = new NativeFunction(
-        getBodyPositionAddr,
+    const getAISoldierView = getAISoldierViewAddr ? new NativeFunction(
+        getAISoldierViewAddr,
         'pointer',
-        ['pointer', 'pointer']
+        ['pointer']
+    ) : null;
+
+    const getPositionAddr = Module.findExportByName(
+        moduleName,
+        "_ZN7cocos2d6CCNode11getPositionEPfS1_"
     );
+
+    const getNodePosition = getPositionAddr ? new NativeFunction(
+        getPositionAddr,
+        'void',
+        ['pointer', 'pointer', 'pointer']
+    ) : null;
+
+    const convertToWorldSpaceAddr = Module.findExportByName(
+        moduleName,
+        "_ZN7cocos2d6CCNode19convertToWorldSpaceERKNS_7CCPointE"
+    );
+
+    const convertToWorldSpace = convertToWorldSpaceAddr ? new NativeFunction(
+        convertToWorldSpaceAddr,
+        'pointer',
+        ['pointer', 'pointer', 'pointer']
+    ) : null;
 
     const getBodyRotationAddr = Module.findExportByName(
         moduleName,
         "_ZN13HumanoidDrone12getFireAngleEv"
     );
 
-    const getBodyRotation = new NativeFunction(
+    const getBodyRotation = getBodyRotationAddr ? new NativeFunction(
         getBodyRotationAddr,
         'float',
         ['pointer']
-    );
+    ) : null;
 
     const getFireAngleAddr = Module.findExportByName(
         moduleName,
         "_ZN13HumanoidDrone12getFireAngleEv"
     );
 
-    const getFireAngle = new NativeFunction(
+    const getFireAngle = getFireAngleAddr ? new NativeFunction(
         getFireAngleAddr,
         'float',
         ['pointer']
-    );
+    ) : null;
 
     const getHumanoidHPAddr = Module.findExportByName(
         moduleName,
         "_ZN13HumanoidDrone5getHPEv"
     );
 
-    const getHumanoidHP = new NativeFunction(
+    const getHumanoidHP = getHumanoidHPAddr ? new NativeFunction(
         getHumanoidHPAddr,
         'int',
         ['pointer']
-    );
+    ) : null;
+
+    // Pre-allocate reusable buffers
+    const zeroPoint = Memory.alloc(8);
+    zeroPoint.writeFloat(0.0);
+    zeroPoint.add(4).writeFloat(0.0);
+
+    const screenOutPoint = Memory.alloc(8);
+    const mapXBuf = Memory.alloc(4);
+    const mapYBuf = Memory.alloc(4);
 
     // Modularized helper functions for reading and logging attributes
     function logHumanoidVelocity(outBuffer, humanoidPtr) {
-        getBodyVelocity(outBuffer, humanoidPtr);
-        const vel_x = outBuffer.readFloat();
-        const vel_y = outBuffer.add(4).readFloat();
-        const vel_z = outBuffer.add(8).readFloat();
-        const vel_w = outBuffer.add(12).readFloat();
-        console.log(`        Velocity: vel_x=${vel_x.toFixed(2)}, vel_y=${vel_y.toFixed(2)}, vel_z=${vel_z.toFixed(2)}, vel_w=${vel_w.toFixed(2)}`);
+        if (getBodyVelocity !== null) {
+            getBodyVelocity(outBuffer, humanoidPtr);
+            const vel_x = outBuffer.readFloat();
+            const vel_y = outBuffer.add(4).readFloat();
+            const vel_z = outBuffer.add(8).readFloat();
+            const vel_w = outBuffer.add(12).readFloat();
+            console.log(`        Velocity: vel_x=${vel_x.toFixed(2)}, vel_y=${vel_y.toFixed(2)}, vel_z=${vel_z.toFixed(2)}, vel_w=${vel_w.toFixed(2)}`);
+        }
     }
 
-    function logHumanoidPosition(outBuffer, humanoidPtr) {
-        getBodyPosition(outBuffer, humanoidPtr);
-        const pos_x = outBuffer.readFloat();
-        const pos_y = outBuffer.add(4).readFloat();
-        const pos_z = outBuffer.add(8).readFloat();
-        const pos_w = outBuffer.add(12).readFloat();
-        console.log(`        Position: pos_x=${pos_x.toFixed(2)}, pos_y=${pos_y.toFixed(2)}, pos_z=${pos_z.toFixed(2)}, pos_w=${pos_w.toFixed(2)}`);
+    function logHumanoidPosition(humanoidPtr) {
+        try {
+            const aiControllerPtr = humanoidPtr.add(0x1ac).readPointer();
+            if (!aiControllerPtr.isNull() && getAISoldierView !== null && getNodePosition !== null) {
+                const hViewPtr = getAISoldierView(aiControllerPtr);
+                if (!hViewPtr.isNull()) {
+                    // 1. In-game Map Coordinates via CCNode::getPosition
+                    getNodePosition(hViewPtr, mapXBuf, mapYBuf);
+                    const mapX = mapXBuf.readFloat();
+                    const mapY = mapYBuf.readFloat();
+
+                    // 2. Screen Coordinates via CCNode::convertToWorldSpace
+                    let screenX = null, screenY = null;
+                    if (convertToWorldSpace !== null) {
+                        convertToWorldSpace(screenOutPoint, hViewPtr, zeroPoint);
+                        screenX = screenOutPoint.readFloat();
+                        screenY = screenOutPoint.add(4).readFloat();
+                    }
+
+                    const screenStr = screenX !== null ? `(${screenX.toFixed(2)}, ${screenY.toFixed(2)})` : "N/A";
+                    console.log(`        Position: Map=(${mapX.toFixed(2)}, ${mapY.toFixed(2)}) | Screen=${screenStr}`);
+                }
+            }
+        } catch (e) {}
     }
 
     function logHumanoidRotation(humanoidPtr) {
-        const rotation = getBodyRotation(humanoidPtr);
-        console.log(`        Rotation: ${rotation.toFixed(2)} rad`);
+        if (getBodyRotation !== null) {
+            const rotation = getBodyRotation(humanoidPtr);
+            console.log(`        Rotation: ${rotation.toFixed(2)} rad`);
+        }
     }
 
     function logHumanoidFireAngle(humanoidPtr) {
-        const fireAngle = getFireAngle(humanoidPtr);
-        console.log(`        Fire Angle: ${fireAngle.toFixed(2)} rad`);
+        if (getFireAngle !== null) {
+            const fireAngle = getFireAngle(humanoidPtr);
+            console.log(`        Fire Angle: ${fireAngle.toFixed(2)} rad`);
+        }
     }
 
     function logHumanoidHP(humanoidPtr) {
-        const hp = getHumanoidHP(humanoidPtr);
-        console.log(`        HP: ${hp}`);
+        if (getHumanoidHP !== null) {
+            const hp = getHumanoidHP(humanoidPtr);
+            console.log(`        HP: ${hp}`);
+        }
     }
 
-    if (initEnemiesAddr !== null && updateStepAddr !== null && 
-        getBodyVelocityAddr !== null && getBodyPositionAddr !== null && 
-        getBodyRotationAddr !== null && getFireAngleAddr !== null && 
-        getHumanoidHPAddr !== null) {
-        
+    if (initEnemiesAddr !== null && updateStepAddr !== null) {
         console.log("[+] HumanoidDrone.js: Successfully resolved exports.");
 
         let enemyManagerPtr = ptr(0);
@@ -125,7 +177,7 @@ if (moduleBase === null) {
             }
         });
 
-        // Pre-allocate 16-byte output buffer for position and velocity vectors (struct return)
+        // Pre-allocate 16-byte output buffer for velocity vectors
         const out = Memory.alloc(16);
         let frameCount = 0;
 
@@ -153,11 +205,11 @@ if (moduleBase === null) {
                                 const humanoidPtr = humanoids[i];
                                 if (!humanoidPtr.isNull()) {
                                     console.log(`    HumanoidDrone [${i}]: ${humanoidPtr}`);
-                                    logHumanoidVelocity(out, humanoidPtr);
-                                    logHumanoidPosition(out, humanoidPtr);
-                                    logHumanoidRotation(humanoidPtr);
-                                    logHumanoidFireAngle(humanoidPtr);
-                                    logHumanoidHP(humanoidPtr);
+                                    logHumanoidPosition(humanoidPtr);
+                                    // logHumanoidVelocity(out, humanoidPtr);
+                                    // logHumanoidRotation(humanoidPtr);
+                                    // logHumanoidFireAngle(humanoidPtr);
+                                    // logHumanoidHP(humanoidPtr);
                                 }
                             }
                         }

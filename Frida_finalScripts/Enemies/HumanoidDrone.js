@@ -43,7 +43,7 @@ if (moduleBase === null) {
 
     const getBodyRotationAddr = Module.findExportByName(
         moduleName,
-        "_ZN13HumanoidDrone15getBodyRotationEv"
+        "_ZN13HumanoidDrone12getFireAngleEv"
     );
 
     const getBodyRotation = new NativeFunction(

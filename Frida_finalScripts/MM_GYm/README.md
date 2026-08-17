@@ -8,7 +8,7 @@ This directory contains the unified, high-performance Frida instrumentation laye
                        Mini Militia Engine
                                 │
                                 ▼
-                TrainingStage::updateStep(float dt)
+                SurvivalStage::updateStep(float dt)
                                 │
                                 │ (onEnter hook)
                                 ▼
@@ -38,11 +38,11 @@ This directory contains the unified, high-performance Frida instrumentation laye
 
 ---
 
-## Coordinate System
+## Authoritative Frame Hook
 
-- **Exclusively In-Game Map Coordinates**:
-  All positions (`player.position` and `enemy.position`) are sampled directly from the game's shared map coordinate space using `getBodyPosition` / `CCNode::getPosition`.
-  Screen/viewport projections (`convertToWorldSpace`) are completely bypassed to guarantee consistent spatial coordinates regardless of camera viewport, zoom level, or screen resolution.
+- **Primary Observation Hook**: `_ZN13SurvivalStage10updateStepEf` (`SurvivalStage::updateStep(float dt)`).
+- **Sampling Point**: `onEnter`. Exactly **one observation** is sampled per update tick.
+- **Coordinate System**: In-game map coordinates sampled directly from `getBodyPosition` / `CCNode::getPosition`.
 
 ---
 
@@ -52,6 +52,7 @@ This directory contains the unified, high-performance Frida instrumentation laye
 {
   "frame": 10023,
   "dt": 0.016667,
+  "stage": "SurvivalStage",
   "player": {
     "position": {
       "x": 100.20,
@@ -62,7 +63,7 @@ This directory contains the unified, high-performance Frida instrumentation laye
       "y": 0.00
     },
     "reloading": false,
-    "ammo_in_mag": 12
+    "ammo_in_mag": 99
   },
   "enemies": [
     {
@@ -111,5 +112,5 @@ Run [`run_observation_hook.bat`](file:///C:/Users/sathi/PycharmProjects/mm/Frida
 
 ### 2. Launch via Python CLI
 ```bash
-python run_observation_hook.py --device gadget --mode pretty
+python run_observation_hook.py --device gadget --interval 2.0
 ```

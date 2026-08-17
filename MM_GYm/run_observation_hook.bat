@@ -15,7 +15,7 @@ if errorlevel 1 (
 )
 
 :: Step 2: Locate Python
-set "PYTHON_PATH=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
+set "PYTHON_PATH=%~dp0..\python\.venv-frida-16\Scripts\python.exe"
 if not exist "!PYTHON_PATH!" (
     set "PYTHON_PATH=C:\Users\sathi\PycharmProjects\mm\python\.venv-frida-16\Scripts\python.exe"
 )

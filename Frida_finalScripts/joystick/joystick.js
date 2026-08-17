@@ -97,7 +97,7 @@
                     }
 
                     if (FORCE_LEFT) {
-                        const forceX = -2.0;
+                        const forceX = -1.0;
                         const forceY = 0.0;
 
                         if (isPointer) {

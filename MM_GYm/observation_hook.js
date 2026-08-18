@@ -334,24 +334,28 @@ function initializeInstrumentation(moduleBase) {
 
         if (!playerControllerPtr.isNull()) {
             try {
-                // 1. In-game Map Position (getBodyPosition or CCNode::getPosition)
-                if (getPlayerPosition !== null) {
-                    getPlayerPosition(playerPosBuf, playerControllerPtr);
-                    px = playerPosBuf.readFloat();
-                    py = playerPosBuf.add(4).readFloat();
-                } else if (!soldierViewPtr.isNull() && getNodePosition !== null) {
+                if (soldierViewPtr.isNull() && getSoldierView !== null) {
+                    soldierViewPtr = getSoldierView(playerControllerPtr);
+                }
+
+                // 1. In-game Map Position via SoldierView CCNode::getPosition (same as test_drones_player.js)
+                if (!soldierViewPtr.isNull() && getNodePosition !== null) {
                     getNodePosition(soldierViewPtr, mapXBuf, mapYBuf);
                     px = mapXBuf.readFloat();
                     py = mapYBuf.readFloat();
+                } else if (getPlayerPosition !== null) {
+                    getPlayerPosition(playerPosBuf, playerControllerPtr);
+                    px = playerPosBuf.readFloat();
+                    py = playerPosBuf.add(4).readFloat();
                 }
             } catch (e) {}
 
             try {
-                // 2. Velocity from SoldierController
+                // 2. Velocity from SoldierController (cpVect has two 64-bit doubles)
                 if (getPlayerVelocity !== null) {
                     getPlayerVelocity(playerVelBuf, playerControllerPtr);
-                    pvx = playerVelBuf.readFloat();
-                    pvy = playerVelBuf.add(4).readFloat();
+                    pvx = playerVelBuf.readDouble();
+                    pvy = playerVelBuf.add(8).readDouble();
                 }
             } catch (e) {}
 
@@ -423,18 +427,18 @@ function initializeInstrumentation(moduleBase) {
             } catch (e) {}
         }
 
-        // 1. Hawk Drones (Offset 0x14 | Type 0) -> Map Coordinates
+        // 1. Hawk Drones (Offset 0x14 | Type 0) -> Map Coordinates via CCNode::getPosition
         iterateDict(0x14, 0, function (hawkPtr, id, type) {
             let x = 0.0, y = 0.0;
             try {
-                if (getHawkPosition !== null) {
-                    getHawkPosition(enemyPosBuf, hawkPtr);
-                    x = enemyPosBuf.readFloat();
-                    y = enemyPosBuf.add(4).readFloat();
-                } else if (getNodePosition !== null) {
+                if (getNodePosition !== null) {
                     getNodePosition(hawkPtr, mapXBuf, mapYBuf);
                     x = mapXBuf.readFloat();
                     y = mapYBuf.readFloat();
+                } else if (getHawkPosition !== null) {
+                    getHawkPosition(enemyPosBuf, hawkPtr);
+                    x = enemyPosBuf.readFloat();
+                    y = enemyPosBuf.add(4).readFloat();
                 }
             } catch (e) {}
 
@@ -442,8 +446,8 @@ function initializeInstrumentation(moduleBase) {
             try {
                 if (getHawkVelocity !== null) {
                     getHawkVelocity(enemyVelBuf, hawkPtr);
-                    vx = enemyVelBuf.readFloat();
-                    vy = enemyVelBuf.add(4).readFloat();
+                    vx = enemyVelBuf.readDouble();
+                    vy = enemyVelBuf.add(8).readDouble();
                 }
             } catch (e) {}
 
@@ -465,24 +469,22 @@ function initializeInstrumentation(moduleBase) {
             });
         });
 
-        // 2. Humanoid Drones (Offset 0x18 | Type 1) -> Map Coordinates
+        // 2. Humanoid Drones (Offset 0x18 | Type 1) -> Map Coordinates via SoldierAIController SoldierView
         iterateDict(0x18, 1, function (humanoidPtr, id, type) {
             let x = 0.0, y = 0.0;
             try {
-                if (getHumanoidPosition !== null) {
+                const aiControllerPtr = humanoidPtr.add(0x1ac).readPointer();
+                if (!aiControllerPtr.isNull() && getAISoldierView !== null) {
+                    const hViewPtr = getAISoldierView(aiControllerPtr);
+                    if (!hViewPtr.isNull() && getNodePosition !== null) {
+                        getNodePosition(hViewPtr, mapXBuf, mapYBuf);
+                        x = mapXBuf.readFloat();
+                        y = mapYBuf.readFloat();
+                    }
+                } else if (getHumanoidPosition !== null) {
                     getHumanoidPosition(enemyPosBuf, humanoidPtr);
                     x = enemyPosBuf.readFloat();
                     y = enemyPosBuf.add(4).readFloat();
-                } else {
-                    const aiControllerPtr = humanoidPtr.add(0x1ac).readPointer();
-                    if (!aiControllerPtr.isNull() && getAISoldierView !== null) {
-                        const hViewPtr = getAISoldierView(aiControllerPtr);
-                        if (!hViewPtr.isNull() && getNodePosition !== null) {
-                            getNodePosition(hViewPtr, mapXBuf, mapYBuf);
-                            x = mapXBuf.readFloat();
-                            y = mapYBuf.readFloat();
-                        }
-                    }
                 }
             } catch (e) {}
 
@@ -490,8 +492,8 @@ function initializeInstrumentation(moduleBase) {
             try {
                 if (getHumanoidVelocity !== null) {
                     getHumanoidVelocity(enemyVelBuf, humanoidPtr);
-                    vx = enemyVelBuf.readFloat();
-                    vy = enemyVelBuf.add(4).readFloat();
+                    vx = enemyVelBuf.readDouble();
+                    vy = enemyVelBuf.add(8).readDouble();
                 }
             } catch (e) {}
 
@@ -511,18 +513,18 @@ function initializeInstrumentation(moduleBase) {
             });
         });
 
-        // 3. Worm Drones (Offset 0x1c | Type 2) -> Map Coordinates
+        // 3. Worm Drones (Offset 0x1c | Type 2) -> Map Coordinates via CCNode::getPosition
         iterateDict(0x1c, 2, function (wormPtr, id, type) {
             let x = 0.0, y = 0.0;
             try {
-                if (getWormPosition !== null) {
-                    getWormPosition(enemyPosBuf, wormPtr);
-                    x = enemyPosBuf.readFloat();
-                    y = enemyPosBuf.add(4).readFloat();
-                } else if (getNodePosition !== null) {
+                if (getNodePosition !== null) {
                     getNodePosition(wormPtr, mapXBuf, mapYBuf);
                     x = mapXBuf.readFloat();
                     y = mapYBuf.readFloat();
+                } else if (getWormPosition !== null) {
+                    getWormPosition(enemyPosBuf, wormPtr);
+                    x = enemyPosBuf.readFloat();
+                    y = enemyPosBuf.add(4).readFloat();
                 }
             } catch (e) {}
 
@@ -530,8 +532,8 @@ function initializeInstrumentation(moduleBase) {
             try {
                 if (getWormVelocity !== null) {
                     getWormVelocity(enemyVelBuf, wormPtr);
-                    vx = enemyVelBuf.readFloat();
-                    vy = enemyVelBuf.add(4).readFloat();
+                    vx = enemyVelBuf.readDouble();
+                    vy = enemyVelBuf.add(8).readDouble();
                 }
             } catch (e) {}
 

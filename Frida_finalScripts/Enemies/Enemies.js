@@ -65,11 +65,9 @@ if (moduleBase === null) {
     function logVector(name, outBuffer, ptr, nativeFunc) {
         if (nativeFunc) {
             nativeFunc(outBuffer, ptr);
-            const x = outBuffer.readFloat();
-            const y = outBuffer.add(4).readFloat();
-            const z = outBuffer.add(8).readFloat();
-            const w = outBuffer.add(12).readFloat();
-            console.log(`        ${name}: x=${x.toFixed(2)}, y=${y.toFixed(2)}, z=${z.toFixed(2)}, w=${w.toFixed(2)}`);
+            const x = outBuffer.readDouble();
+            const y = outBuffer.add(8).readDouble();
+            console.log(`        ${name}: x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
         }
     }
 

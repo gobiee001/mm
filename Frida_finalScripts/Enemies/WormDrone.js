@@ -87,11 +87,9 @@ if (moduleBase === null) {
     function logWormVelocity(outBuffer, wormPtr) {
         if (getBodyVelocity !== null) {
             getBodyVelocity(outBuffer, wormPtr);
-            const vel_x = outBuffer.readFloat();
-            const vel_y = outBuffer.add(4).readFloat();
-            const vel_z = outBuffer.add(8).readFloat();
-            const vel_w = outBuffer.add(12).readFloat();
-            console.log(`        Velocity: vel_x=${vel_x.toFixed(2)}, vel_y=${vel_y.toFixed(2)}, vel_z=${vel_z.toFixed(2)}, vel_w=${vel_w.toFixed(2)}`);
+            const vel_x = outBuffer.readDouble();
+            const vel_y = outBuffer.add(8).readDouble();
+            console.log(`        Velocity: vel_x=${vel_x.toFixed(2)}, vel_y=${vel_y.toFixed(2)}`);
         }
     }
 

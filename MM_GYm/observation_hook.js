@@ -9,11 +9,9 @@
 
 'use strict';
 
-import { CONFIG } from './config.js';
+import { CONFIG, MODULE_NAME } from './config.js';
 import { initRuntimeControls } from './runtime_controls.js';
 import { initObservationCollector } from './observation_collector.js';
-
-const MODULE_NAME = "libcocos2dcpp.so";
 
 function startAll(moduleBase) {
     console.log("[+] ========================================================");

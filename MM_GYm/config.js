@@ -6,6 +6,8 @@
 
 'use strict';
 
+export const MODULE_NAME = "libcocos2dcpp.so";
+
 export const CONFIG = {
     // Weapon Spawn Config: 5 is UZI (3: DEAGLE, 4: MAGNUM, 5: UZI, 6: MP5, 7: AK47, 8: M16, 9: SHOTGUN, 11: SMAW)
     always_spawn_with_weapon: true,
@@ -18,8 +20,8 @@ export const CONFIG = {
 
     // Stage & Game Flow Modifiers
     disable_sarge: true,      // Stubs Sarge updates & dialogue chatter
-    disable_rendering: false, // Set to true for headless speedup during RL training
-    game_speed: 1.0,          // Time scale multiplier (e.g. 1.0, 3.0, 5.0)
+    disable_rendering: true, // Set to true for headless speedup during RL training
+    game_speed: 2.0,          // Time scale multiplier (e.g. 1.0, 3.0, 5.0)
     disable_sound: true,      // Disables background music and sound effects
 
     // Performance & Diagnostics

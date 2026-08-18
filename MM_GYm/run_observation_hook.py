@@ -8,8 +8,51 @@ import sys
 import os
 import time
 import json
+import re
 import argparse
 import frida
+
+def resolve_imports(script_path, visited=None):
+    if visited is None:
+        visited = set()
+
+    abs_path = os.path.abspath(script_path)
+    if not os.path.exists(abs_path):
+        return ""
+    
+    if abs_path in visited:
+        return ""
+    visited.add(abs_path)
+
+    base_dir = os.path.dirname(abs_path)
+
+    try:
+        with open(abs_path, "r", encoding="utf-8") as f:
+            code = f.read()
+    except Exception as e:
+        print(f"[-] Failed to read script {abs_path}: {e}")
+        return ""
+
+    # Matches: import { ... } from "path"; or import "path";
+    pattern = re.compile(r'import\s+(?:{[^}]+}\s+from\s+)?["\']([^"\']+)["\'];?')
+
+    def replace_import(match):
+        imp_path = match.group(1)
+        full_path = os.path.abspath(os.path.join(base_dir, imp_path))
+        if os.path.exists(full_path):
+            if full_path in visited:
+                return ""
+            imported_code = resolve_imports(full_path, visited)
+            imported_code = re.sub(r'\bexport\s+', '', imported_code)
+            return imported_code
+        else:
+            return match.group(0)
+
+    # First resolve child imports recursively
+    resolved = pattern.sub(replace_import, code)
+    # Strip top-level export keywords from the current file
+    resolved = re.sub(r'\bexport\s+', '', resolved)
+    return resolved
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Mini Militia RL Frame Observation Runner")
@@ -75,7 +118,7 @@ class ThrottledObservationMonitor:
 
         frame = payload.get("frame", self.total_frames_received)
         dt = payload.get("dt", 0.0)
-        stage = payload.get("stage", "SurvivalStage")
+        stage = payload.get("stage", "PhysicsManager")
         p = payload.get("player", {})
         enemies = payload.get("enemies", [])
         
@@ -111,8 +154,10 @@ def main():
         print(f"[-] Script not found: {args.script}")
         sys.exit(1)
 
-    with open(args.script, "r", encoding="utf-8") as f:
-        script_code = f.read()
+    script_code = resolve_imports(args.script)
+    if not script_code:
+        print(f"[-] Failed to load or resolve script: {args.script}")
+        sys.exit(1)
 
     # Configure JS to send structured payload objects directly to Python
     script_code = script_code.replace("output_mode: 'pretty'", "output_mode: 'send'")
@@ -133,7 +178,7 @@ def main():
         print(f"[+] Attached to process successfully!")
         print(f"[*] Printing frame observations to console every {args.interval} seconds...\n")
         
-        script = session.create_script(script_code)
+        script = session.create_script(script_code, runtime="v8")
         
         monitor = ThrottledObservationMonitor(interval=args.interval, mode=args.mode, limit=args.limit)
         script.on('message', monitor.on_message)

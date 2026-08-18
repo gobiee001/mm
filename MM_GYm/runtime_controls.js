@@ -16,12 +16,9 @@
 
 'use strict';
 
-import { CONFIG as DEFAULT_CONFIG } from './config.js';
-
-const MODULE_NAME = "libcocos2dcpp.so";
-
 export function initRuntimeControls(moduleBase, customConfig) {
-    const config = customConfig || DEFAULT_CONFIG;
+    const config = customConfig || {};
+    const moduleName = "libcocos2dcpp.so";
     console.log("[+] ========================================================");
     console.log("[+] Mini Militia Runtime Controls Layer Initialized");
     console.log("[+] Target Module Base: " + moduleBase);
@@ -29,11 +26,11 @@ export function initRuntimeControls(moduleBase, customConfig) {
 
     let modObj = null;
     try {
-        modObj = Process.getModuleByName(MODULE_NAME);
+        modObj = Process.getModuleByName(moduleName);
     } catch (e) {}
 
     function resolveExport(name) {
-        let addr = Module.findExportByName(MODULE_NAME, name);
+        let addr = Module.findExportByName(moduleName, name);
         if (addr !== null) return addr;
         if (modObj) {
             try {
@@ -273,18 +270,4 @@ export function initRuntimeControls(moduleBase, customConfig) {
             } catch (e) {}
         }
     }
-}
-
-// Standalone execution support
-const initialBase = Module.findBaseAddress(MODULE_NAME);
-if (initialBase !== null) {
-    initRuntimeControls(initialBase, DEFAULT_CONFIG);
-} else {
-    const checkTimer = setInterval(function () {
-        const base = Module.findBaseAddress(MODULE_NAME);
-        if (base !== null) {
-            clearInterval(checkTimer);
-            initRuntimeControls(base, DEFAULT_CONFIG);
-        }
-    }, 250);
 }

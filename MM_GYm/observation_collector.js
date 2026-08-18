@@ -15,25 +15,22 @@
 
 'use strict';
 
-import { CONFIG as DEFAULT_CONFIG } from './config.js';
-
-const MODULE_NAME = "libcocos2dcpp.so";
-
 export function initObservationCollector(moduleBase, customConfig) {
-    const config = customConfig || DEFAULT_CONFIG;
+    const config = customConfig || {};
+    const moduleName = "libcocos2dcpp.so";
     console.log("[+] ========================================================");
     console.log("[+] Mini Militia Observation Collection Layer Initialized");
-    console.log("[+] Primary Hook: SurvivalStage::updateStep");
+    console.log("[+] Primary Hook: PhysicsManager::updateStep");
     console.log("[+] Target Module Base: " + moduleBase);
     console.log("[+] ========================================================");
 
     let modObj = null;
     try {
-        modObj = Process.getModuleByName(MODULE_NAME);
+        modObj = Process.getModuleByName(moduleName);
     } catch (e) {}
 
     function resolveExport(name) {
-        let addr = Module.findExportByName(MODULE_NAME, name);
+        let addr = Module.findExportByName(moduleName, name);
         if (addr !== null) return addr;
         if (modObj) {
             try {
@@ -478,18 +475,4 @@ export function initObservationCollector(moduleBase, customConfig) {
             console.log("[+] Fallback Hook attached: Stage::updateStep (_ZN5Stage10updateStepEf)");
         } catch (e) {}
     }
-}
-
-// Standalone execution support
-const initialBase = Module.findBaseAddress(MODULE_NAME);
-if (initialBase !== null) {
-    initObservationCollector(initialBase, DEFAULT_CONFIG);
-} else {
-    const checkTimer = setInterval(function () {
-        const base = Module.findBaseAddress(MODULE_NAME);
-        if (base !== null) {
-            clearInterval(checkTimer);
-            initObservationCollector(base, DEFAULT_CONFIG);
-        }
-    }, 250);
 }

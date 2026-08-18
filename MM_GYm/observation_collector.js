@@ -1,11 +1,11 @@
 /**
  * Mini Militia RL Environment - Pure Observation Collection Layer
  * 
- * Primary Frame Hook: SurvivalStage::updateStep(float dt) -> onEnter (_ZN13SurvivalStage10updateStepEf)
- * Multi-Stage Support: TrainingStage::updateStep, Stage::updateStep
+ * Primary Frame Hook: PhysicsManager::updateStep(float dt) -> onEnter (_ZN14PhysicsManager10updateStepEf)
+ * Multi-Stage Fallback: SurvivalStage::updateStep, TrainingStage::updateStep, Stage::updateStep
  * 
  * Features:
- *  - 1-to-1 Frame Observation collection directly on SurvivalStage::updateStep onEnter
+ *  - 1-to-1 Frame Observation collection directly on PhysicsManager::updateStep onEnter
  *  - Zero per-frame memory allocations / symbol resolutions
  *  - Complete Player State: in-game map position (x, y), velocity (vx, vy), reloading (bool), ammo_in_mag (int)
  *  - Complete Active Enemy State: id, in-game map position (x, y), velocity (vx, vy), type (0: Hawk, 1: Humanoid, 2: Worm), aim_angle
@@ -44,7 +44,8 @@ export function initObservationCollector(moduleBase, customConfig) {
         return null;
     }
 
-    // 1. Stage Hook Exports
+    // 1. Core Physics & Stage Hook Exports
+    const physicsUpdateAddr  = resolveExport("_ZN14PhysicsManager10updateStepEf");
     const survivalUpdateAddr = resolveExport("_ZN13SurvivalStage10updateStepEf");
     const trainingUpdateAddr = resolveExport("_ZN13TrainingStage10updateStepEf");
     const stageUpdateAddr    = resolveExport("_ZN5Stage10updateStepEf");
@@ -435,39 +436,46 @@ export function initObservationCollector(moduleBase, customConfig) {
         outputObservation(observation);
     }
 
-    // 10. Frame Hooks
-    if (survivalUpdateAddr !== null) {
+    // 10. Frame Hooks (Primary: PhysicsManager::updateStep)
+    if (physicsUpdateAddr !== null) {
+        try {
+            Interceptor.attach(physicsUpdateAddr, {
+                onEnter(args) {
+                    handleUpdateStep(args, "PhysicsManager");
+                }
+            });
+            console.log("[+] Primary Hook attached: PhysicsManager::updateStep (_ZN14PhysicsManager10updateStepEf)");
+        } catch (e) {
+            console.log("[-] Error attaching to PhysicsManager::updateStep: " + e.message);
+        }
+    } else if (survivalUpdateAddr !== null) {
         try {
             Interceptor.attach(survivalUpdateAddr, {
                 onEnter(args) {
                     handleUpdateStep(args, "SurvivalStage");
                 }
             });
-            console.log("[+] Primary Hook attached: SurvivalStage::updateStep (_ZN13SurvivalStage10updateStepEf)");
+            console.log("[+] Fallback Hook attached: SurvivalStage::updateStep (_ZN13SurvivalStage10updateStepEf)");
         } catch (e) {
             console.log("[-] Error attaching to SurvivalStage::updateStep: " + e.message);
         }
-    }
-
-    if (trainingUpdateAddr !== null) {
+    } else if (trainingUpdateAddr !== null) {
         try {
             Interceptor.attach(trainingUpdateAddr, {
                 onEnter(args) {
                     handleUpdateStep(args, "TrainingStage");
                 }
             });
-            console.log("[+] Hook attached: TrainingStage::updateStep (_ZN13TrainingStage10updateStepEf)");
+            console.log("[+] Fallback Hook attached: TrainingStage::updateStep (_ZN13TrainingStage10updateStepEf)");
         } catch (e) {}
-    }
-
-    if (stageUpdateAddr !== null) {
+    } else if (stageUpdateAddr !== null) {
         try {
             Interceptor.attach(stageUpdateAddr, {
                 onEnter(args) {
                     handleUpdateStep(args, "Stage");
                 }
             });
-            console.log("[+] Hook attached: Stage::updateStep (_ZN5Stage10updateStepEf)");
+            console.log("[+] Fallback Hook attached: Stage::updateStep (_ZN5Stage10updateStepEf)");
         } catch (e) {}
     }
 }

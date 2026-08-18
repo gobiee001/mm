@@ -140,7 +140,7 @@ def main():
         
         print("[*] Loading observation hook...")
         script.load()
-        print("[+] Hook running. Start or unpause a match in Survival mode to stream ticks...\n")
+        print("[+] Hook running. Start or unpause a match to stream physics/frame ticks...\n")
 
         while True:
             time.sleep(0.5)

@@ -40,9 +40,9 @@ This directory contains the unified, high-performance Frida instrumentation laye
 
 ## Authoritative Frame Hook
 
-- **Primary Observation Hook**: `_ZN13SurvivalStage10updateStepEf` (`SurvivalStage::updateStep(float dt)`).
-- **Sampling Point**: `onEnter`. Exactly **one observation** is sampled per update tick.
-- **Coordinate System**: In-game map coordinates sampled directly from `getBodyPosition` / `CCNode::getPosition`.
+- **Primary Observation Hook**: `_ZN14PhysicsManager10updateStepEf` (`PhysicsManager::updateStep(float dt)`).
+- **Sampling Point**: `onEnter`. Exactly **one observation** is sampled per physics simulation tick.
+- **Coordinate System**: In-game map coordinates sampled directly from `CCNode::getPosition`.
 
 ---
 

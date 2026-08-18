@@ -85,9 +85,18 @@ This directory contains the unified, high-performance Frida instrumentation laye
 
 ---
 
+## Directory Structure & Modules
+
+- [**`config.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/config.js): Central runtime switches and configuration parameters (weapon spawn, infinite health/ammo/boost, speed scale, headless rendering, FPS unlock).
+- [**`runtime_controls.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/runtime_controls.js): Handles all game modifiers, auto-equips, timescale modifications, headless rendering, and native VSync unlocking.
+- [**`observation_collector.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/observation_collector.js): Pure observation extraction module sampling player & enemy drone state (map position, velocity, ammo, aim angle) on stage update ticks.
+- [**`observation_hook.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/observation_hook.js): Master orchestrator script combining config, runtime controls, and observation collection.
+
+---
+
 ## Runtime Configuration Options
 
-Configure these flags directly at the top of [`observation_hook.js`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/observation_hook.js):
+Configure these flags directly in [`config.js`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/config.js):
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -97,7 +106,8 @@ Configure these flags directly at the top of [`observation_hook.js`](file:///C:/
 | `disable_sarge` | `boolean` | `true` | Stubs Sarge updates & dialogue chatter |
 | `disable_rendering` | `boolean` | `false` | Disables Cocos2d-x scene draw for headless RL training speedup |
 | `game_speed` | `float` | `1.0` | Controls Cocos2d-x `CCScheduler` timescale (e.g. `3.0`, `5.0`) |
-| `show_fps` | `boolean` | `true` | Calculates FPS & unlocks 60 FPS cap via `eglSwapInterval(0)` |
+| `unlock_fps` | `boolean` | `true` | Unlocks 60 FPS cap via native `eglSwapInterval(dpy, 0)` |
+| `show_fps` | `boolean` | `true` | Calculates & logs FPS measured over `CCDisplayLinkDirector::mainLoop` |
 | `infinite_health` | `boolean` | `true` | Locks player HP to 100 on each tick |
 | `infinite_boost` | `boolean` | `true` | Locks player jetpack/power to 10.0 |
 | `disable_sound` | `boolean` | `true` | Disables background music and sound effects |

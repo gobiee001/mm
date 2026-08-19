@@ -27,7 +27,7 @@ def resolve_imports(script_path):
         return ""
     
     base_dir = os.path.dirname(os.path.abspath(script_path))
-    # Dynamically locate the main project root (e.g. C:/Users/sathi/PycharmProjects/mm)
+    # Dynamically locate the main project root
     project_root = find_project_root(base_dir)
 
     try:

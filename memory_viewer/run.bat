@@ -21,7 +21,11 @@ echo   [2] Launch Interactive CLI (memscan REPL)
 echo ==============================================
 set /p opt="Enter choice [1 or 2]: "
 
-set "PYTHON_BIN=C:\Users\sathi\PycharmProjects\mm\python\.venv-frida-16\Scripts\python.exe"
+:: Determine Python path
+set "PYTHON_BIN=python"
+if exist "%~dp0..\..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_BIN=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
+if exist "%~dp0..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_BIN=%~dp0..\python\.venv-frida-16\Scripts\python.exe"
+if exist "%~dp0python\.venv-frida-16\Scripts\python.exe" set "PYTHON_BIN=%~dp0python\.venv-frida-16\Scripts\python.exe"
 
 if "%opt%"=="2" (
     echo.

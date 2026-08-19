@@ -20,17 +20,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: Step 2: Determine Python path
-set "PYTHON_PATH=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
-if not exist "!PYTHON_PATH!" (
-    set "PYTHON_PATH=C:\Users\sathi\PycharmProjects\mm\python\.venv-frida-16\Scripts\python.exe"
-)
-if not exist "!PYTHON_PATH!" (
-    set "PYTHON_PATH=C:\Users\sathi\Desktop\mm\python\.venv-frida-16\Scripts\python.exe"
-)
-if not exist "!PYTHON_PATH!" (
-    set "PYTHON_PATH=python"
-)
+:: Determine Python path
+set "PYTHON_PATH=python"
+if exist "%~dp0..\..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
+if exist "%~dp0..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0..\python\.venv-frida-16\Scripts\python.exe"
+if exist "%~dp0python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0python\.venv-frida-16\Scripts\python.exe"
 
 :: Step 3: Run python script
 echo Connecting to Frida Gadget using: !PYTHON_PATH!

@@ -87,16 +87,16 @@ This directory contains the unified, high-performance Frida instrumentation laye
 
 ## Directory Structure & Modules
 
-- [**`config.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/config.js): Central runtime switches and configuration parameters (weapon spawn, infinite health/ammo/boost, speed scale, headless rendering, FPS unlock).
-- [**`runtime_controls.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/runtime_controls.js): Handles all game modifiers, auto-equips, timescale modifications, headless rendering, and native VSync unlocking.
-- [**`observation_collector.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/observation_collector.js): Pure observation extraction module sampling player & enemy drone state (map position, velocity, ammo, aim angle) on stage update ticks.
-- [**`observation_hook.js`**](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/observation_hook.js): Master orchestrator script combining config, runtime controls, and observation collection.
+- [**`config.js`**](./config.js): Central runtime switches and configuration parameters (weapon spawn, infinite health/ammo/boost, speed scale, headless rendering, FPS unlock).
+- [**`runtime_controls.js`**](./runtime_controls.js): Handles all game modifiers, auto-equips, timescale modifications, headless rendering, and native VSync unlocking.
+- [**`observation_collector.js`**](./observation_collector.js): Pure observation extraction module sampling player & enemy drone state (map position, velocity, ammo, aim angle) on stage update ticks.
+- [**`observation_hook.js`**](./observation_hook.js): Master orchestrator script combining config, runtime controls, and observation collection.
 
 ---
 
 ## Runtime Configuration Options
 
-Configure these flags directly in [`config.js`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/config.js):
+Configure these flags directly in [`config.js`](./config.js):
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -118,7 +118,7 @@ Configure these flags directly in [`config.js`](file:///C:/Users/sathi/PycharmPr
 ## Usage
 
 ### 1. Launch via Batch File
-Run [`run_observation_hook.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/run_observation_hook.bat) directly.
+Run [`run_observation_hook.bat`](./run_observation_hook.bat) directly.
 
 ### 2. Launch via Python CLI
 ```bash

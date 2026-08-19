@@ -13,21 +13,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: Step 2: Determine Python path
-:: Check relative path from this batch script (up two levels to the project root's python dir)
-set "PYTHON_PATH=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
-if not exist "!PYTHON_PATH!" (
-    :: Fallback to the current working project location
-    set "PYTHON_PATH=C:\Users\sathi\PycharmProjects\mm\python\.venv-frida-16\Scripts\python.exe"
-)
-if not exist "!PYTHON_PATH!" (
-    :: Fallback to Desktop path
-    set "PYTHON_PATH=C:\Users\sathi\Desktop\mm\python\.venv-frida-16\Scripts\python.exe"
-)
-if not exist "!PYTHON_PATH!" (
-    :: Final fallback to standard python
-    set "PYTHON_PATH=python"
-)
+:: Determine Python path
+set "PYTHON_PATH=python"
+if exist "%~dp0..\..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
+if exist "%~dp0..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0..\python\.venv-frida-16\Scripts\python.exe"
+if exist "%~dp0python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0python\.venv-frida-16\Scripts\python.exe"
 
 :: Step 3: Run python script
 echo Connecting to Frida Gadget using: !PYTHON_PATH!

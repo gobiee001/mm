@@ -1,0 +1,405 @@
+================================================================================
+MM_GYm/Actions - aim_move_shoot_native.js - detailed explanation
+Subject: "movement only works after I move the joystick manually once" +
+          "player rotates but doesn't translate" - both fixed and confirmed
+          working in-game.
+Last updated: 2026-08-21
+================================================================================
+
+FILES
+--------------------------------------------------------------------------------
+aim_move_shoot_native.js          The action-injection script (this file's
+                                   subject). CONFIRMED WORKING in-game.
+run_aim_move_shoot_native.bat     Runner: adb forward -> venv python ->
+                                   Frida_finalScripts/run_hook.py.
+NOTES_aim_move_shoot_native.txt   This file.
+
+UNTOUCHED  aim_move_shoot-Copy.js, aim_move_shoot-Copy - Copy.js,
+           run_aim_move_shoot.bat, run_aim_move_shoot - Copy.bat
+           (legacy scripts, kept for comparison, not modified)
+
+NOT YET PORTED  python_gym_Wrapper/js/gym_actions.js has the same touch-gate
+           defect as the legacy script (see BUG 1 below) and does not have
+           the vect1 translation fix (BUG 2 below) either. The RL training
+           path will hit both bugs until this is ported over.
+
+Run with:
+    run_aim_move_shoot_native.bat
+
+
+================================================================================
+OVERVIEW: two independent bugs, two independent fixes
+================================================================================
+
+The script drives the player by intercepting native functions inside
+libcocos2dcpp.so (ARM, cocos2d-x 2.x + Chipmunk physics) via Frida. Two
+separate bugs were found and fixed, in this order:
+
+  BUG 1 - "I have to touch the joystick once before the script works."
+          The Joypad object has a touch-gate state machine that was never
+          being opened programmatically. FIXED by simulating a real touch.
+
+  BUG 2 - Once BUG 1 was fixed, the player would visibly rotate to face the
+          commanded direction, but never actually translate (walk/fly) that
+          way - X input did nothing but turn the character, Y input moved
+          diagonally instead of straight. FIXED by overriding an argument
+          of SoldierHostController::updateStep directly.
+
+Both are explained in detail below, in the order they were discovered.
+
+
+================================================================================
+BUG 1 - THE TOUCH GATE (movement needed a manual touch first)
+================================================================================
+
+libcocos2dcpp.so has a real touch state machine on the Joypad class. Symbols
+confirmed in Archive/frida_scripts/libcocos2dcpp_dump.txt:
+
+    Joypad::touchBeganHandler(cocos2d::CCPoint, long)
+    Joypad::beginTouch(cocos2d::CCPoint, long)
+    Joypad::startControl()  /  Joypad::stopControl()
+    Joypad::touchMoveHandler(...)  /  Joypad::touchEndHandler(...)
+    Joypad::setMoveDirection(cpVect)  /  Joypad::setAimDirection(cpVect)
+    Joypad::disableMovement(bool)     /  Joypad::disableFiring(bool)
+
+Stage only samples Joypad::getXOffset()/getYOffset() for movement while that
+pad is in its "finger down" state. The legacy script tried to fake that state
+by writing GUESSED struct offsets onto the Joypad object (0x110 "active touch
+id", 0x12f "isMoveTouchActive", 0x130 "isTouchActive"). Writing those never
+opens the gate from cold - your one manual joystick touch was what ran the
+real path (touchBeganHandler -> beginTouch -> startControl), and only AFTER
+that did the per-frame writes keep the state latched. Hence: works after one
+manual touch, dead before it. Aim/fire worked from the start because
+getFireAngle() is polled unconditionally - movement was the only gated path.
+
+THE FIX: stop faking the state, call the game's own handlers.
+
+  a) PRIME ONCE, the first frame an action is received:
+         startControl(pad)
+         touchBeganHandler(pad, anchor, SYNTH_TOUCH_ID)
+     This is exactly what a finger touch was doing, now done by the script.
+     SYNTH_TOUCH_ID = 7777 (a value a real finger would never produce).
+
+  b) HOLD THE SYNTHETIC TOUCH DOWN FOREVER, steer it every frame:
+         touchMoveHandler(pad, anchor + dir * JOYSTICK_RADIUS, SYNTH_TOUCH_ID)
+     "Stand still" is expressed as ZERO DEFLECTION, never a release -
+     calling touchEndHandler would close the gate right back up.
+
+  c) Also call setMoveDirection(cpVect)/setAimDirection(cpVect) every frame,
+     as a second, independent channel into the same Joypad.
+
+  d) The getXOffset/getYOffset/getFireAngle return-value overrides, the
+     Joypad::fire() override, and the raw struct pokes are all kept as a
+     belt-and-suspenders fallback layer (USE_RAW_OFFSET_WRITES).
+
+WHAT THE FIRST ATTEMPT GOT WRONG (and what it taught us about the ABI):
+
+The very first run of this approach crashed every frame with:
+
+    [-] touchBeganHandler failed on 0xd18b5f00: access violation accessing 0x42960000
+
+0x42960000 is the IEEE-754 bit pattern for the float 75.0 - the x coordinate
+of the anchor being passed. The callee took our float VALUE and dereferenced
+it as a POINTER. Reason: cocos2d::CCPoint has a user-declared copy
+constructor, so it is NOT trivially copyable, and the C++ ABI passes such a
+class BY INVISIBLE REFERENCE - a pointer to a caller-allocated temporary. The
+real machine-level signature is:
+
+    Joypad::touchBeganHandler(this, CCPoint* /* NOT two floats */, long id)
+
+cpVect is different: a plain Chipmunk POD struct with no user-declared copy
+constructor, so it IS passed by value in registers. Two point/vector types,
+two different calling conventions - mixing them up is what crashed.
+
+How the script actually calls each one (see "Native functions" section of the
+code, around IS_ARM32/VEC/ccPoint/callVec):
+
+    CCPoint args (touchBeganHandler, beginTouch, touchMoveHandler,
+    touchEndHandler)
+        NativeFunction declared ['pointer', 'pointer', 'long'].
+        ccPoint(x, y) writes the point into an 8-byte Memory.alloc buffer and
+        returns that pointer - satisfies the "by invisible reference" rule.
+
+    cpVect args (setMoveDirection, setAimDirection)
+        32-bit (armeabi-v7a, softfp): declared ['pointer','uint32','uint32']
+        and passed as raw float bits via floatBits(). Softfp puts these two
+        words in plain core registers, and using uint32 keeps libffi's
+        softfp-vs-VFP configuration out of the equation entirely.
+        64-bit (arm64): declared ['pointer', ['float','float']] - cpVect is a
+        homogeneous float aggregate passed in s0/s1 there, so Frida is left
+        to marshal a real struct.
+        Selected via the IS_ARM32 flag / the callVec() helper.
+
+    Float RETURN values (getXOffset, getYOffset, getFireAngle)
+        On armeabi-v7a softfp, a float return comes back in r0, which is
+        exactly what retval.replace() writes - so this direction needed no
+        special handling. replaceFloatRetval() additionally sets ctx.s0 on
+        arm64, where float returns use the VFP register instead.
+
+
+================================================================================
+BUG 2 - ROTATES BUT NEVER TRANSLATES (the deeper, real-movement bug)
+================================================================================
+
+Once BUG 1 was fixed, the touch gate opened correctly and getXOffset/
+getYOffset/getFireAngle overrides all took effect - but the player's actual
+in-game behaviour was still wrong:
+
+    x = -1 or +1   -> character visibly turns/angles to face that direction,
+                      but does NOT translate (no walking/flying that way)
+    y = +1         -> character DOES move, but diagonally ("top-right")
+                      instead of straight up
+    y = -1         -> no distinguishable effect
+
+DIAGNOSIS (via decompiled SoldierHostController::updateStep, pulled through
+Ghidra by hand - see the mm-gym-movement-bug memory note for the full trail):
+
+  SoldierHostController::updateStep(float dt, cpVect vect1, cpVect vect2,
+  float f) - note the signature is NOT the plain "updateStep(float)" every
+  sibling class (SoldierAIController, SoldierRemoteController, ...) shares,
+  so this is a direct, non-virtual, statically-typed call - never a vtable
+  dispatch.
+
+  Inside it, the controller's OWN struct fields at offset 0x118 (moveX) /
+  0x11c (moveY) - the fields this script's raw-write fallback pokes, and what
+  SoldierController::getJoyPadOffset() reads - are used for exactly two
+  things:
+    1. A smoothed facing-angle blend -> cpBodySetAngle() (ROTATION only).
+    2. A thrust scalar from moveY alone (moveY*0.5+0.5, stored at offset
+       0x110), which gates jetpack/gravity behaviour - this is why Y input
+       produced SOME movement even before the real fix (via gravity/thrust),
+       while X input produced none.
+
+  The REAL translational force (a cpBodySetVel-like call) is built by
+  normalizing vect1 - one of updateStep's own ARGUMENTS, not a struct field -
+  via cpvlength(vect1) -> local_158 -> applied force direction. This happens
+  in both the grounded and airborne branches of the function. vect2 (the
+  other cpVect argument) is only ever used as a magnitude/blend-rate scalar,
+  never as a direction.
+
+  Ghidra's decompile of every relevant function carried "dead code
+  elimination" warnings, meaning its shown argument lists for the CALL SITES
+  into updateStep could not be trusted at face value. Rather than guess a
+  third or fourth time, the actual ABI was captured empirically: a temporary
+  diagnostic dumped the raw registers/stack updateStep receives (Frida's
+  args[] abstraction: args[0..3] = r0-r3, args[4+] = stack words), while
+  commanding known values like move=(1,0), (-1,0), (0,1) and reading back
+  what showed up.
+
+  Result: cpVect in this build is confirmed to be TWO DOUBLES (16 bytes),
+  not two floats. And critically:
+    - vect2 (args[6..9], as two doubles) EXACTLY mirrors commanded
+      move_x/move_y, sign flips and all - it's fed correctly already
+      (built from the getXOffset/getYOffset overrides upstream).
+    - vect1 (args[2..5]) NEVER correlated with anything commanded - it read
+      back as uncorrelated leftover register content in every trace.
+
+  Since vect1 (the thing that actually decides applied-force direction) was
+  garbage, cpvlength(vect1) was effectively meaningless every frame, and the
+  real force direction never reliably matched the commanded input. That is
+  the entire "rotates but doesn't translate" bug.
+
+THE FIX (see hook #5, SoldierHostController::updateStep, onEnter):
+
+  Because we already hook this function's onEnter, args[] can simply be
+  overwritten before the real function body runs. doubleToWords() encodes
+  a JS number as an IEEE-754 double split into low/high 32-bit words, and
+  those get written directly into args[2]/args[3] (vect1.x) and args[4]/
+  args[5] (vect1.y):
+
+      const [xlo, xhi] = doubleToWords(currentActions.move_x);
+      const [ylo, yhi] = doubleToWords(currentActions.move_y);
+      args[2] = ptr(xlo); args[3] = ptr(xhi);
+      args[4] = ptr(ylo); args[5] = ptr(yhi);
+
+  vect2 is left completely untouched - it was already correct. This is the
+  fix that was confirmed working: the player now actually translates in the
+  commanded direction instead of only rotating to face it.
+
+
+================================================================================
+HOW THE CURRENT SCRIPT IS STRUCTURED, TOP TO BOTTOM
+================================================================================
+
+1. ACTION STATE & THE HOLD LATCH (top of file, before any Frida hooks)
+
+   currentActions = { move_x, move_y, aim_x, aim_y, shoot, aim_angle_deg,
+   has_action, has_aim } - the single source of truth every hook reads from.
+   All four axis values live in [-1, 1] (matching python_gym_Wrapper's action
+   space), with an optional "normalized" [0,1] legacy payload shape (0.5 =
+   centre) still accepted for backwards compatibility.
+
+   updateActions(mx, my, ax, ay, shoot, normalized, bypassHold) is the single
+   entry point that writes into currentActions. It contains a HOLD LATCH:
+   once a move direction (move_x, move_y) is accepted, it is held for
+   MOVE_HOLD_MS (4000 ms, i.e. 4 seconds) - a different direction arriving
+   inside that window is simply ignored, and the previously-held value keeps
+   being fed to the game. This exists so a commanded direction is actually
+   observable for a few seconds instead of flickering. Once MOVE_HOLD_MS has
+   elapsed, the next call is accepted and the window restarts.
+       - Aim (aim_x/aim_y) and shoot are NOT held - they always apply
+         immediately, since holding those would make aiming unusable.
+       - bypassHold=true skips the latch entirely; only the self-test sweep
+         uses this, since every tick there is a deliberate, already-paced
+         change, not a competing command that needs debouncing.
+
+   The ONLY console.log in the entire script lives here: a single line,
+   [INPUT] x=.., y=.. , printed once whenever the held (move_x, move_y)
+   actually changes value. All prior debug/diagnostic logging (module
+   discovery, hook-attach confirmations, pad discovery/priming messages,
+   per-getter override traces, periodic verify traces, the raw register
+   dump used to find BUG 2, a passive real-touch probe hook) has been
+   removed now that both bugs are fixed and confirmed working - none of it
+   was doing anything functional, it was all diagnostic scaffolding.
+
+2. SYMBOL RESOLUTION HELPERS
+
+   resolveSymbol(name) - looks up an export first, then falls back to
+   scanning the module's full symbol table (enumerateSymbols) for a name
+   match. nativeFn(name, retType, argTypes) wraps that into a NativeFunction,
+   returning null on any failure. attach(name, callbacks) wraps
+   Interceptor.attach the same way. All three fail silently (return null/
+   false) rather than throwing, since a missing symbol on a different game
+   build should degrade gracefully, not crash the whole script.
+
+3. NATIVE FUNCTION TABLE
+
+   Every Joypad/SoldierHostController function the script calls into is
+   resolved once at load time (padTypeFn, startControl, setMoveDirection,
+   setAimDirection, touchBegan, beginTouch, touchMove, touchEnd,
+   disableMovement, disableFiring, getXOffsetFn, getYOffsetFn,
+   nodeGetPosition, setPlayerHP, setPower, setThrust) using the ABI rules
+   described in BUG 1 above (ccPoint()/callVec()/IS_ARM32/VEC).
+
+4. THE PAD REGISTRY (pads / movePad / aimPad / registerPad / classifyPads)
+
+   Two Joypad instances exist in the game (move stick + aim stick). Rather
+   than guess which is which from padType(), the script learns it by
+   observing which pad the GAME itself calls getFireAngle() on (-> aim pad)
+   versus getXOffset() on (-> move pad). classifyPads() additionally infers
+   the move pad by elimination once the aim pad is known and both pads have
+   been seen at all. Each pad's record also carries a resolved "anchor"
+   point (see resolveAnchor(): CCNode::getPosition() first, the legacy
+   0x104/0x108 struct read second, ANCHOR_FALLBACK last) - the screen
+   position the synthetic touch is centred on.
+
+5. PRIMING / DRIVING / SELF-HEALING (primePad, releasePad, driveMovePad,
+   driveAimPad, verify)
+
+   primePad() does the BUG 1 fix: disableMovement/disableFiring(false) if
+   FORCE_ENABLE_CONTROLS, then startControl(), then tries touchBeganHandler
+   and falls back to beginTouch if that throws. It gives up after
+   MAX_PRIME_ATTEMPTS (5) failures rather than retrying forever.
+   driveMovePad()/driveAimPad() run every frame once a pad is primed:
+   touchMoveHandler steers the held synthetic touch, setMoveDirection/
+   setAimDirection are called as a second channel. verify() reads the move
+   pad back through its OWN getters with bypassOverrides=true (so we see
+   what the game itself thinks the offset is, not our injected value) -
+   this runs every VERIFY_EVERY (60) frames inside hook #5, and if the
+   commanded magnitude isn't being reflected after REPRIME_AFTER_MISSES (2)
+   consecutive checks, the pad is released and re-primed from scratch. This
+   covers respawns and a stray real finger touch lifting the synthetic one -
+   relevant for long unattended RL runs.
+
+6. THE FIVE FRIDA HOOKS
+
+   1. Joypad::updateStep - per-frame driver. Registers/classifies whichever
+      pad called it, then (if it's the move pad, or roles aren't known yet)
+      calls driveMovePad()/driveAimPad(), plus the legacy raw struct pokes
+      as a fallback layer (USE_RAW_OFFSET_WRITES).
+   2. Joypad::getXOffset / getYOffset - unconditionally override the return
+      value with commanded move_x/move_y once any action has been received
+      (including exactly zero - "stand still" always wins, it never falls
+      through to the real joypad and leaks stale touch state). Also used to
+      identify the move pad the first time the game calls getXOffset.
+   3. Joypad::getFireAngle - unconditionally overrides the return with the
+      held aim angle; also identifies the aim pad on first call.
+   4. Joypad::fire - overrides the return with the commanded shoot flag.
+   5. SoldierHostController::updateStep - the BUG 2 fix (vect1 argument
+      override, see above), plus: infinite health (setHP 100 every frame),
+      infinite jetpack power (setPower 10.0 every frame), the controller-side
+      raw struct writes (0x48/0x118/0x11c/0x120/0x121) and setThrust() as a
+      fallback layer, and the periodic self-heal check described above.
+
+7. EXTERNAL CONTROL SURFACE (recv / rpc.exports)
+
+   recv(onMessage) listens for {type:'send', payload:{action:'input', ...}}
+   messages from the Python/RL host and feeds them into updateActions(),
+   switching TEST_MODE to "LISTEN" (which also stops the self-test driving
+   the game). rpc.exports additionally exposes setAction/move/stop/release/
+   status for manual driving from a Frida REPL (`frida -l script.js`) -
+   run_hook.py itself does not call these, but they're there for interactive
+   debugging. release() hands control back to the real joystick by calling
+   releasePad() on every tracked pad and clearing has_action/has_aim.
+   status() returns the full pad inventory (pointer, padType, inferred role,
+   touchActive, anchor + its source) plus frame count and the diag error
+   counters (prime/reprime/touchErr/setDirErr/verifyFail) - useful for
+   checking health without turning any logging back on.
+
+8. BUILT-IN SELF TEST (TEST_MODE === "CYCLE")
+
+   Runs only when no external action has arrived yet (any recv message or
+   rpc call flips TEST_MODE to "LISTEN" and this stops immediately). Steps
+   through SWEEP_STEPS = [-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0]
+   - the full range in increments, not just the three extremes - one axis at
+   a time: all 9 steps on X first (Y held at 0), then all 9 steps on Y (X
+   held at 0), repeating indefinitely. Each step is held for the full
+   MOVE_HOLD_MS (4 seconds) via the normal hold latch (not bypassed here) -
+   long enough to actually watch the player's response to a given magnitude
+   before it changes, instead of it flickering past.
+
+
+================================================================================
+CONFIGURATION KNOBS (top of aim_move_shoot_native.js)
+================================================================================
+
+TEST_MODE            = "CYCLE"   "CYCLE" self-test, or "LISTEN" once any real
+                                 action arrives (Python/RL or rpc).
+SYNTH_TOUCH_ID       = 7777      Id for our synthetic finger.
+JOYSTICK_RADIUS      = 60.0      Stick deflection in points.
+MOVE_DEADZONE        = 0.01
+AIM_DEADZONE         = 0.01
+FORCE_ENABLE_CONTROLS= true      Calls disableMovement(false)/disableFiring(false)
+                                 when priming, in case the game had them off.
+PRIME_AIM_PAD        = false     Aim is polled unconditionally, so the aim pad
+                                 does not need a synthetic touch. Turn on only
+                                 if firing turns out to be gated too.
+USE_RAW_OFFSET_WRITES= true      Keeps the legacy 0x104/0x110/0x11c/0x120/0x12f/
+                                 0x130/0x131 pokes and the controller writes
+                                 (0x48/0x118/0x11c/0x120/0x121) as a fallback
+                                 layer. Set false to test the native path alone.
+ANCHOR_FALLBACK      = {120,120} Used only if the first two anchor sources fail.
+VERIFY_EVERY         = 60        Frames between commanded-vs-actual read-backs.
+REPRIME_AFTER_MISSES = 2         Failed verifications before a pad is re-primed.
+MAX_PRIME_ATTEMPTS   = 5         Cap on retrying a pad that keeps failing to
+                                 prime.
+MOVE_HOLD_MS         = 4000      How long an accepted move direction is held
+                                 before a different one can replace it (does
+                                 not apply to aim/shoot, and is bypassed by
+                                 the self-test sweep).
+
+rpc.exports (for `frida -l script.js` REPL use, not called by run_hook.py):
+    setAction(mx, my, ax, ay, shoot, normalized)
+    move(mx, my)
+    stop()
+    release()          - hands control back to the real joystick
+    status()            - pad inventory + frame count + diag counters
+
+
+================================================================================
+STATUS
+================================================================================
+
+- Both bugs (touch gate, and the vect1 translation argument) are fixed and
+  CONFIRMED WORKING against the live game - the player now translates
+  correctly in the commanded direction, not just rotates to face it.
+- All temporary diagnostic logging used to find and confirm both fixes
+  (raw register dump, real-touch probe hook, per-getter/per-frame verbose
+  traces) has been removed. The script now prints exactly one line,
+  [INPUT] x=.., y=.., only when the held move value changes.
+- The self-test now sweeps the full [-1, 1] range in steps (not just the
+  three extremes), one axis at a time, each held 4 seconds.
+- NOT YET DONE: python_gym_Wrapper/js/gym_actions.js still has the original
+  touch-gate defect (same guessed offsets, no priming) AND lacks the vect1
+  translation fix. The RL training path will hit both bugs until this
+  script's fixes are ported over there.

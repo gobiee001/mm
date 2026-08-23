@@ -18,3 +18,8 @@ python/venv*/
 
 # pytest cache folder
 **/.pytest_cache/
+
+# Training artifacts (model checkpoints and tensorboard/CSV logs).
+# Both are regenerated per run and the model zips are large.
+MM_GYm/logs/
+MM_GYm/models/

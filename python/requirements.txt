@@ -17,6 +17,10 @@ torch==2.13.0
 numpy==2.5.2
 networkx==3.6.1
 cloudpickle==3.1.2
+# Training dashboard for MM_GYm/Training. Optional at runtime: the trainer
+# probes for it and falls back to progress.csv when absent. Confirm this pin is
+# mirrored in the internal artifact registry before installing.
+tensorboard==2.20.0
 
 # Testing & Utilities
 pytest==9.1.1

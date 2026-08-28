@@ -483,12 +483,22 @@ def build_model(a: argparse.Namespace, env: VecEnv) -> PPO:
         A PPO instance.
     """
     if a.resume:
-        print(f"[*] resuming from {a.resume}")
+        resume_target = a.resume
+        if resume_target.lower() in ("latest", "auto", "best", "latest_best"):
+            try:
+                from Inference.model_loader import find_latest_best_model
+                found = find_latest_best_model()
+                if found:
+                    resume_target = str(found)
+            except Exception:
+                pass
+        print(f"[*] resuming from {resume_target}")
         # PPO.load rebuilds the model from the archive's own hyperparameters, so
         # the PPO flags on this invocation are deliberately not applied --
         # overriding them mid-run would silently change the optimisation problem
         # without any record of it in the original run's config.
-        return PPO.load(a.resume, env=env, device=a.torch_device)
+        return PPO.load(resume_target, env=env, device=a.torch_device)
+
 
     learning_rate = (hp.linear_schedule(a.learning_rate)
                      if a.lr_schedule == "linear" else a.learning_rate)

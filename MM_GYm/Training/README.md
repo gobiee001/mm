@@ -16,10 +16,11 @@ forward) for you.
 
 * **[`batFiles/run_all_devices_headless.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_all_devices_headless.bat)** — Runs parallel PPO training across all connected ADB devices in headless mode (30,000,000 steps).
 * **[`batFiles/run_all_devices_render.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_all_devices_render.bat)** — Runs parallel training across all devices with game rendering visible on screen.
-* **[`batFiles/run_mock_parallel.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_mock_parallel.bat)** — Runs 4 parallel mock simulators with no devices needed.
+* **[`batFiles/resume_latest_best.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/resume_latest_best.bat)** — Automatically picks up the latest best model from `models/` and resumes training across all devices.
 * **[`batFiles/stop_training.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/stop_training.bat)** — Cleanly stops the current active training run after the current step and saves the final model.
 * **[`batFiles/evaluate_latest_best.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/evaluate_latest_best.bat)** — Evaluates the latest best-performing checkpoint against the scripted baseline.
 * **[`batFiles/run_training.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_training.bat)** — Core flexible batch runner accepting custom CLI arguments.
+
 
 
 ---

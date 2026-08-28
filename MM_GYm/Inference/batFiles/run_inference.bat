@@ -74,11 +74,12 @@ echo.
 ::    run_inference.bat --mock --episodes 3
 :: ==============================================================================
 
-:: Step 4: Run inference
+:: Step 4: Run inference with full in-game rendering enabled (not headless)
 pushd "%~dp0..\.."
-"!PYTHON_PATH!" -m Inference.infer %*
+"!PYTHON_PATH!" -m Inference.infer --render-game %*
 set "EXITCODE=!ERRORLEVEL!"
 popd
+
 
 echo.
 echo ==============================================================================

@@ -262,8 +262,9 @@ def main(argv: Optional[list] = None) -> int:
     print(f"  Mode               : {'Continuous / Endless' if args.continuous else f'{args.episodes} Episode(s)'}")
     print(f"  Policy Sampling    : {'Deterministic (Mean Action)' if args.deterministic else 'Stochastic'}")
     print(f"  Target Environment : {'Mock Simulator' if args.mock else ('All ADB Devices' if args.all_devices else args.host)}")
-    print(f"  Game Rendering     : {'Visible on Screen' if args.render_game else 'Headless'}")
+    print(f"  Game Rendering     : {'FULL RENDERING ACTIVE (Visible on Screen, Not Headless)' if args.render_game else 'Headless'}")
     print(f"  Live HUD           : {'Enabled' if args.hud else 'Disabled'}")
+
     print()
 
     # 2. Resolve Host & Device

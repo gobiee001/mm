@@ -192,8 +192,98 @@ what makes the custom metrics show up promptly in TensorBoard."""
 
 
 # =============================================================================
+# Multi-Device / Parallel Environments
+# =============================================================================
+
+NUM_ENVS: int = 1
+"""Number of parallel environment workers. When > 1 with multiple devices or
+mock instances, environments run in parallel using SubprocVecEnv to scale
+training throughput proportionally with the number of devices."""
+
+HOST: str = "127.0.0.1:27042"
+"""Default host:port for Frida gadget/remote connection on the primary device."""
+
+VEC_ENV_TYPE: str = "auto"
+"""Vectorized environment implementation: 'auto' (subproc for num_envs > 1,
+dummy for num_envs == 1), 'subproc' (multiprocessing), or 'dummy' (single-process)."""
+
+
+AUTO_DEVICES: bool = False
+"""Whether to automatically discover all connected ADB devices and forward ports."""
+
+
+# =============================================================================
 # Helpers
 # =============================================================================
+
+def resolve_hosts(hosts_spec: Optional[str | List[str]],
+                  base_host: str = HOST,
+                  num_envs: Optional[int] = 1,
+                  is_mock: bool = False,
+                  auto_devices: bool = False) -> Tuple[List[str], List[str]]:
+    """Resolve a list of host:port addresses for parallel environments.
+
+    Supports:
+    * Automatic discovery of all connected ADB devices when ``auto_devices=True``.
+    * Explicit list of hosts (e.g. ``["127.0.0.1:27042", "127.0.0.1:27043"]``).
+    * Comma- or space-separated host string (e.g. ``"127.0.0.1:27042,127.0.0.1:27043"``).
+    * Base host with ``num_envs > 1``: auto-increments the port from the base host
+      (e.g. ``"127.0.0.1:27042"`` with ``num_envs=3`` -> ``["127.0.0.1:27042", "127.0.0.1:27043", "127.0.0.1:27044"]``).
+
+    Args:
+        hosts_spec: Explicit host(s) specified on CLI, or None.
+        base_host: Single fallback host or starting address (e.g. ``"127.0.0.1:27042"``).
+        num_envs: Number of requested environments, or None for auto.
+        is_mock: When True and no hosts are given, returns dummy host names.
+        auto_devices: When True and not is_mock and no hosts_spec, queries ADB devices.
+
+    Returns:
+        ``(hosts, device_serials)`` where ``hosts`` is a list of host strings and
+        ``device_serials`` is a list of corresponding ADB device serial numbers (or empty strings).
+    """
+    if is_mock and not hosts_spec:
+        n = max(1, num_envs or 1)
+        return [f"mock:{i}" for i in range(n)], [f"mock_{i}" for i in range(n)]
+
+    if auto_devices and not hosts_spec and not is_mock:
+        from .adb_utils import get_connected_adb_devices, setup_adb_port_forwarding
+        devices = get_connected_adb_devices()
+        if devices:
+            # Extract base port from base_host
+            port = 27042
+            if ":" in base_host:
+                try:
+                    port = int(base_host.rsplit(":", 1)[1])
+                except ValueError:
+                    port = 27042
+            mappings = setup_adb_port_forwarding(devices, base_port=port)
+            hosts = [m[1] for m in mappings]
+            serials = [m[0] for m in mappings]
+            return hosts, serials
+
+    if hosts_spec:
+        if isinstance(hosts_spec, str):
+            raw = [h.strip() for h in hosts_spec.replace(",", " ").split() if h.strip()]
+        else:
+            raw = []
+            for item in hosts_spec:
+                raw.extend(h.strip() for h in str(item).replace(",", " ").split() if h.strip())
+        if raw:
+            return raw, ["" for _ in raw]
+
+    # Derive sequential ports from base_host if num_envs > 1
+    n_envs = max(1, num_envs or 1)
+    if ":" in base_host:
+        host_part, port_str = base_host.rsplit(":", 1)
+        try:
+            base_port = int(port_str)
+        except ValueError:
+            return [base_host] * n_envs, ["" for _ in range(n_envs)]
+        return [f"{host_part}:{base_port + i}" for i in range(n_envs)], ["" for _ in range(n_envs)]
+
+    return [base_host] * n_envs, ["" for _ in range(n_envs)]
+
+
 
 def linear_schedule(initial_value: float) -> Callable[[float], float]:
     """Return an SB3 learning-rate schedule that decays linearly to zero.
@@ -236,3 +326,4 @@ def net_arch_from_string(spec: str) -> Dict[str, List[int]]:
     if any(w < 1 for w in widths):
         raise ValueError(f"net-arch layer widths must be >= 1, got {spec!r}")
     return {"pi": list(widths), "vf": list(widths)}
+

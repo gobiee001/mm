@@ -12,18 +12,33 @@ forward) for you.
 
 ## Quick start
 
+### Ready-to-Run Batch Launchers (in [`Training/batFiles/`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles)):
+
+* **[`batFiles/run_all_devices_headless.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_all_devices_headless.bat)** — Runs parallel PPO training across all connected ADB devices in headless mode (30,000,000 steps).
+* **[`batFiles/run_all_devices_render.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_all_devices_render.bat)** — Runs parallel training across all devices with game rendering visible on screen.
+* **[`batFiles/run_mock_parallel.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_mock_parallel.bat)** — Runs 4 parallel mock simulators with no devices needed.
+* **[`batFiles/stop_training.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/stop_training.bat)** — Cleanly stops the current active training run after the current step and saves the final model.
+* **[`batFiles/evaluate_latest_best.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/evaluate_latest_best.bat)** — Evaluates the latest best-performing checkpoint against the scripted baseline.
+* **[`batFiles/run_training.bat`](file:///C:/Users/sathi/PycharmProjects/mm/MM_GYm/Training/batFiles/run_training.bat)** — Core flexible batch runner accepting custom CLI arguments.
+
+
+---
+
+### Command-Line Usage:
+
 Exercise the whole stack with no device and no game attached:
 
 ```bash
 run_training.bat --mock --total-timesteps 8192
 ```
 
-Train against the live game (gadget listening on `tcp:27042`, a match already
-running):
+Train across all attached ADB devices in parallel:
 
 ```bash
-run_training.bat --headless --total-timesteps 200000
+run_training.bat --all-devices --headless --total-timesteps 30000000
 ```
+
+
 
 Stop a long run cleanly at any time by creating the `STOP` file the startup
 banner names — preferable to Ctrl-C, which on a live phone can land inside a
@@ -177,10 +192,12 @@ Deliberately **not** used:
 * **`TimeLimit`** — `MiniMilitiaEnv` truncates internally at `max_episode_steps`
   and correctly reports `truncated` rather than `terminated`, so a bootstrapping
   learner already handles the cut. A wrapper would add a second, competing limit.
-* **Multiple environments** — `n_envs=1` is a hard constraint, not a
-  simplification. The JS side keeps one global step accumulator inside the game
-  process, so two environments stepping it would interleave and corrupt each
-  other's observations.
+* **Multiple environments across multiple devices** — You can run N parallel
+  environments using `--num-envs N` or `--hosts host1 host2 ...` (backed by
+  `SubprocVecEnv`), provided each environment connects to its own independent
+  game process / device port (or mock instance). Two environments must not
+  connect to the *same* game process, because the JS instrumentation maintains
+  a single global step counter per game process.
 
 ### Episodes end by truncation unless you ask otherwise
 
@@ -217,10 +234,11 @@ Three behaviours to be aware of:
 
 `--help` is authoritative and shows live defaults. The commonly used ones:
 
-**Environment** — `--mock`, `--device {gadget,usb,remote,local}`, `--host`,
-`--process`, `--frame-skip`, `--max-episode-steps`, `--game-speed`, `--hard-sync`,
-`--headless` / `--render-game`, `--weapon`, `--max-enemies`,
-`--terminate-on-death`, `--verbose-env`
+**Environment & Devices** — `--num-envs`, `--hosts`, `--host`, `--vec-env-type {auto,subproc,dummy}`,
+`--mock`, `--device {gadget,usb,remote,local}`, `--process`, `--frame-skip`,
+`--max-episode-steps`, `--game-speed`, `--hard-sync`, `--headless` / `--render-game`,
+`--weapon`, `--max-enemies`, `--terminate-on-death`, `--verbose-env`
+
 
 **PPO** — `--total-timesteps`, `--n-steps`, `--batch-size`, `--n-epochs`,
 `--learning-rate`, `--lr-schedule {constant,linear}`, `--gamma`, `--gae-lambda`,

@@ -45,7 +45,7 @@ class EnvConfig:
     frame_skip: int = 10
     """Physics ticks the action is held for, per env.step()."""
 
-    hard_sync: bool = False
+    hard_sync: bool = True
     """Freeze CCScheduler::update and release exactly frame_skip real frames
     per step()/reset(), instead of letting the game run freely between steps.
     game_speed has no effect while this is True (see README)."""
@@ -72,7 +72,7 @@ class EnvConfig:
     test; disable for a modest speedup if the idle penalty is off."""
 
     # --- Episode contract -------------------------------------------------
-    max_episode_steps: int = 1000
+    max_episode_steps: int = 3000
     """Episodes are truncated here. Truncation (not termination) is what gets
     reported, so a bootstrapping learner handles the cut correctly."""
 

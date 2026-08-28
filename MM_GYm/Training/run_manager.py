@@ -254,6 +254,18 @@ class RunPaths:
         """
         return self.logs_dir / "monitor.csv"
 
+    def monitor_csv_for(self, env_idx: int = 0, total_envs: int = 1) -> Path:
+        """Path for environment ``env_idx``'s ``Monitor`` CSV.
+
+        When running a single environment, writes to ``monitor.csv`` for full
+        backwards compatibility. When running multiple parallel environments,
+        writes to ``monitor_0.csv``, ``monitor_1.csv``, etc.
+        """
+        if total_envs <= 1:
+            return self.logs_dir / "monitor.csv"
+        return self.logs_dir / f"monitor_{env_idx}.csv"
+
+
     @property
     def config_json(self) -> Path:
         """Path for the run's reproducibility record."""

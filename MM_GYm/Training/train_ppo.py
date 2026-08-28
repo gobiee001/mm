@@ -7,8 +7,14 @@ package -- the same convention ``run_gym_demo.bat`` uses::
     # Smoke-test the whole stack with no device and no game attached:
     python -m Training.train_ppo --mock --total-timesteps 8192
 
-    # Train against the live game (gadget on tcp:27042, match already running):
+    # Parallel smoke-test with 4 mock environments:
+    python -m Training.train_ppo --mock --num-envs 4 --total-timesteps 8192
+
+    # Train against the live game on a single device (gadget on tcp:27042):
     python -m Training.train_ppo --total-timesteps 200000 --headless
+
+    # Train across multiple devices in parallel (ports forwarded to 27042, 27043, ...):
+    python -m Training.train_ppo --hosts 127.0.0.1:27042 127.0.0.1:27043 --headless
 
     # Continue from a saved checkpoint:
     python -m Training.train_ppo --resume models/run_.../final_step....zip
@@ -31,10 +37,11 @@ What this script arranges
 
 Design notes worth knowing before changing anything
 ---------------------------------------------------
-**One environment only.** ``n_envs=1`` is not a simplification, it is a hard
-constraint: the JS side keeps a single global step accumulator inside the game
-process, so two environments stepping the same process interleave and corrupt
-each other's observations.
+**Parallel environments across multiple devices.** You can run N parallel environments
+using ``--num-envs N`` or ``--hosts host1 host2 ...`` with ``SubprocVecEnv``, provided each
+environment connects to its own independent game process / device (or mock instance).
+Two environments must NOT connect to the same game process, as the JS side keeps
+a single global step accumulator inside the process.
 
 **No ``TimeLimit`` wrapper.** ``MiniMilitiaEnv`` truncates internally at
 ``cfg.env.max_episode_steps`` and reports ``truncated`` (never a bogus
@@ -57,11 +64,12 @@ counters the reward is built from. The ``finally`` block is not decoration.
 from __future__ import annotations
 
 import argparse
+import copy
 import importlib.util
 import os
 import sys
 import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Allow both `python -m Training.train_ppo` (from MM_GYm/) and
 # `python Training/train_ppo.py`, mirroring the guard in demo.py. The second form
@@ -74,6 +82,7 @@ from stable_baselines3 import PPO                                    # noqa: E40
 from stable_baselines3.common.callbacks import CallbackList           # noqa: E402
 from stable_baselines3.common.logger import configure                 # noqa: E402
 from stable_baselines3.common.monitor import Monitor                  # noqa: E402
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv  # noqa: E402
 
 from python_gym_Wrapper import (                                      # noqa: E402
     BridgeError,
@@ -108,7 +117,7 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
     behind each one.
     """
     p = argparse.ArgumentParser(
-        description="Train a PPO agent on the Mini Militia environment",
+        description="Train a PPO agent on the Mini Militia environment across one or more devices",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -118,10 +127,24 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
         "--mock", action="store_true",
         help="train against the in-process simulator; no device or game needed")
     env_group.add_argument(
+        "--num-envs", "-n", "--n-envs", dest="num_envs", type=int, default=None,
+        help="number of parallel environments / devices (default: 1, or inferred from --hosts/--all-devices)")
+    env_group.add_argument(
+        "--all-devices", "--auto-devices", dest="all_devices", action="store_true",
+        default=hp.AUTO_DEVICES,
+        help="automatically detect all connected ADB devices and forward ports for parallel training")
+    env_group.add_argument(
         "--device", choices=["gadget", "usb", "remote", "local"], default="gadget",
         help="how to reach the target process")
-    env_group.add_argument("--host", default="127.0.0.1:27042",
-                           help="host:port for --device gadget/remote")
+    env_group.add_argument("--host", default=hp.HOST,
+                           help="primary or base host:port for --device gadget/remote")
+    env_group.add_argument(
+        "--hosts", nargs="+", default=None,
+        help="explicit list of host:port targets for multiple devices (e.g. 127.0.0.1:27042 127.0.0.1:27043)")
+    env_group.add_argument(
+        "--vec-env-type", choices=["auto", "subproc", "dummy"], default=hp.VEC_ENV_TYPE,
+        help="vectorized environment type: auto (subproc if num_envs > 1), subproc, or dummy")
+
     env_group.add_argument("--process", default=None,
                            help="override the process name to attach to")
     env_group.add_argument("--frame-skip", type=int, default=hp.FRAME_SKIP,
@@ -159,7 +182,7 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
     ppo = p.add_argument_group("PPO")
     ppo.add_argument("--total-timesteps", type=int, default=hp.TOTAL_TIMESTEPS)
     ppo.add_argument("--n-steps", type=int, default=hp.N_STEPS,
-                     help="rollout length between policy updates")
+                     help="rollout length per environment between policy updates")
     ppo.add_argument("--batch-size", type=int, default=hp.BATCH_SIZE)
     ppo.add_argument("--n-epochs", type=int, default=hp.N_EPOCHS)
     ppo.add_argument("--learning-rate", type=float, default=hp.LEARNING_RATE)
@@ -225,7 +248,7 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
 # Environment construction
 # =============================================================================
 
-def build_config(a: argparse.Namespace) -> MiniMilitiaConfig:
+def build_config(a: argparse.Namespace, host: Optional[str] = None) -> MiniMilitiaConfig:
     """Translate CLI arguments into a :class:`MiniMilitiaConfig`.
 
     Follows the pattern established in ``demo.build_config``: mutate the
@@ -238,7 +261,7 @@ def build_config(a: argparse.Namespace) -> MiniMilitiaConfig:
     e = cfg.env
 
     e.device = a.device
-    e.host = a.host
+    e.host = host if host is not None else a.host
     if a.process:
         e.process = a.process
 
@@ -269,66 +292,141 @@ def build_config(a: argparse.Namespace) -> MiniMilitiaConfig:
     return cfg
 
 
+class SingleEnvFactory:
+    """Callable worker factory for creating a monitored MiniMilitiaEnv instance.
+
+    Defined at module top-level so that multiprocessing (spawn method on Windows)
+    can serialize and execute it within child worker processes.
+    """
+
+    def __init__(self,
+                 cfg: MiniMilitiaConfig,
+                 is_mock: bool,
+                 seed: Optional[int],
+                 monitor_csv_path: Optional[str]):
+        self.cfg = cfg
+        self.is_mock = is_mock
+        self.seed = seed
+        self.monitor_csv_path = monitor_csv_path
+
+    def __call__(self) -> Monitor:
+        bridge = MockBridge(self.cfg, seed=self.seed) if self.is_mock else None
+        env = MiniMilitiaEnv(self.cfg, bridge=bridge)
+        env.connect()
+        return Monitor(env, filename=self.monitor_csv_path)
+
+
 def make_env(a: argparse.Namespace,
-             paths: RunPaths) -> Tuple[Monitor, MiniMilitiaEnv, MiniMilitiaConfig]:
-    """Build, connect, and wrap the environment.
+             paths: RunPaths) -> Tuple[VecEnv, List[MiniMilitiaConfig], List[str], List[str]]:
+    """Build, connect, and wrap the environment(s) into a vectorized VecEnv.
 
-    ``Monitor`` is applied explicitly rather than relying on SB3's auto-wrap, for
-    two reasons: it guarantees ``model.ep_info_buffer`` populates (which is where
-    both saving callbacks read the reward that goes into filenames), and it lets
-    the per-episode CSV land in the log directory of our choosing.
+    Supports single or multiple devices/hosts and parallel mock simulators.
+    Uses ``SubprocVecEnv`` for parallel multiprocessing or ``DummyVecEnv`` for
+    single-process execution.
 
-    Connecting here rather than lazily on the first ``reset()`` means a missing
-    game or an unloaded gadget fails immediately with a useful message, instead
-    of surfacing from inside ``learn()`` after the run directory already exists.
+    ``Monitor`` is applied to each environment instance explicitly rather than
+    relying on SB3's auto-wrap, ensuring per-episode CSV logs and episode returns
+    are properly captured.
 
     Returns:
-        ``(monitored_env, raw_env, config)``. Closing the monitor closes the raw
-        environment; the raw handle is returned only for instrumentation reporting.
+        ``(vec_env, configs, hosts, serials)``.
     """
-    cfg = build_config(a)
-    # MockBridge is an in-process double with toy physics that exercises the real
-    # encoder and reward engine. Note that passing bridge= makes the environment
-    # not own it, so env.close() will not close it -- harmless here, since there
-    # is no external resource to release.
-    bridge = MockBridge(cfg, seed=a.seed) if a.mock else None
+    req_num_envs = a.num_envs
+    if req_num_envs is None:
+        if a.hosts:
+            resolved_hosts, _ = hp.resolve_hosts(a.hosts, a.host, 1, a.mock, auto_devices=False)
+            req_num_envs = len(resolved_hosts)
+        elif a.all_devices and not a.mock:
+            req_num_envs = None
+        else:
+            req_num_envs = 1
 
-    env = MiniMilitiaEnv(cfg, bridge=bridge)
-    env.connect()
+    hosts, serials = hp.resolve_hosts(
+        hosts_spec=a.hosts,
+        base_host=a.host,
+        num_envs=req_num_envs,
+        is_mock=a.mock,
+        auto_devices=a.all_devices,
+    )
+    num_envs = len(hosts)
 
-    monitored = Monitor(env, filename=str(paths.monitor_csv))
-    return monitored, env, cfg
+    configs: List[MiniMilitiaConfig] = []
+    factories: List[SingleEnvFactory] = []
+
+    for i in range(num_envs):
+        host = hosts[i]
+        cfg = build_config(a, host=host if not a.mock else a.host)
+        configs.append(cfg)
+
+        seed = None if a.seed is None else (a.seed + i * 1000)
+        monitor_path = str(paths.monitor_csv_for(i, num_envs))
+        factories.append(SingleEnvFactory(
+            cfg=cfg,
+            is_mock=a.mock,
+            seed=seed,
+            monitor_csv_path=monitor_path,
+        ))
+
+    vec_type = a.vec_env_type
+    if vec_type == "auto":
+        vec_type = "subproc" if num_envs > 1 else "dummy"
+
+    if vec_type == "subproc":
+        vec_env = SubprocVecEnv(factories)
+    else:
+        vec_env = DummyVecEnv(factories)
+
+    return vec_env, configs, hosts, serials
 
 
-def print_environment_report(env: MiniMilitiaEnv, mock: bool) -> None:
-    """Print what the instrumentation actually resolved.
-
-    Worth reading before every live run: a missing damage or kill hook means the
-    corresponding reward term stays at zero for the whole run, and the agent will
-    dutifully optimise the truncated reward function without complaint.
-    """
-    info = env.instrumentation_info
-    caps: Dict[str, Any] = info.get("capabilities", {}) or {}
+def print_environment_report(vec_env: VecEnv,
+                             configs: List[MiniMilitiaConfig],
+                             hosts: List[str],
+                             serials: List[str],
+                             mock: bool) -> None:
+    """Print what the instrumentation actually resolved for all environments."""
+    num_envs = vec_env.num_envs
+    vec_type = vec_env.__class__.__name__
+    first_cfg = configs[0]
 
     print(RULE)
-    print("ENVIRONMENT" + ("  (mock -- toy physics, no game attached)" if mock else ""))
+    print(f"ENVIRONMENT  ({num_envs} parallel env{'s' if num_envs > 1 else ''} via {vec_type})"
+          + ("  (mock -- toy physics, no game attached)" if mock else ""))
     print(RULE)
-    print(f"  observation space : {env.observation_space}")
-    print(f"  action space      : {env.action_space}  "
-          f"[move_x, move_y, aim_x, aim_y, shoot]")
-    print(f"  frame skip        : {env.cfg.env.frame_skip} ticks/step"
-          f"{'  (hard sync)' if env.cfg.env.hard_sync else '  (soft sync)'}")
-    print(f"  episode cap       : {env.cfg.env.max_episode_steps} steps")
-    print(f"  terminate on death: {env.cfg.env.terminate_on_death}"
-          f"   (infinite_health={env.cfg.env.infinite_health})")
+    print(f"  parallel envs     : {num_envs} ({vec_type})")
     if not mock:
-        print(f"  tick source       : {info.get('tick_source')}")
-        print("  reward signals:")
-        for label, key in (("damage (Enemy::addDamage)", "damage_hook"),
-                           ("kills  (awardPoints)", "kill_hook"),
-                           ("shots  (weaponDidFire)", "shot_hook"),
-                           ("player HP", "player_hp")):
-            print(f"    {'OK     ' if caps.get(key) else 'MISSING'}  {label}")
+        targets_desc = []
+        for h, s in zip(hosts, serials):
+            targets_desc.append(f"{s} ({h})" if s else h)
+        print(f"  target device(s)  : {', '.join(targets_desc)}")
+    print(f"  observation space : {vec_env.observation_space}")
+    print(f"  action space      : {vec_env.action_space}  "
+          f"[move_x, move_y, aim_x, aim_y, shoot]")
+    print(f"  frame skip        : {first_cfg.env.frame_skip} ticks/step"
+          f"{'  (hard sync)' if first_cfg.env.hard_sync else '  (soft sync)'}")
+    print(f"  episode cap       : {first_cfg.env.max_episode_steps} steps")
+    print(f"  terminate on death: {first_cfg.env.terminate_on_death}"
+          f"   (infinite_health={first_cfg.env.infinite_health})")
+
+    if not mock:
+        try:
+            all_infos = vec_env.get_attr("instrumentation_info")
+        except Exception:
+            all_infos = []
+
+        for idx, info in enumerate(all_infos):
+            caps: Dict[str, Any] = info.get("capabilities", {}) or {}
+            serial = serials[idx] if idx < len(serials) and serials[idx] else ""
+            host = hosts[idx] if idx < len(hosts) else f"env_{idx}"
+            label = f"{serial} @ {host}" if serial else host
+            print(f"  device [{idx}] ({label}):")
+            print(f"    tick source       : {info.get('tick_source')}")
+            print("    reward signals:")
+            for name, key in (("damage (Enemy::addDamage)", "damage_hook"),
+                              ("kills  (awardPoints)", "kill_hook"),
+                              ("shots  (weaponDidFire)", "shot_hook"),
+                              ("player HP", "player_hp")):
+                print(f"      {'OK     ' if caps.get(key) else 'MISSING'}  {name}")
     print()
 
 
@@ -368,7 +466,7 @@ def build_logger(paths: RunPaths, has_tensorboard: bool):
     return configure(folder=str(paths.logs_dir), format_strings=formats)
 
 
-def build_model(a: argparse.Namespace, env: Monitor) -> PPO:
+def build_model(a: argparse.Namespace, env: VecEnv) -> PPO:
     """Construct a fresh PPO model, or load one for resumption.
 
     The logger is *not* set here -- the caller applies :func:`build_logger`
@@ -379,7 +477,7 @@ def build_model(a: argparse.Namespace, env: Monitor) -> PPO:
 
     Args:
         a: Parsed CLI arguments.
-        env: The Monitor-wrapped environment.
+        env: The vectorized environment (VecEnv).
 
     Returns:
         A PPO instance.
@@ -472,16 +570,32 @@ def save_final(model: PPO, paths: RunPaths, status: str,
 def main(argv: Optional[list] = None) -> int:
     a = parse_args(argv)
 
-    if a.n_steps % a.batch_size != 0:
-        print(f"[warn] n_steps={a.n_steps} is not a multiple of "
-              f"batch_size={a.batch_size}; the last minibatch of each epoch will "
-              f"be short, which biases the gradient slightly.")
     if a.hard_sync and a.game_speed != 1.0:
         print("[warn] --game-speed has no effect under --hard-sync: the fixed dt "
               "released per step is not scaled by the timescale.")
 
     has_tensorboard = importlib.util.find_spec("tensorboard") is not None
     paths = RunPaths.create(run_name=a.run_name, wipe_logs=not a.no_wipe_logs)
+
+    # -- environment -------------------------------------------------------
+    try:
+        env, configs, hosts, serials = make_env(a, paths)
+    except BridgeError as exc:
+        print(f"[-] could not attach to the game: {exc}", file=sys.stderr)
+        print("\n    Checklist:", file=sys.stderr)
+        print("      * the game is running with the Frida gadget loaded", file=sys.stderr)
+        print("      * a match is active, so physics ticks are running", file=sys.stderr)
+        print("      * adb port forwarding has been configured for each device", file=sys.stderr)
+        print("\n    Or pass --mock to train against the in-process simulator.",
+              file=sys.stderr)
+        return 1
+
+    num_envs = env.num_envs
+    total_rollout_steps = a.n_steps * num_envs
+    if total_rollout_steps % a.batch_size != 0:
+        print(f"[warn] total rollout steps ({a.n_steps} n_steps x {num_envs} envs = {total_rollout_steps}) "
+              f"is not a multiple of batch_size={a.batch_size}; the last minibatch of each epoch will "
+              f"be short, which biases the gradient slightly.")
 
     print(RULE)
     print("MINI MILITIA RL - PPO TRAINING")
@@ -490,6 +604,10 @@ def main(argv: Optional[list] = None) -> int:
     print(f"  models       : {paths.run_dir}")
     print(f"  logs         : {paths.logs_dir}"
           f"{'' if a.no_wipe_logs else '   (contents cleared)'}")
+    print(f"  parallel envs: {num_envs} ({env.__class__.__name__})")
+    if not a.mock:
+        desc_list = [f"{s} ({h})" if s else h for h, s in zip(hosts, serials)]
+        print(f"  devices/hosts: {', '.join(desc_list)}")
     if has_tensorboard:
         print("  metrics      : TensorBoard + CSV + stdout")
     else:
@@ -501,25 +619,13 @@ def main(argv: Optional[list] = None) -> int:
           f"newest {a.keep_checkpoints} kept")
     print(f"  best models  : top {a.top_k} by mean return over "
           f"{a.best_window} episodes")
-    eta_hours = a.total_timesteps / hp.EXPECTED_STEPS_PER_SECOND / 3600.0
+    throughput = hp.EXPECTED_STEPS_PER_SECOND * num_envs
+    eta_hours = a.total_timesteps / max(throughput, 1e-6) / 3600.0
     print(f"  budget       : {a.total_timesteps:,} steps "
-          f"(~{eta_hours:.1f} h at {hp.EXPECTED_STEPS_PER_SECOND:g} steps/s)")
+          f"(~{eta_hours:.1f} h at {throughput:g} aggregate steps/s across {num_envs} envs)")
     print()
 
-    # -- environment -------------------------------------------------------
-    try:
-        env, raw_env, cfg = make_env(a, paths)
-    except BridgeError as exc:
-        print(f"[-] could not attach to the game: {exc}", file=sys.stderr)
-        print("\n    Checklist:", file=sys.stderr)
-        print("      * the game is running with the Frida gadget loaded", file=sys.stderr)
-        print("      * a match is active, so physics ticks are running", file=sys.stderr)
-        print("      * adb forward tcp:27042 tcp:27042 has been run", file=sys.stderr)
-        print("\n    Or pass --mock to train against the in-process simulator.",
-              file=sys.stderr)
-        return 1
-
-    print_environment_report(raw_env, a.mock)
+    print_environment_report(env, configs, hosts, serials, a.mock)
 
     # -- model -------------------------------------------------------------
     try:
@@ -534,16 +640,21 @@ def main(argv: Optional[list] = None) -> int:
 
     paths.write_run_config({
         "args": vars(a),
+        "num_envs": num_envs,
+        "hosts": hosts,
+        "device_serials": serials,
+        "vec_env_type": env.__class__.__name__,
         "tensorboard_available": has_tensorboard,
         "observation_shape": list(env.observation_space.shape),
         "action_shape": list(env.action_space.shape),
         "env_config": {
-            "env": vars(cfg.env),
-            "reward": vars(cfg.reward),
-            "obs": vars(cfg.obs),
-            "action": vars(cfg.action),
+            "env": vars(configs[0].env),
+            "reward": vars(configs[0].reward),
+            "obs": vars(configs[0].obs),
+            "action": vars(configs[0].action),
         },
     })
+
 
     # -- callbacks ---------------------------------------------------------
     # One tracker shared by both saving callbacks, so the reward written into a
@@ -567,9 +678,9 @@ def main(argv: Optional[list] = None) -> int:
         k=a.top_k,
         min_episodes=a.best_min_episodes,
         min_improvement=a.best_min_improvement,
-        # One rollout of cooldown, so the K kept files sample the peak rather
+        # One rollout of cooldown across all envs, so the K kept files sample the peak rather
         # than piling onto a single moment of it.
-        cooldown_steps=model.n_steps,
+        cooldown_steps=a.n_steps * num_envs,
     )
     metrics_cb = MiniMilitiaMetricsCallback(episode_window=a.best_window)
     stop_cb = StopFileCallback(stop_file=paths.stop_file)
@@ -609,9 +720,8 @@ def main(argv: Optional[list] = None) -> int:
     finally:
         elapsed = time.perf_counter() - started
         save_final(model, paths, status, tracker)
-        # Closing releases the Frida session and unloads the injected script. An
-        # orphaned script double-hooks on the next attach and quietly corrupts
-        # the event counters the reward depends on.
+        # Closing releases Frida sessions and unloads injected scripts from all
+        # workers/environments.
         env.close()
 
     # -- summary -----------------------------------------------------------
@@ -619,7 +729,7 @@ def main(argv: Optional[list] = None) -> int:
     print(RULE)
     print(f"RUN {status.upper()}  --  {model.num_timesteps:,} timesteps in "
           f"{elapsed / 60.0:.1f} min "
-          f"({model.num_timesteps / max(elapsed, 1e-9):.1f} steps/s)")
+          f"({model.num_timesteps / max(elapsed, 1e-9):.1f} steps/s across {num_envs} envs)")
     print(RULE)
     print(f"  episodes : {tracker.episodes}")
     best_single = tracker.best_single()

@@ -46,7 +46,7 @@ export function initRuntime(cfg, diag) {
     }
 
     if (cfg.disable_sarge) {
-        for (const sym of ["_ZN13SurvivalStage11updateSargeEf", "_ZN13TrainingStage11headChatterEf"]) {
+        for (const sym of ["_ZN13SurvivalStage11updateSargeEf"]) {
             const addr = resolveExport(sym);
             if (addr === null) continue;
             try {

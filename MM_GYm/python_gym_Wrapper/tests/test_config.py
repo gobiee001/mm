@@ -15,8 +15,9 @@ class TestEnvConfig(unittest.TestCase):
     def test_defaults_are_valid(self):
         e = EnvConfig()
         self.assertEqual(e.frame_skip, 10)
-        self.assertFalse(e.infinite_health)
-        self.assertTrue(e.terminate_on_death)
+        self.assertTrue(e.infinite_health)
+        self.assertFalse(e.terminate_on_death)
+        self.assertTrue(e.reset_force_spawn)
 
     def test_rejects_bad_frame_skip(self):
         with self.assertRaises(ValueError):
@@ -103,11 +104,11 @@ class TestToJs(unittest.TestCase):
         import json
         json.dumps(MiniMilitiaConfig().to_js())
 
-    def test_hard_sync_defaults_off_and_round_trips(self):
-        self.assertFalse(MiniMilitiaConfig().to_js()["hard_sync"])
+    def test_hard_sync_round_trips(self):
+        self.assertTrue(MiniMilitiaConfig().to_js()["hard_sync"])
         cfg = MiniMilitiaConfig()
-        cfg.env.hard_sync = True
-        self.assertTrue(cfg.to_js()["hard_sync"])
+        cfg.env.hard_sync = False
+        self.assertFalse(cfg.to_js()["hard_sync"])
 
 
 if __name__ == "__main__":

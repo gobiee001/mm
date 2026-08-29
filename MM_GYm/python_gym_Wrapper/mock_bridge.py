@@ -225,6 +225,7 @@ class MockBridge:
             "capabilities": {
                 "damage_hook": True, "kill_hook": True, "shot_hook": True,
                 "reset_kill_player": True, "reset_kill_enemies": True,
+                "reset_force_spawn": True,
                 "player_hp": True, "enemy_hp": True,
             },
             "action_hooks": {"player": True, "fire": True},
@@ -246,10 +247,14 @@ class MockBridge:
         return self._run(list(action), self.env.frame_skip, "step")
 
     def reset(self, kill_player: bool, clear_enemies: bool,
-              settle_ticks: int) -> Dict[str, Any]:
-        if clear_enemies or kill_player:
+              settle_ticks: int, force_spawn: bool = True) -> Dict[str, Any]:
+        if clear_enemies or kill_player or force_spawn:
             self._spawn_all()
         return self._run([0.0] * 5, max(1, settle_ticks), "reset")
+
+    def force_spawn(self) -> Dict[str, Any]:
+        self.php = 100.0
+        return {"ok": True}
 
     @property
     def errors(self) -> List[str]:

@@ -87,6 +87,8 @@ const SYMBOLS = new Set([
     '_ZN10StageLayer11onEndedGameEPN7cocos2d8CCObjectE',
     '_ZN21SoldierHostController5getHPEv',
     '_ZN12EnemyManager14killAllEnemiesEv',
+    '_ZN14SoldierManager11spawnPlayerEv',
+    '_ZN14SoldierManager10updateStepEf',
     '_ZN6Joypad10getXOffsetEv',
     '_ZN6Joypad10getYOffsetEv',
     '_ZN6Joypad12getFireAngleEv',
@@ -173,6 +175,7 @@ function floatArg(v) { f32[0] = v; return new FakePtr(i32[0] >>> 0); }
 const PLAYER = new FakePtr(0x11110000);
 const ENEMY_MGR = new FakePtr(0x22220000);
 const DRONE = new FakePtr(0x33330000);
+const SOLDIER_MGR = new FakePtr(0x55550000);
 
 function tick(n) {
     for (let i = 0; i < n; i++) {
@@ -181,6 +184,9 @@ function tick(n) {
         }
         if (hooks['_ZN12EnemyManager10updateStepEf']) {
             hooks['_ZN12EnemyManager10updateStepEf'].onEnter([ENEMY_MGR, floatArg(0.016667)]);
+        }
+        if (hooks['_ZN14SoldierManager10updateStepEf']) {
+            hooks['_ZN14SoldierManager10updateStepEf'].onEnter([SOLDIER_MGR, floatArg(0.016667)]);
         }
         hooks['_ZN14PhysicsManager10updateStepEf'].onEnter([new FakePtr(1), floatArg(0.016667)]);
     }
@@ -219,7 +225,7 @@ async function stepWith(action, frameSkip, extra) {
     check('reports kill hook resolved', info.capabilities.kill_hook === true);
     check('reports shot hook resolved', info.capabilities.shot_hook === true);
     check('reports reset primitives resolved',
-          info.capabilities.reset_kill_player && info.capabilities.reset_kill_enemies);
+          info.capabilities.reset_kill_player && info.capabilities.reset_kill_enemies && info.capabilities.reset_force_spawn);
     eq('frame_skip reached JS from __PY_CONFIG__', info.config.frame_skip, 10);
 
     // --- frame skip ---
@@ -308,7 +314,7 @@ async function stepWith(action, frameSkip, extra) {
           Math.abs(f32[0]) < 1e-4, `got ${f32[0]}`);
 
     // --- reset ---
-    const rp = rpc.reset({ kill_player: true, clear_enemies: true, settle_ticks: 7 });
+    const rp = rpc.reset({ kill_player: true, clear_enemies: true, force_spawn: true, settle_ticks: 7 });
     await null;
     tick(7);
     const rr = await rp;
@@ -318,6 +324,13 @@ async function stepWith(action, frameSkip, extra) {
           (nativeCalls['_ZN12EnemyManager14killAllEnemiesEv'] || 0) >= 1);
     check('killPlayer invoked on the game thread',
           (nativeCalls['_ZN21SoldierHostController10killPlayerEv'] || 0) >= 1);
+    check('spawnPlayer invoked on the game thread',
+          (nativeCalls['_ZN14SoldierManager11spawnPlayerEv'] || 0) >= 1);
+
+    const fSpawn = rpc.forceSpawn();
+    check('forceSpawn executes successfully', fSpawn.ok === true);
+    check('forceSpawn invoked spawnPlayer',
+          (nativeCalls['_ZN14SoldierManager11spawnPlayerEv'] || 0) >= 2);
 
     // --- watchdog ---
     rpc.setConfig({ frame_skip: 1000 });          // far more ticks than we crank

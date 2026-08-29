@@ -81,8 +81,18 @@ class TestResetContract(unittest.TestCase):
     def test_options_override_reset_behaviour(self):
         env, _ = make_env()
         try:
-            _, info = env.reset(options={"settle_ticks": 3})
+            _, info = env.reset(options={"settle_ticks": 3, "force_spawn": True})
             self.assertEqual(info["reset_ticks"], 3)
+        finally:
+            env.close()
+
+    def test_force_spawn_in_reset_and_method(self):
+        env, _ = make_env()
+        try:
+            obs, info = env.reset(options={"force_spawn": True})
+            self.assertTrue(info["has_player"])
+            res = env.force_spawn()
+            self.assertTrue(res.get("ok"))
         finally:
             env.close()
 
@@ -200,7 +210,8 @@ class TestEpisodeContract(unittest.TestCase):
             env.close()
 
     def test_terminates_on_player_death(self):
-        env, _ = make_env(frame_skip=40, max_episode_steps=500)
+        env, _ = make_env(frame_skip=40, max_episode_steps=500,
+                          terminate_on_death=True, infinite_health=False)
         try:
             env.reset()
             terminated = False

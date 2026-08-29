@@ -71,14 +71,14 @@ class TestSigns(unittest.TestCase):
 
 class TestScaling(unittest.TestCase):
     def test_full_drone_of_damage_is_about_one(self):
-        calc = RewardCalculator(RewardConfig(), frame_skip=10)
+        calc = RewardCalculator(RewardConfig(w_damage=1.0), frame_skip=10)
         b = calc.compute(events(damage_dealt=100.0), acc())
         self.assertAlmostEqual(b.damage, 1.0, places=6)
 
     def test_typical_step_stays_in_single_digits(self):
         """The original scale paid ~150 for one kill against a 0.5 idle
         penalty; PPO defaults expect roughly [-1, 1]."""
-        calc = RewardCalculator(RewardConfig(), frame_skip=10)
+        calc = RewardCalculator(RewardConfig(w_damage=1.0, w_kill=1.0), frame_skip=10)
         b = calc.compute(events(damage_dealt=100.0, kills_credited=1,
                                 shots_fired=10), acc())
         self.assertLess(abs(b.total), 5.0)

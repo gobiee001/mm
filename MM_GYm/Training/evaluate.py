@@ -219,10 +219,20 @@ def main(argv: Optional[list] = None) -> int:
 
     try:
         if a.model:
+            model_target = a.model
+            if model_target.lower() in ("latest", "auto", "best", "latest_best"):
+                from Inference.model_loader import find_latest_best_model
+                found = find_latest_best_model()
+                if found:
+                    model_target = str(found)
+                else:
+                    raise FileNotFoundError(
+                        "No saved model found under models/ to evaluate."
+                    )
             # Loaded without an env: predict() only needs the observation space,
             # which is baked into the archive. A shape mismatch here means the
             # model was trained with a different --max-enemies.
-            model = PPO.load(a.model, device="cpu")
+            model = PPO.load(model_target, device="cpu")
             deterministic = not a.stochastic
 
             def learned_policy(obs: np.ndarray) -> np.ndarray:

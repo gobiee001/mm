@@ -157,6 +157,7 @@ class MiniMilitiaEnv(gym.Env):
             kill_player=bool(opts.get("kill_player", e.reset_kill_player)),
             clear_enemies=bool(opts.get("clear_enemies", e.reset_clear_enemies)),
             settle_ticks=int(opts.get("settle_ticks", e.reset_settle_ticks)),
+            force_spawn=bool(opts.get("force_spawn", e.reset_force_spawn)),
         )
         try:
             payload = self._bridge.reset(**reset_kwargs)
@@ -316,6 +317,15 @@ class MiniMilitiaEnv(gym.Env):
                 f"pos=({e.get('x', 0.0):8.1f},{e.get('y', 0.0):8.1f}) "
                 f"d={e.get('dist', 0.0):7.1f}")
         return "\n".join(lines)
+
+    def force_spawn(self) -> Dict[str, Any]:
+        """Trigger SoldierManager::spawnPlayer immediately via the bridge."""
+        if not self._connected:
+            raise BridgeError("env is not connected; call reset() first")
+        fn = getattr(self._bridge, "force_spawn", None)
+        if callable(fn):
+            return fn()
+        return {"ok": False, "error": "bridge does not support force_spawn"}
 
     def close(self) -> None:
         if self._bridge is not None and self._owns_bridge:

@@ -76,6 +76,7 @@ export function initObserver(cfg, diag) {
     // Reset primitives (called on the game thread, never from an RPC callback).
     const killPlayerFn = nativeFn("_ZN21SoldierHostController10killPlayerEv", 'void', ['pointer']);
     const killAllEnemiesFn = nativeFn("_ZN12EnemyManager14killAllEnemiesEv", 'void', ['pointer']);
+    const spawnPlayerFn = nativeFn("_ZN14SoldierManager11spawnPlayerEv", 'void', ['pointer']);
 
     // ---- Reusable buffers (no per-frame allocation) -----------------------
     const xBuf = Memory.alloc(4);
@@ -91,8 +92,10 @@ export function initObserver(cfg, diag) {
     // ---- Cached instance pointers with staleness tracking -----------------
     let playerCtl = ptr(0);
     let enemyMgr = ptr(0);
+    let soldierMgr = ptr(0);
     let sincePlayerUpdate = 1e9;
     let sinceEnemyUpdate = 1e9;
+    let sinceSoldierMgrUpdate = 1e9;
 
     attach("_ZN21SoldierHostController10updateStepEf6cpVectS0_f", {
         onEnter(args) { playerCtl = args[0]; sincePlayerUpdate = 0; }
@@ -102,6 +105,9 @@ export function initObserver(cfg, diag) {
     });
     attach("_ZN12EnemyManager11initEnemiesEv", {
         onEnter(args) { enemyMgr = args[0]; sinceEnemyUpdate = 0; }
+    });
+    attach("_ZN14SoldierManager10updateStepEf", {
+        onEnter(args) { soldierMgr = args[0]; sinceSoldierMgrUpdate = 0; }
     });
 
     // ---- Monotonic event counters ----------------------------------------
@@ -367,6 +373,19 @@ export function initObserver(cfg, diag) {
 
     function requestSoftReset(opts) { resetRequest = opts || {}; }
 
+    function forceSpawnPlayer() {
+        if (spawnPlayerFn !== null && !soldierMgr.isNull() && sinceSoldierMgrUpdate <= STALE_TICKS) {
+            try {
+                spawnPlayerFn(soldierMgr);
+                return true;
+            } catch (e) {
+                diag.reset_err++;
+                return false;
+            }
+        }
+        return false;
+    }
+
     function applyPendingReset() {
         if (resetRequest === null) return false;
         const opts = resetRequest;
@@ -383,6 +402,11 @@ export function initObserver(cfg, diag) {
             try { killPlayerFn(playerCtl); did = true; }
             catch (e) { diag.reset_err++; }
         }
+        if (opts.force_spawn && spawnPlayerFn !== null &&
+            !soldierMgr.isNull() && sinceSoldierMgrUpdate <= STALE_TICKS) {
+            try { spawnPlayerFn(soldierMgr); did = true; }
+            catch (e) { diag.reset_err++; }
+        }
         return did;
     }
 
@@ -390,6 +414,7 @@ export function initObserver(cfg, diag) {
     function onTick(acc) {
         sincePlayerUpdate++;
         sinceEnemyUpdate++;
+        sinceSoldierMgrUpdate++;
 
         samplePlayer();
         if (cfg.sample_every_tick || acc === null || acc.ticks + 1 >= acc.target) {
@@ -453,6 +478,7 @@ export function initObserver(cfg, diag) {
         diffCounters: diffCounters,
         requestSoftReset: requestSoftReset,
         applyPendingReset: applyPendingReset,
+        forceSpawnPlayer: forceSpawnPlayer,
         hasPlayer: () => !playerCtl.isNull() && sincePlayerUpdate <= STALE_TICKS,
         capabilities: {
             damage_hook: haveDamageHook,
@@ -460,6 +486,7 @@ export function initObserver(cfg, diag) {
             shot_hook: haveShotHook,
             reset_kill_player: killPlayerFn !== null,
             reset_kill_enemies: killAllEnemiesFn !== null,
+            reset_force_spawn: spawnPlayerFn !== null,
             player_hp: getPlayerHP !== null,
             enemy_hp: DRONES[0].getHP !== null
         }

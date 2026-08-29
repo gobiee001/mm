@@ -300,9 +300,13 @@ class FridaBridge:
         return self._call("step", list(action))
 
     def reset(self, kill_player: bool, clear_enemies: bool,
-              settle_ticks: int) -> Dict[str, Any]:
+              settle_ticks: int, force_spawn: bool = True) -> Dict[str, Any]:
         return self._call("reset", {
             "kill_player": bool(kill_player),
             "clear_enemies": bool(clear_enemies),
             "settle_ticks": int(settle_ticks),
+            "force_spawn": bool(force_spawn),
         })
+
+    def force_spawn(self) -> Dict[str, Any]:
+        return self._call("forceSpawn")

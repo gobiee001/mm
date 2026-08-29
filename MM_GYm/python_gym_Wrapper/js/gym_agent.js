@@ -212,21 +212,35 @@ rpc.exports = {
     },
 
     /**
-     * Soft reset. Optionally kills the player and/or clears all drones, then
-     * lets `settleTicks` physics ticks elapse so the respawn completes before
-     * the first observation is taken.
+     * Soft reset. Optionally kills the player, clears all drones, and/or forces
+     * player spawn, then lets `settleTicks` physics ticks elapse so the
+     * respawn completes before the first observation is taken.
      */
     reset(opts) {
         if (!ready) return notReady();
         const o = opts || {};
         actions.clearAction();
-        if (o.kill_player || o.clear_enemies) {
+        if (o.kill_player || o.clear_enemies || o.force_spawn) {
             observer.requestSoftReset({
                 kill_player: !!o.kill_player,
-                clear_enemies: !!o.clear_enemies
+                clear_enemies: !!o.clear_enemies,
+                force_spawn: !!o.force_spawn
             });
         }
         return beginStep("reset", o.settle_ticks || 1);
+    },
+
+    /** Force spawn the player immediately on the SoldierManager instance. */
+    forceSpawn() {
+        if (!ready) return notReady();
+        const ok = observer.forceSpawnPlayer();
+        return { ok: ok };
+    },
+
+    spawnPlayer() {
+        if (!ready) return notReady();
+        const ok = observer.forceSpawnPlayer();
+        return { ok: ok };
     },
 
     /** Non-blocking current state. Does not advance or wait for ticks. */

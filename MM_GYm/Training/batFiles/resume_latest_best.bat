@@ -13,11 +13,6 @@ if exist "%~dp0..\..\..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PA
 if exist "%~dp0..\..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0..\..\python\.venv-frida-16\Scripts\python.exe"
 if exist "%~dp0..\python\.venv-frida-16\Scripts\python.exe" set "PYTHON_PATH=%~dp0..\python\.venv-frida-16\Scripts\python.exe"
 
-set "MODELS_DIR=%~dp0..\..\models"
-set "LATEST_RUN="
-for /f "delims=" %%D in ('dir /b /ad /o-d "%MODELS_DIR%\run_*" 2^>nul') do (
-    if not defined LATEST_RUN set "LATEST_RUN=%%D"
-)
 
 set "FIRST_ARG=%~1"
 if defined FIRST_ARG (
@@ -29,21 +24,11 @@ if defined FIRST_ARG (
 if defined FIRST_ARG (
     set "MODEL_PATH=%~1"
 ) else (
-    if defined LATEST_RUN (
-        for /f "delims=" %%F in ('dir /b /a-d /o-d "%MODELS_DIR%\!LATEST_RUN!\best\*.zip" 2^>nul') do (
-            if not defined MODEL_PATH set "MODEL_PATH=%MODELS_DIR%\!LATEST_RUN!\best\%%F"
-        )
-        if not defined MODEL_PATH (
-            for /f "delims=" %%F in ('dir /b /a-d /o-d "%MODELS_DIR%\!LATEST_RUN!\*.zip" 2^>nul') do (
-                if not defined MODEL_PATH set "MODEL_PATH=%MODELS_DIR%\!LATEST_RUN!\%%F"
-            )
-        )
-        if not defined MODEL_PATH (
-            for /f "delims=" %%F in ('dir /b /a-d /o-d "%MODELS_DIR%\!LATEST_RUN!\checkpoints\*.zip" 2^>nul') do (
-                if not defined MODEL_PATH set "MODEL_PATH=%MODELS_DIR%\!LATEST_RUN!\checkpoints\%%F"
-            )
-        )
+    pushd "%~dp0..\.."
+    for /f "delims=" %%M in ('"!PYTHON_PATH!" -c "from Inference.model_loader import find_latest_best_model; m = find_latest_best_model(); print(m if m else '')" 2^>nul') do (
+        set "MODEL_PATH=%%M"
     )
+    popd
 )
 
 
@@ -72,13 +57,13 @@ if defined MODEL_PATH (
     pushd "%~dp0"
     if defined FIRST_ARG (
         shift
-        call run_training.bat --all-devices --headless --resume "!MODEL_PATH!" %1 %2 %3 %4 %5 %6 %7 %8 %9
+        call run_training.bat --all-devices --headless --total-timesteps 30000000 --resume "!MODEL_PATH!" %1 %2 %3 %4 %5 %6 %7 %8 %9
     ) else (
-        call run_training.bat --all-devices --headless --resume "!MODEL_PATH!" %*
+        call run_training.bat --all-devices --headless --total-timesteps 30000000 --resume "!MODEL_PATH!" %*
     )
     popd
 ) else (
-    echo [-] No saved model found under %MODELS_DIR% to resume.
+    echo [-] No saved model found under models directory to resume.
     echo     Start a fresh training run first with run_all_devices_headless.bat,
     echo     or pass an explicit model path:
     echo       resume_latest_best.bat path\to\model.zip

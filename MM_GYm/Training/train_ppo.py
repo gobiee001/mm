@@ -67,6 +67,7 @@ import argparse
 import copy
 import importlib.util
 import os
+from pathlib import Path
 import sys
 import time
 from typing import Any, Dict, List, Optional, Tuple
@@ -507,6 +508,74 @@ def build_logger(paths: RunPaths, has_tensorboard: bool):
     return configure(folder=str(paths.logs_dir), format_strings=formats)
 
 
+def resolve_resume_path(target: str) -> Path:
+    """Resolve a model path from various CLI input formats.
+
+    Supports:
+    - Keywords: 'latest', 'auto', 'best', 'latest_best' -> dynamic discovery
+    - Absolute file paths
+    - Relative paths from current working directory
+    - Relative paths from MM_GYm root
+    - Relative paths passed with leading '../' traversal (e.g. from batFiles)
+    - Relative paths from MM_GYm/models/
+    - Automatic extension inference (appending .zip if omitted)
+    """
+    target_str = target.strip().strip('"').strip("'")
+    if target_str.lower() in ("latest", "auto", "best", "latest_best"):
+        try:
+            from Inference.model_loader import find_latest_best_model
+            found = find_latest_best_model()
+            if found and found.is_file():
+                return found.resolve()
+        except Exception:
+            pass
+        raise FileNotFoundError("Could not find any saved models in the models directory to resume from.")
+
+    p = Path(target_str)
+    root_dir = Path(__file__).resolve().parent.parent
+
+    candidates: List[Path] = [
+        p,
+        p.with_suffix(".zip"),
+        root_dir / p,
+        (root_dir / p).with_suffix(".zip"),
+        root_dir / "models" / p,
+        (root_dir / "models" / p).with_suffix(".zip"),
+    ]
+
+    # Strip leading relative traversals (e.g. "../../models/..." -> "models/...")
+    clean_parts: List[str] = []
+    started = False
+    for part in p.parts:
+        if not started and part in ("..", "."):
+            continue
+        started = True
+        clean_parts.append(part)
+
+    if clean_parts:
+        clean_path = Path(*clean_parts)
+        candidates.extend([
+            clean_path,
+            clean_path.with_suffix(".zip"),
+            root_dir / clean_path,
+            (root_dir / clean_path).with_suffix(".zip"),
+            root_dir / "models" / clean_path,
+            (root_dir / "models" / clean_path).with_suffix(".zip"),
+        ])
+
+    for cand in candidates:
+        try:
+            if cand.is_file():
+                return cand.resolve()
+        except (OSError, ValueError):
+            continue
+
+    checked_str = "\n  - ".join(str(c.resolve()) if hasattr(c, "resolve") else str(c) for c in candidates[:6])
+    raise FileNotFoundError(
+        f"Could not find model file: '{target}'. Checked candidates include:\n  - {checked_str}"
+    )
+
+
 def build_model(a: argparse.Namespace, env: VecEnv) -> PPO:
     """Construct a fresh PPO model, or load one for resumption.
 
@@ -524,21 +593,13 @@ def build_model(a: argparse.Namespace, env: VecEnv) -> PPO:
         A PPO instance.
     """
     if a.resume:
-        resume_target = a.resume
-        if resume_target.lower() in ("latest", "auto", "best", "latest_best"):
-            try:
-                from Inference.model_loader import find_latest_best_model
-                found = find_latest_best_model()
-                if found:
-                    resume_target = str(found)
-            except Exception:
-                pass
-        print(f"[*] resuming from {resume_target}")
+        model_path = resolve_resume_path(a.resume)
+        print(f"[*] resuming from {model_path}")
         # PPO.load rebuilds the model from the archive's own hyperparameters, so
         # the PPO flags on this invocation are deliberately not applied --
         # overriding them mid-run would silently change the optimisation problem
         # without any record of it in the original run's config.
-        return PPO.load(resume_target, env=env, device=a.torch_device)
+        return PPO.load(str(model_path), env=env, device=a.torch_device)
 
 
     learning_rate = (hp.linear_schedule(a.learning_rate)

@@ -9,7 +9,7 @@ import sys
 from Training import hyperparams as hp
 from Training.adb_utils import parse_adb_devices_output
 from Training.run_manager import RunPaths, format_reward, checkpoint_filename, best_filename
-from Training.train_ppo import parse_args, build_config, make_env, build_model
+from Training.train_ppo import parse_args, build_config, make_env, build_model, resolve_resume_path
 from Training.callbacks import EpisodeReturnTracker
 
 
@@ -120,6 +120,40 @@ class TestMultiEnvConstruction(unittest.TestCase):
             self.assertEqual(len(rews), 2)
             self.assertEqual(len(infos), 2)
             vec_env.close()
+
+
+
+class TestResolveResumePath(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.tmp_path = Path(self.tmp)
+        # Create a dummy model zip
+        self.dummy_model = self.tmp_path / "dummy_model.zip"
+        self.dummy_model.write_bytes(b"PK\x05\x06" + b"\x00" * 18)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_direct_absolute_path(self):
+        res = resolve_resume_path(str(self.dummy_model))
+        self.assertEqual(res, self.dummy_model.resolve())
+
+    def test_extension_omitted(self):
+        path_no_ext = str(self.dummy_model).removesuffix(".zip")
+        res = resolve_resume_path(path_no_ext)
+        self.assertEqual(res, self.dummy_model.resolve())
+
+    def test_keywords_resolve(self):
+        # Should either find a real model or raise FileNotFoundError if none exist
+        try:
+            res = resolve_resume_path("best")
+            self.assertTrue(res.is_file())
+        except FileNotFoundError:
+            pass
+
+    def test_nonexistent_raises_filenotfound(self):
+        with self.assertRaises(FileNotFoundError):
+            resolve_resume_path("totally_nonexistent_model_12345.zip")
 
 
 if __name__ == "__main__":

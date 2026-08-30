@@ -80,7 +80,7 @@ GAE_LAMBDA: float = 0.95
 CLIP_RANGE: float = 0.2
 """SB3's default PPO trust region."""
 
-ENT_COEF: float = 0.005
+ENT_COEF: float = 0.01
 """Deliberately non-zero, unlike SB3's 0.0 default. With no entropy bonus the
 Gaussian over this 5-dimensional continuous action space tends to collapse early
 -- the agent commits to one aim/shoot pattern and stops probing alternatives.
@@ -92,12 +92,9 @@ MAX_GRAD_NORM: float = 0.5
 be ten times a typical one, and clipping the gradient norm is what stops that
 single step from wrecking the policy."""
 
-TARGET_KL: Optional[float] = None
-"""Early-stop PPO's epoch loop once the approximate KL exceeds this. Left at
-SB3's default (off) so the algorithm behaves as documented, but ``0.03`` is
-genuinely worth setting here: one rollout costs minutes of wall clock, so a
-single destructive update is expensive to recover from, and this caps the damage
-without discarding the rollout."""
+TARGET_KL: Optional[float] = 0.03
+"""Early-stop PPO's epoch loop once the approximate KL exceeds this. Set to
+0.03 to cap destructive policy updates without discarding the rollout."""
 
 LOG_STD_INIT: float = -1.0
 """Initial log standard deviation of the Gaussian policy, below SB3's 0.0 default.

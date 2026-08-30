@@ -178,6 +178,24 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
     env_group.add_argument("--verbose-env", action="store_true",
                            help="let the environment print its own diagnostics")
 
+    # Navigation configuration knobs (no hardcoding)
+    env_group.add_argument("--no-auto-navigate", action="store_true",
+                           help="Disable automatic ADB startup and menu navigation")
+    env_group.add_argument("--game-aspect", type=float, default=2.0,
+                           help="Mini Militia game viewport aspect ratio (width / height)")
+    env_group.add_argument("--startup-wait", type=float, default=10.0,
+                           help="Seconds to wait after launching app via ADB")
+    env_group.add_argument("--splash-wait", type=float, default=10.0,
+                           help="Seconds to wait after tapping splash screen")
+    env_group.add_argument("--menu-step-wait", type=float, default=1.0,
+                           help="Seconds to wait between subsequent menu button taps")
+    env_group.add_argument("--splash-tap-x", type=int, default=1)
+    env_group.add_argument("--splash-tap-y", type=int, default=2)
+    env_group.add_argument("--button1-x", type=float, default=0.50)
+    env_group.add_argument("--button1-y", type=float, default=0.65)
+    env_group.add_argument("--button2-x", type=float, default=0.50)
+    env_group.add_argument("--button2-y", type=float, default=0.46)
+
     # -- PPO ---------------------------------------------------------------
     ppo = p.add_argument_group("PPO")
     ppo.add_argument("--total-timesteps", type=int, default=hp.TOTAL_TIMESTEPS)
@@ -248,7 +266,7 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
 # Environment construction
 # =============================================================================
 
-def build_config(a: argparse.Namespace, host: Optional[str] = None) -> MiniMilitiaConfig:
+def build_config(a: argparse.Namespace, host: Optional[str] = None, serial: Optional[str] = None) -> MiniMilitiaConfig:
     """Translate CLI arguments into a :class:`MiniMilitiaConfig`.
 
     Follows the pattern established in ``demo.build_config``: mutate the
@@ -262,6 +280,28 @@ def build_config(a: argparse.Namespace, host: Optional[str] = None) -> MiniMilit
 
     e.device = a.device
     e.host = host if host is not None else a.host
+    if serial:
+        e.adb_serial = serial
+    elif getattr(a, "serial", None):
+        e.adb_serial = a.serial
+
+    if getattr(a, "no_auto_navigate", False):
+        e.auto_navigate_menu = False
+    if hasattr(a, "game_aspect"):
+        e.game_aspect = a.game_aspect
+    if hasattr(a, "startup_wait"):
+        e.startup_wait_s = a.startup_wait
+    if hasattr(a, "splash_wait"):
+        e.splash_wait_s = a.splash_wait
+    if hasattr(a, "menu_step_wait"):
+        e.menu_step_wait_s = a.menu_step_wait
+    if hasattr(a, "splash_tap_x") and hasattr(a, "splash_tap_y"):
+        e.splash_tap_coords = (a.splash_tap_x, a.splash_tap_y)
+    if hasattr(a, "button1_x") and hasattr(a, "button1_y"):
+        e.button1_normalized = (a.button1_x, a.button1_y)
+    if hasattr(a, "button2_x") and hasattr(a, "button2_y"):
+        e.button2_normalized = (a.button2_x, a.button2_y)
+
     if a.process:
         e.process = a.process
 
@@ -355,7 +395,8 @@ def make_env(a: argparse.Namespace,
 
     for i in range(num_envs):
         host = hosts[i]
-        cfg = build_config(a, host=host if not a.mock else a.host)
+        serial = serials[i] if i < len(serials) and serials[i] and not serials[i].startswith("mock") else None
+        cfg = build_config(a, host=host if not a.mock else a.host, serial=serial)
         configs.append(cfg)
 
         seed = None if a.seed is None else (a.seed + i * 1000)

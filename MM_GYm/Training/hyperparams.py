@@ -43,7 +43,7 @@ POLICY: str = "MlpPolicy"
 """The observation is a flat 58-element float vector, so there is nothing for a
 CNN to exploit. MlpPolicy is the right and only sensible choice."""
 
-NET_ARCH: Dict[str, List[int]] = {"pi": [128, 128], "vf": [128, 128]}
+NET_ARCH: Dict[str, List[int]] = {"pi": [512,512,512], "vf": [512,512,512]}
 """Two hidden layers of 128 units for both actor and critic. Generously sized
 for a 58 -> 5 mapping, while still small enough to stay fast on CPU."""
 
@@ -136,7 +136,7 @@ TOTAL_TIMESTEPS: int = 200_000
 FRAME_SKIP: int = 10
 """Physics ticks each action is held for. Matches the environment's own default."""
 
-MAX_EPISODE_STEPS: int = 300
+MAX_EPISODE_STEPS: int = 600
 """Below the environment's own 1000-step default, on purpose. At ~5 steps/s, 1000
 steps is >3 minutes per episode, so the 20-episode best-model window would take
 over an hour to fill before the tracker even arms. 300 steps is ~1 minute per

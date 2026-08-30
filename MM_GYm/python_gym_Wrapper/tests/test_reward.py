@@ -26,7 +26,7 @@ class TestSigns(unittest.TestCase):
     the ammo and idle penalties into bonuses."""
 
     def setUp(self):
-        self.cfg = RewardConfig()
+        self.cfg = RewardConfig(clip=None)
         self.calc = RewardCalculator(self.cfg, frame_skip=10)
 
     def test_damage_is_positive(self):

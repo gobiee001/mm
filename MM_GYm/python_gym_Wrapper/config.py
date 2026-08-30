@@ -121,13 +121,13 @@ class EnvConfig:
     game_aspect: float = 2.0
     """Mini Militia game viewport aspect ratio (width / height). Default 2.0 (2:1)."""
 
-    startup_wait_s: float = 10.0
+    startup_wait_s: float = 22.0
     """Seconds to wait after launching the app via ADB before dismissing splash."""
 
     splash_wait_s: float = 10.0
     """Seconds to wait after dismissing splash before tapping first menu button."""
 
-    menu_step_wait_s: float = 1.0
+    menu_step_wait_s: float = 2.0
     """Seconds to wait between subsequent menu button taps."""
 
     splash_tap_coords: tuple[int, int] = (1, 2)
@@ -170,24 +170,24 @@ class RewardConfig:
     than the 50 the original plan used against a 0.5 idle penalty.
     """
 
-    w_damage: float = 4.0
+    w_damage: float = 10.0
     """Applied to (damage_dealt / enemy_max_hp). One full drone's worth of
     damage is therefore worth ~1.0."""
 
-    w_kill: float = 5.0
+    w_kill: float = 15.0
     w_damage_taken: float = 1
     """Applied to (damage_taken / player_max_hp)."""
 
     w_death: float = 5.0
 
-    w_shot_cost: float = 0.01
+    w_shot_cost: float = 0.02
     """Per-shot cost. Gives the same anti-spray pressure as the original
     hit-window correlation without a stateful attribution scheme that cannot be
     verified: with frame_skip=10 a ``hit_window_steps=3`` window spans 30
     physics ticks, so damage from three steps ago would cancel this step's
     penalty."""
 
-    shot_cost_mode: Literal["flat", "unrewarded"] = "flat"
+    shot_cost_mode: Literal["flat", "unrewarded"] = "unrewarded"
     """``flat`` charges every shot. ``unrewarded`` charges only when the step
     dealt no damage at all -- closer to the original intent, still stateless."""
 

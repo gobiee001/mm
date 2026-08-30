@@ -235,7 +235,7 @@ class FridaBridge:
         b2_x, b2_y = self.env.button2_normalized
         self._on_log(f"[nav] clicking second button at normalized ({b2_x:.2f}, {b2_y:.2f})...")
         self._tap_game_normalized(b2_x, b2_y)
-        time.sleep(self.env.menu_step_wait_s)
+    
 
     def connect(self, wait_ready_s: float = 30.0) -> Dict[str, Any]:
         import frida  # lazy: keeps the pure-Python units importable without it

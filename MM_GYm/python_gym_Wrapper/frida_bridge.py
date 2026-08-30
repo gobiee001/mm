@@ -27,7 +27,8 @@ import subprocess
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
-from typing import Any, Callable, Dict, List, Optional
+from math import gcd
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .config import EnvConfig, MiniMilitiaConfig
 
@@ -56,6 +57,78 @@ DEFAULT_PROCESS = {
 # attach uses ("Gadget" for the embedded-gadget mode) -- needed for adb
 # force-stop/relaunch during crash recovery.
 PACKAGE_NAME = "com.appsomniacs.da2"
+
+
+def get_aspect_ratio(width: int, height: int) -> Tuple[int, int]:
+    """Reduce width:height to the smallest integer ratio."""
+    divisor = gcd(width, height)
+    return (width // divisor, height // divisor)
+
+
+def get_adb_devices() -> List[str]:
+    """Return list of connected and authorized ADB device serials."""
+    try:
+        res = subprocess.run(["adb", "devices"], capture_output=True, text=True, timeout=10.0)
+        lines = res.stdout.strip().splitlines()
+        devices = []
+        for line in lines[1:]:
+            parts = line.strip().split()
+            if len(parts) >= 2 and parts[1] == "device":
+                devices.append(parts[0])
+        return devices
+    except Exception:
+        return []
+
+
+def get_adb_resolution(adb_fn: Optional[Callable[..., str]] = None) -> Tuple[int, int]:
+    """Get effective Android display resolution (Override size if configured, else Physical size)."""
+    if adb_fn is None:
+        def adb_fn(*args):
+            res = subprocess.run(["adb", *args], capture_output=True, text=True, timeout=15.0)
+            return (res.stdout or "") + (res.stderr or "")
+
+    output = adb_fn("shell", "wm", "size")
+    match = re.search(r"Override size:\s*(\d+)x(\d+)", output)
+    if not match:
+        match = re.search(r"Physical size:\s*(\d+)x(\d+)", output)
+    if not match:
+        raise RuntimeError(f"Could not determine Android resolution from ADB output: {output}")
+
+    return int(match.group(1)), int(match.group(2))
+
+
+def calc_adb_tap_coordinates(
+    x_ratio: float,
+    y_ratio: float,
+    screen_width: int,
+    screen_height: int,
+    game_aspect: float = 2.0
+) -> Tuple[int, int]:
+    """Convert normalized (x_ratio, y_ratio) within the 2:1 game viewport to Android screen coordinates."""
+    screen_aspect = screen_width / screen_height
+    if screen_aspect > game_aspect:
+        # Screen is wider than game: game fitted to height
+        game_height = screen_height
+        game_width = round(game_height * game_aspect)
+        offset_x = (screen_width - game_width) / 2
+        offset_y = 0
+    elif screen_aspect < game_aspect:
+        # Screen is narrower/taller than game: game fitted to width
+        game_width = screen_width
+        game_height = round(game_width / game_aspect)
+        offset_x = 0
+        offset_y = (screen_height - game_height) / 2
+    else:
+        game_width = screen_width
+        game_height = screen_height
+        offset_x = 0
+        offset_y = 0
+
+    game_x = x_ratio * game_width
+    game_y = y_ratio * game_height
+    adb_x = round(offset_x + game_x)
+    adb_y = round(offset_y + game_y)
+    return adb_x, adb_y
 
 
 class BridgeError(RuntimeError):
@@ -126,6 +199,44 @@ class FridaBridge:
         self.crash_count = 0
 
     # -- lifecycle ---------------------------------------------------------
+    def _tap_game_normalized(self, x_ratio: float, y_ratio: float) -> None:
+        """Calculate screen coordinates and tap the device via ADB."""
+        try:
+            w, h = get_adb_resolution(self._adb)
+            adb_x, adb_y = calc_adb_tap_coordinates(x_ratio, y_ratio, w, h, self.env.game_aspect)
+            self._on_log(
+                f"[nav] tap normalized ({x_ratio:.2f}, {y_ratio:.2f}) -> screen ({adb_x}, {adb_y}) on {w}x{h}"
+            )
+            self._adb("shell", "input", "tap", str(adb_x), str(adb_y))
+        except Exception as exc:
+            self._on_log(f"[nav] tap_game_normalized failed: {exc}")
+
+    def _perform_menu_navigation(self) -> None:
+        """Launch Mini Militia, dismiss splash, and click through menu buttons via ADB."""
+        self._on_log(f"[nav] starting {PACKAGE_NAME} via ADB...")
+        self._adb("shell", "monkey", "-p", PACKAGE_NAME, "-c", "android.intent.category.LAUNCHER", "1")
+        self._on_log(f"[nav] waiting {self.env.startup_wait_s}s for startup...")
+        time.sleep(self.env.startup_wait_s)
+
+        # Step 2: Dismiss splash screen
+        sx, sy = self.env.splash_tap_coords
+        self._on_log(f"[nav] dismissing splash screen via tap ({sx}, {sy})...")
+        self._adb("shell", "input", "tap", str(sx), str(sy))
+        self._on_log(f"[nav] waiting {self.env.splash_wait_s}s for menu...")
+        time.sleep(self.env.splash_wait_s)
+
+        # Step 3: First highlighted button
+        b1_x, b1_y = self.env.button1_normalized
+        self._on_log(f"[nav] clicking first button at normalized ({b1_x:.2f}, {b1_y:.2f})...")
+        self._tap_game_normalized(b1_x, b1_y)
+        time.sleep(self.env.menu_step_wait_s)
+
+        # Step 4: Second highlighted button
+        b2_x, b2_y = self.env.button2_normalized
+        self._on_log(f"[nav] clicking second button at normalized ({b2_x:.2f}, {b2_y:.2f})...")
+        self._tap_game_normalized(b2_x, b2_y)
+        time.sleep(self.env.menu_step_wait_s)
+
     def connect(self, wait_ready_s: float = 30.0) -> Dict[str, Any]:
         import frida  # lazy: keeps the pure-Python units importable without it
 
@@ -133,21 +244,57 @@ class FridaBridge:
         e = self.env
         process = e.process or DEFAULT_PROCESS.get(e.device, "Gadget")
 
-        try:
-            if e.device in ("gadget", "remote"):
-                self._device = frida.get_device_manager().add_remote_device(e.host)
-            elif e.device == "usb":
-                self._device = frida.get_usb_device(timeout=10)
-            elif e.device == "local":
-                self._device = frida.get_local_device()
-            else:
-                raise BridgeError(f"unknown device kind: {e.device}")
+        if e.auto_navigate_menu:
+            self._perform_menu_navigation()
 
-            self._session = self._device.attach(process)
-        except Exception as exc:
+        last_exc = None
+        for attempt in range(10):
+            try:
+                if e.adb_serial:
+                    try:
+                        self._device = frida.get_device(e.adb_serial, timeout=5)
+                    except Exception:
+                        self._device = None
+
+                if self._device is None:
+                    if e.device == "usb":
+                        self._device = frida.get_usb_device(timeout=5)
+                    elif e.device in ("gadget", "remote"):
+                        try:
+                            self._device = frida.get_device_manager().add_remote_device(e.host)
+                        except Exception:
+                            if e.device == "gadget":
+                                self._device = frida.get_usb_device(timeout=5)
+                            else:
+                                raise
+                    elif e.device == "local":
+                        self._device = frida.get_local_device()
+                    else:
+                        raise BridgeError(f"unknown device kind: {e.device}")
+
+                # Try attaching to target process or package
+                try:
+                    self._session = self._device.attach(process)
+                except Exception as attach_err:
+                    if process != PACKAGE_NAME:
+                        try:
+                            self._session = self._device.attach(PACKAGE_NAME)
+                        except Exception:
+                            # Try again with Gadget if on remote/gadget
+                            if process != "Gadget":
+                                self._session = self._device.attach("Gadget")
+                            else:
+                                raise attach_err
+                    else:
+                        raise attach_err
+                break
+            except Exception as exc:
+                last_exc = exc
+                time.sleep(1.0)
+        else:
             raise BridgeError(
-                f"could not attach to '{process}' via {e.device} ({e.host}): {exc}"
-            ) from exc
+                f"could not attach to '{process}' via {e.device} ({e.host}): {last_exc}"
+            ) from last_exc
 
         source = bundle_js(e.js_dir, self.cfg.to_js())
         self._script = self._session.create_script(source, runtime=e.runtime)
@@ -198,7 +345,11 @@ class FridaBridge:
         not crash the recovery path, it should just leave the app dead so the
         next reconnect() attempt tries again."""
         try:
-            result = subprocess.run(["adb", *args], capture_output=True,
+            if self.env.adb_serial:
+                full_cmd = ["adb", "-s", self.env.adb_serial, *args]
+            else:
+                full_cmd = ["adb", *args]
+            result = subprocess.run(full_cmd, capture_output=True,
                                     text=True, timeout=timeout)
             return (result.stdout or "") + (result.stderr or "")
         except Exception as exc:
@@ -231,8 +382,12 @@ class FridaBridge:
         self._ready_evt.clear()
         self._errors.clear()
 
-        self._relaunch_app()
-        time.sleep(self.env.recover_wait_s)
+        if self.env.auto_navigate_menu:
+            self._on_log(f"[recover] force-stopping {PACKAGE_NAME} for menu navigation recovery")
+            self._adb("shell", "am", "force-stop", PACKAGE_NAME)
+        else:
+            self._relaunch_app()
+            time.sleep(self.env.recover_wait_s)
         return self.connect(wait_ready_s=wait_ready_s)
 
     # -- messaging ---------------------------------------------------------

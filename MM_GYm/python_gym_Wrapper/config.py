@@ -38,6 +38,8 @@ class EnvConfig:
     device: DeviceKind = "gadget"
     host: str = "127.0.0.1:27042"
     process: str = "Gadget"
+    adb_serial: Optional[str] = None
+    """Specific ADB device serial (e.g. 'emulator-5554' or '192.168.1.5:5555')."""
     js_dir: str = DEFAULT_JS_DIR
     runtime: str = "v8"
 
@@ -85,6 +87,9 @@ class EnvConfig:
     reset_clear_enemies: bool = True
     """On reset(), call EnemyManager::killAllEnemies to clear the field."""
 
+    reset_force_spawn: bool = True
+    """On reset(), call SoldierManager::spawnPlayer to force player spawning."""
+
     reset_settle_ticks: int = 30
     """Physics ticks to let elapse after a reset before the first observation,
     so the respawn has completed."""
@@ -107,6 +112,32 @@ class EnvConfig:
     show_fps: bool = True
 
     verbose: bool = False
+
+    # --- Startup & Menu Navigation ----------------------------------------
+    auto_navigate_menu: bool = True
+    """If True, automatically launch the app and click through the menus via ADB
+    using aspect-ratio-aware viewport coordinates on connect() and reconnect()."""
+
+    game_aspect: float = 2.0
+    """Mini Militia game viewport aspect ratio (width / height). Default 2.0 (2:1)."""
+
+    startup_wait_s: float = 10.0
+    """Seconds to wait after launching the app via ADB before dismissing splash."""
+
+    splash_wait_s: float = 10.0
+    """Seconds to wait after dismissing splash before tapping first menu button."""
+
+    menu_step_wait_s: float = 1.0
+    """Seconds to wait between subsequent menu button taps."""
+
+    splash_tap_coords: tuple[int, int] = (1, 2)
+    """Absolute (x, y) coordinates to tap to dismiss the splash screen."""
+
+    button1_normalized: tuple[float, float] = (0.50, 0.65)
+    """Normalized (x_ratio, y_ratio) coordinates for the first menu button."""
+
+    button2_normalized: tuple[float, float] = (0.50, 0.46)
+    """Normalized (x_ratio, y_ratio) coordinates for the second menu button."""
 
     def __post_init__(self) -> None:
         if self.frame_skip < 1:
@@ -139,12 +170,12 @@ class RewardConfig:
     than the 50 the original plan used against a 0.5 idle penalty.
     """
 
-    w_damage: float = 1.0
+    w_damage: float = 4.0
     """Applied to (damage_dealt / enemy_max_hp). One full drone's worth of
     damage is therefore worth ~1.0."""
 
-    w_kill: float = 2.0
-    w_damage_taken: float = 0.5
+    w_kill: float = 5.0
+    w_damage_taken: float = 1
     """Applied to (damage_taken / player_max_hp)."""
 
     w_death: float = 5.0
@@ -160,7 +191,7 @@ class RewardConfig:
     """``flat`` charges every shot. ``unrewarded`` charges only when the step
     dealt no damage at all -- closer to the original intent, still stateless."""
 
-    w_idle: float = 0.05
+    w_idle: float = 0.2
     """Per idle tick, then divided by frame_skip so changing the frame skip
     does not silently rescale the reward function."""
 
@@ -259,7 +290,7 @@ class ActionSpaceConfig:
     high: float = 1.0
     dim: int = 5
 
-    move_deadzone: float = 0.01
+    move_deadzone: float = 0.1
     aim_deadzone: float = 0.01
     shoot_threshold: float = 0.0
     joystick_radius: float = 60.0

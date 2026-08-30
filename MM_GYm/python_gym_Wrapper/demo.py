@@ -56,6 +56,24 @@ def build_config(a: argparse.Namespace) -> MiniMilitiaConfig:
     e.verbose = a.verbose
     if a.process:
         e.process = a.process
+    if getattr(a, "serial", None):
+        e.adb_serial = a.serial
+    if getattr(a, "no_auto_navigate", False):
+        e.auto_navigate_menu = False
+    if hasattr(a, "game_aspect"):
+        e.game_aspect = a.game_aspect
+    if hasattr(a, "startup_wait"):
+        e.startup_wait_s = a.startup_wait
+    if hasattr(a, "splash_wait"):
+        e.splash_wait_s = a.splash_wait
+    if hasattr(a, "menu_step_wait"):
+        e.menu_step_wait_s = a.menu_step_wait
+    if hasattr(a, "splash_tap_x") and hasattr(a, "splash_tap_y"):
+        e.splash_tap_coords = (a.splash_tap_x, a.splash_tap_y)
+    if hasattr(a, "button1_x") and hasattr(a, "button1_y"):
+        e.button1_normalized = (a.button1_x, a.button1_y)
+    if hasattr(a, "button2_x") and hasattr(a, "button2_y"):
+        e.button2_normalized = (a.button2_x, a.button2_y)
     if a.infinite_health:
         e.infinite_health = True
         e.terminate_on_death = False
@@ -244,6 +262,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--host", default="127.0.0.1:27042")
     p.add_argument("--process", default=None,
                    help="override the process name to attach to")
+    p.add_argument("--serial", "--device-id", dest="serial", default=None,
+                   help="specific ADB device serial to target")
 
     p.add_argument("--episodes", type=int, default=1)
     p.add_argument("--steps", type=int, default=200, help="max steps per episode")
@@ -268,9 +288,26 @@ def parse_args() -> argparse.Namespace:
                    help="force rendering off for a training-speed run")
     p.add_argument("--render", action="store_true",
                    help="print the ansi state dump each step")
-    p.add_argument("--probe-timescale", action="store_true")
     p.add_argument("--log-every", type=int, default=10)
     p.add_argument("--verbose", action="store_true")
+
+    # Navigation configuration knobs (no hardcoding)
+    p.add_argument("--no-auto-navigate", action="store_true",
+                   help="Disable automatic ADB startup and menu navigation")
+    p.add_argument("--game-aspect", type=float, default=2.0,
+                   help="Mini Militia game viewport aspect ratio (width / height)")
+    p.add_argument("--startup-wait", type=float, default=10.0,
+                   help="Seconds to wait after launching app via ADB")
+    p.add_argument("--splash-wait", type=float, default=10.0,
+                   help="Seconds to wait after tapping splash screen")
+    p.add_argument("--menu-step-wait", type=float, default=1.0,
+                   help="Seconds to wait between subsequent menu button taps")
+    p.add_argument("--splash-tap-x", type=int, default=1)
+    p.add_argument("--splash-tap-y", type=int, default=2)
+    p.add_argument("--button1-x", type=float, default=0.50)
+    p.add_argument("--button1-y", type=float, default=0.65)
+    p.add_argument("--button2-x", type=float, default=0.50)
+    p.add_argument("--button2-y", type=float, default=0.46)
     return p.parse_args()
 
 

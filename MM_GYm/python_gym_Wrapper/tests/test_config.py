@@ -18,6 +18,11 @@ class TestEnvConfig(unittest.TestCase):
         self.assertTrue(e.infinite_health)
         self.assertFalse(e.terminate_on_death)
         self.assertTrue(e.reset_force_spawn)
+        self.assertTrue(e.auto_navigate_menu)
+        self.assertEqual(e.game_aspect, 2.0)
+        self.assertEqual(e.splash_tap_coords, (1, 2))
+        self.assertEqual(e.button1_normalized, (0.50, 0.65))
+        self.assertEqual(e.button2_normalized, (0.50, 0.46))
 
     def test_rejects_bad_frame_skip(self):
         with self.assertRaises(ValueError):

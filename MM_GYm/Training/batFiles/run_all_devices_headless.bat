@@ -32,17 +32,10 @@ if exist "C:\Users\sathi\PycharmProjects\mm\python\.venv-frida-16\Scripts\python
 echo [*] Using Python: !PYTHON_PATH!
 echo.
 
-:: Step 3: Launch app and perform menu touches across all devices
-echo [*] Starting Mini Militia and performing menu touches on all devices...
-pushd "%~dp0..\.."
-"!PYTHON_PATH!" -u simpletests\loadingGame\test_menu_navigation.py
-popd
-echo.
-
-:: Step 4: Continue into PPO training with --all-devices --headless
-echo [*] Continuing to PPO Training (Headless)...
+:: Step 3: Run PPO training across all devices in headless mode
+echo [*] Launching PPO Training on all connected devices (Headless)...
 pushd "%~dp0"
-call run_training.bat --all-devices --headless --no-auto-navigate --total-timesteps 30000000 %*
+call run_training.bat --all-devices --headless --total-timesteps 30000000 %*
 set "EXITCODE=!ERRORLEVEL!"
 popd
 

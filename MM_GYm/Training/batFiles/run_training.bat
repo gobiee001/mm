@@ -53,7 +53,7 @@ echo.
 
 :: Step 4: Run the trainer as a module from MM_GYm\
 pushd "%~dp0..\.."
-"!PYTHON_PATH!" -m Training.train_ppo %*
+"!PYTHON_PATH!" -u -m Training.train_ppo %*
 set "EXITCODE=!ERRORLEVEL!"
 popd
 
@@ -89,11 +89,11 @@ echo   --run-name LABEL            label the run folder
 
 echo.
 echo Outputs:
-echo   models  MM_GYm\models\run_<timestamp>\
+echo   models  MM_GYm\models\run_^<timestamp^\>\
 echo   logs    MM_GYm\logs\   (contents cleared at the start of every run)
 echo.
 echo To stop a long run cleanly, run stop_training.bat or:
-echo   type nul > MM_GYm\models\run_<timestamp>\STOP
+echo   type nul ^> MM_GYm\models\run_^<timestamp^\>\STOP
 echo.
 
 :: Step 5: TensorBoard reminder.

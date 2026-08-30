@@ -68,5 +68,5 @@ echo ======================================================
 echo [+] All !DEVICE_COUNT! device(s) cleaned and processes terminated.
 echo ======================================================
 echo.
-pause
+
 exit /b 0

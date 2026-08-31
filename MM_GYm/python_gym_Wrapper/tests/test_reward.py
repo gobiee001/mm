@@ -17,8 +17,13 @@ def events(**kw):
     return e
 
 
-def acc(ticks=10, idle_ticks=0):
-    return {"ticks": ticks, "idle_ticks": idle_ticks}
+def acc(ticks=10, idle_ticks=0, no_shoot_ticks=0, engaged_ticks=0):
+    return {
+        "ticks": ticks,
+        "idle_ticks": idle_ticks,
+        "no_shoot_ticks": no_shoot_ticks,
+        "engaged_ticks": engaged_ticks,
+    }
 
 
 class TestSigns(unittest.TestCase):
@@ -44,6 +49,25 @@ class TestSigns(unittest.TestCase):
         self.assertGreater(b.idle, 0.0)
         self.assertLess(b.total, 0.0)
 
+    def test_not_shooting_penalty_when_engaged(self):
+        b = self.calc.compute(events(shots_fired=0), acc(no_shoot_ticks=10, engaged_ticks=10))
+        self.assertGreater(b.not_shooting, 0.0)
+        self.assertAlmostEqual(b.not_shooting, self.cfg.w_not_shooting)
+        self.assertLess(b.total, 0.0)
+
+    def test_shooting_even_if_missing_is_better_than_not_shooting(self):
+        """Shooting and missing incurs mild shot_cost but avoids not_shooting penalty.
+        Holding fire when engaged must incur a larger penalty to prevent pacifism."""
+        not_shooting = self.calc.compute(
+            events(shots_fired=0, damage_dealt=0.0),
+            acc(no_shoot_ticks=10, engaged_ticks=10),
+        )
+        shooting_miss = self.calc.compute(
+            events(shots_fired=10, damage_dealt=0.0),
+            acc(no_shoot_ticks=0, engaged_ticks=10),
+        )
+        self.assertGreater(shooting_miss.total, not_shooting.total)
+
     def test_shot_cost_reduces_reward(self):
         b = self.calc.compute(events(shots_fired=20), acc())
         self.assertGreater(b.shot_cost, 0.0)
@@ -62,7 +86,7 @@ class TestSigns(unittest.TestCase):
         b = self.calc.compute(
             events(damage_dealt=30.0, kills_credited=1, shots_fired=5,
                    damage_taken=10.0),
-            acc(idle_ticks=2))
+            acc(idle_ticks=2, no_shoot_ticks=3))
         d = b.as_dict()
         recomposed = sum(v for k, v in d.items()
                          if k not in ("total", "clipped"))
@@ -104,6 +128,12 @@ class TestFrameSkipInvariance(unittest.TestCase):
         cfg = RewardConfig(clip=None)
         r10 = RewardCalculator(cfg, 10).compute(events(), acc(10, 10)).idle
         r40 = RewardCalculator(cfg, 40).compute(events(), acc(40, 40)).idle
+        self.assertAlmostEqual(r10, r40, places=9)
+
+    def test_not_shooting_costs_the_same_at_any_frame_skip(self):
+        cfg = RewardConfig(clip=None)
+        r10 = RewardCalculator(cfg, 10).compute(events(), acc(10, no_shoot_ticks=10)).not_shooting
+        r40 = RewardCalculator(cfg, 40).compute(events(), acc(40, no_shoot_ticks=40)).not_shooting
         self.assertAlmostEqual(r10, r40, places=9)
 
     def test_can_be_disabled(self):
@@ -168,16 +198,18 @@ class TestEpisodeTotals(unittest.TestCase):
         calc = RewardCalculator(RewardConfig(), 10)
         for _ in range(3):
             calc.compute(events(damage_dealt=10.0, kills_credited=1,
-                                shots_fired=4), acc())
+                                shots_fired=4), acc(no_shoot_ticks=2))
         t = calc.totals.as_dict()
         self.assertEqual(t["steps"], 3)
         self.assertEqual(t["kills"], 3)
         self.assertEqual(t["shots"], 12)
+        self.assertEqual(t["no_shoot_ticks"], 6)
         self.assertAlmostEqual(t["damage_dealt"], 30.0)
         self.assertAlmostEqual(t["accuracy"], 30.0 / 12)
 
         calc.reset()
         self.assertEqual(calc.totals.as_dict()["steps"], 0)
+        self.assertEqual(calc.totals.as_dict()["no_shoot_ticks"], 0)
 
     def test_accuracy_safe_with_no_shots(self):
         calc = RewardCalculator(RewardConfig(), 10)

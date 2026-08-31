@@ -97,6 +97,7 @@ r = w_damage · (damage / enemy_max_hp)
   − w_death  · deaths
   − shot_cost
   − w_idle   · (idle_ticks / ticks)
+  − w_not_shooting · (no_shoot_ticks / ticks)
   − w_time
 ```
 

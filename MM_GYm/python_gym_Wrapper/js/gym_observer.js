@@ -429,8 +429,11 @@ export function initObserver(cfg, diag) {
         if (poolLen > 0) acc.enemy_ticks++;
 
         const engaged = (d <= cfg.engagement_radius);
-        if (engaged) acc.engaged_ticks++;
-        if (engaged && acc.isIdle()) acc.idle_ticks++;
+        if (engaged) {
+            acc.engaged_ticks++;
+            if (acc.isIdle()) acc.idle_ticks++;
+            if (!acc.isShooting()) acc.no_shoot_ticks++;
+        }
         if (player.valid && player.hp <= 0) acc.dead_ticks++;
     }
 

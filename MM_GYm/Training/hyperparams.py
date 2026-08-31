@@ -133,7 +133,7 @@ TOTAL_TIMESTEPS: int = 200_000
 FRAME_SKIP: int = 10
 """Physics ticks each action is held for. Matches the environment's own default."""
 
-MAX_EPISODE_STEPS: int = 600
+MAX_EPISODE_STEPS: int = 300
 """Below the environment's own 1000-step default, on purpose. At ~5 steps/s, 1000
 steps is >3 minutes per episode, so the 20-episode best-model window would take
 over an hour to fill before the tracker even arms. 300 steps is ~1 minute per
@@ -155,6 +155,38 @@ WEAPON: str = "uzi"
 DISABLE_RENDERING: bool = True
 """Turn the *game's* own rendering off during training for the throughput win.
 Unrelated to the Gym ``render_mode``, which stays None while training."""
+
+
+# =============================================================================
+# Reward Shaping
+# =============================================================================
+
+W_DAMAGE: float = 10.0
+"""Applied to (damage_dealt / enemy_max_hp)."""
+
+W_KILL: float = 15.0
+"""Reward per confirmed kill."""
+
+W_DAMAGE_TAKEN: float = 1.0
+"""Applied to (damage_taken / player_max_hp)."""
+
+W_DEATH: float = 5.0
+"""Penalty per player death."""
+
+W_SHOT_COST: float = 0.005
+"""Per-shot cost outside combat. Mild enough that firing and missing when
+enemies are near is vastly preferable to holding fire."""
+
+W_IDLE: float = 0.2
+"""Per idle tick (neither moving nor shooting when engaged)."""
+
+W_NOT_SHOOTING: float = 0.5
+"""Penalty per engaged tick when enemies are within engagement radius but the
+agent is NOT shooting. Prevents pacifist policy collapse by heavily penalising
+passivity near enemies."""
+
+W_TIME: float = 0.0
+"""Flat per-step cost to discourage stalling."""
 
 
 # =============================================================================

@@ -72,13 +72,13 @@ from .run_manager import best_filename, checkpoint_filename
 # ``RewardBreakdown.as_dict()``. Penalties arrive already sign-flipped negative,
 # so these can be averaged and displayed as-is and they sum to ``total``.
 _REWARD_COMPONENTS: Tuple[str, ...] = (
-    "damage", "kill", "damage_taken", "death", "shot_cost", "idle", "time",
+    "damage", "kill", "damage_taken", "death", "shot_cost", "idle", "not_shooting", "time",
 )
 
 # Scalar fields of ``info["episode_totals"]`` worth charting per episode.
 _EPISODE_TOTALS: Tuple[str, ...] = (
     "kills", "damage_dealt", "damage_taken", "shots",
-    "deaths", "idle_ticks", "ticks", "accuracy",
+    "deaths", "idle_ticks", "no_shoot_ticks", "ticks", "accuracy",
 )
 
 # Every value ``info["end_reason"]`` can take, from
@@ -512,6 +512,7 @@ class MiniMilitiaMetricsCallback(BaseCallback):
                                 ("enemy_count", "env/enemy_count"),
                                 ("dt_mean", "env/dt_mean"),
                                 ("idle_ticks", "env/idle_ticks"),
+                                ("no_shoot_ticks", "env/no_shoot_ticks"),
                                 ("engaged_ticks", "env/engaged_ticks")):
                 if key in info:
                     self.logger.record_mean(metric, float(info[key]))

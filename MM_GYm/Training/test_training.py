@@ -156,5 +156,19 @@ class TestResolveResumePath(unittest.TestCase):
             resolve_resume_path("totally_nonexistent_model_12345.zip")
 
 
+class TestRewardConfigCLI(unittest.TestCase):
+    def test_reward_args_override_config(self):
+        args = parse_args([
+            "--mock",
+            "--w-not-shooting", "1.5",
+            "--w-damage", "20.0",
+            "--w-shot-cost", "0.001",
+        ])
+        cfg = build_config(args)
+        self.assertEqual(cfg.reward.w_not_shooting, 1.5)
+        self.assertEqual(cfg.reward.w_damage, 20.0)
+        self.assertEqual(cfg.reward.w_shot_cost, 0.001)
+
+
 if __name__ == "__main__":
     unittest.main()

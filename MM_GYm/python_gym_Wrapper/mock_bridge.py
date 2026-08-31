@@ -171,7 +171,7 @@ class MockBridge:
 
     def _run(self, action: List[float], ticks: int, kind: str) -> Dict[str, Any]:
         ev = self._new_events()
-        idle = engaged = enemy_ticks = dead = 0
+        idle = engaged = no_shoot = enemy_ticks = dead = 0
         min_dist = float("inf")
         dt = 1.0 / 60.0
 
@@ -187,6 +187,8 @@ class MockBridge:
                     engaged += 1
                     if not st["moving"] and not st["shooting"]:
                         idle += 1
+                    if not st["shooting"]:
+                        no_shoot += 1
             if self.php <= 0:
                 dead += 1
 
@@ -196,7 +198,8 @@ class MockBridge:
             "obs": self._observation(),
             "events": ev,
             "acc": {
-                "ticks": ticks, "idle_ticks": idle, "engaged_ticks": engaged,
+                "ticks": ticks, "idle_ticks": idle, "no_shoot_ticks": no_shoot,
+                "engaged_ticks": engaged,
                 "enemy_ticks": enemy_ticks, "dead_ticks": dead,
                 "min_dist": -1.0 if min_dist == float("inf") else min_dist,
                 "dt_sum": dt * ticks, "dt_mean": dt, "dt_min": dt, "dt_max": dt,

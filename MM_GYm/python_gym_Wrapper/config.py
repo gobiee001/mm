@@ -180,20 +180,24 @@ class RewardConfig:
 
     w_death: float = 5.0
 
-    w_shot_cost: float = 0.02
-    """Per-shot cost. Gives the same anti-spray pressure as the original
-    hit-window correlation without a stateful attribution scheme that cannot be
-    verified: with frame_skip=10 a ``hit_window_steps=3`` window spans 30
-    physics ticks, so damage from three steps ago would cancel this step's
-    penalty."""
+    w_shot_cost: float = 0.005
+    """Per-shot cost. Gives mild anti-spray pressure outside combat without
+    penalising shooting when fighting enemies."""
 
     shot_cost_mode: Literal["flat", "unrewarded"] = "unrewarded"
     """``flat`` charges every shot. ``unrewarded`` charges only when the step
     dealt no damage at all -- closer to the original intent, still stateless."""
 
     w_idle: float = 0.2
-    """Per idle tick, then divided by frame_skip so changing the frame skip
-    does not silently rescale the reward function."""
+    """Per idle tick (neither moving nor shooting when engaged), divided by
+    frame_skip so changing frame_skip does not silently rescale the reward
+    function."""
+
+    w_not_shooting: float = 0.5
+    """Penalty per engaged tick when enemies are within engagement radius but
+    the agent is NOT shooting, divided by frame_skip. Discourages pacifist
+    behavior and ensures shooting (even if missing) is significantly preferred
+    over holding fire."""
 
     w_time: float = 0.0
     """Optional flat per-step cost to discourage stalling."""

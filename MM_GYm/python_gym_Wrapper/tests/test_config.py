@@ -47,7 +47,7 @@ class TestRewardConfig(unittest.TestCase):
     def test_weights_are_positive_magnitudes(self):
         r = RewardConfig()
         for name in ("w_damage", "w_kill", "w_damage_taken", "w_death",
-                     "w_shot_cost", "w_idle", "w_time"):
+                     "w_shot_cost", "w_idle", "w_not_shooting", "w_time"):
             self.assertGreaterEqual(getattr(r, name), 0.0, name)
 
     def test_rejects_negative_weight(self):

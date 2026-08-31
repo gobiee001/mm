@@ -301,6 +301,10 @@ export function initActions(cfg, diag) {
         return !isMoving() && !act.shoot;
     }
 
+    function isShooting() {
+        return act.shoot;
+    }
+
     // 1. Movement axes: identify the move pad and override the samples -----
     attach("_ZN6Joypad10getXOffsetEv", {
         onEnter(args) {
@@ -471,6 +475,7 @@ export function initActions(cfg, diag) {
         clearAction: clearAction,
         isIdle: isIdle,
         isMoving: isMoving,
+        isShooting: isShooting,
         ok: hasPlayerHook,
         hasFireHook: resolveExport("_ZN6Joypad4fireEv") !== null
     };

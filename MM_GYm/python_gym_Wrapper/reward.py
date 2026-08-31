@@ -32,6 +32,7 @@ Weights are positive magnitudes; the formula subtracts penalties::
       - w_death  * deaths
       - shot_cost
       - idle_cost
+      - not_shooting_cost
       - w_time
 """
 
@@ -53,6 +54,7 @@ class RewardBreakdown:
     death: float = 0.0
     shot_cost: float = 0.0
     idle: float = 0.0
+    not_shooting: float = 0.0
     time: float = 0.0
     total: float = 0.0
     clipped: bool = False
@@ -65,6 +67,7 @@ class RewardBreakdown:
             "death": -self.death,
             "shot_cost": -self.shot_cost,
             "idle": -self.idle,
+            "not_shooting": -self.not_shooting,
             "time": -self.time,
             "total": self.total,
             "clipped": self.clipped,
@@ -82,6 +85,7 @@ class EpisodeTotals:
     shots: int = 0
     deaths: int = 0
     idle_ticks: int = 0
+    no_shoot_ticks: int = 0
     steps: int = 0
     ticks: int = 0
 
@@ -94,6 +98,7 @@ class EpisodeTotals:
             "shots": self.shots,
             "deaths": self.deaths,
             "idle_ticks": self.idle_ticks,
+            "no_shoot_ticks": self.no_shoot_ticks,
             "steps": self.steps,
             "ticks": self.ticks,
             "accuracy": (self.damage_dealt / self.shots) if self.shots else 0.0,
@@ -141,6 +146,15 @@ class RewardCalculator:
         ticks = max(1, int(acc.get("ticks", self.frame_skip) or self.frame_skip))
         idle_ticks = max(0, int(acc.get("idle_ticks", 0) or 0))
 
+        if "no_shoot_ticks" in acc:
+            no_shoot_ticks = max(0, int(acc.get("no_shoot_ticks", 0) or 0))
+        else:
+            engaged_ticks = max(0, int(acc.get("engaged_ticks", 0) or 0))
+            if shots <= 0 and engaged_ticks > 0:
+                no_shoot_ticks = engaged_ticks
+            else:
+                no_shoot_ticks = 0
+
         b.damage = c.w_damage * (dmg / c.enemy_max_hp)
         b.kill = c.w_kill * kills
         b.damage_taken = c.w_damage_taken * (taken / c.player_max_hp)
@@ -155,10 +169,11 @@ class RewardCalculator:
         # changing frame_skip does not rescale the reward function.
         idle_divisor = float(ticks) if c.normalize_penalties_by_frame_skip else 1.0
         b.idle = c.w_idle * (idle_ticks / idle_divisor)
+        b.not_shooting = c.w_not_shooting * (no_shoot_ticks / idle_divisor)
         b.time = c.w_time
 
         b.total = (b.damage + b.kill
-                   - b.damage_taken - b.death - b.shot_cost - b.idle - b.time)
+                   - b.damage_taken - b.death - b.shot_cost - b.idle - b.not_shooting - b.time)
 
         if c.clip is not None:
             clamped = max(-c.clip, min(c.clip, b.total))
@@ -173,6 +188,7 @@ class RewardCalculator:
         t.shots += shots
         t.deaths += deaths
         t.idle_ticks += idle_ticks
+        t.no_shoot_ticks += no_shoot_ticks
         t.steps += 1
         t.ticks += ticks
         return b

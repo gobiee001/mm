@@ -63,6 +63,7 @@ function newAcc(target) {
         target: target,
         ticks: 0,
         idle_ticks: 0,
+        no_shoot_ticks: 0,
         engaged_ticks: 0,
         enemy_ticks: 0,
         dead_ticks: 0,
@@ -70,7 +71,8 @@ function newAcc(target) {
         dt_sum: 0.0,
         dt_min: Infinity,
         dt_max: 0.0,
-        isIdle: () => (actions !== null ? actions.isIdle() : true)
+        isIdle: () => (actions !== null ? actions.isIdle() : true),
+        isShooting: () => (actions !== null ? actions.isShooting() : false)
     };
 }
 
@@ -78,6 +80,7 @@ function accPayload(a) {
     return {
         ticks: a.ticks,
         idle_ticks: a.idle_ticks,
+        no_shoot_ticks: a.no_shoot_ticks,
         engaged_ticks: a.engaged_ticks,
         enemy_ticks: a.enemy_ticks,
         dead_ticks: a.dead_ticks,

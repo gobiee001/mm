@@ -197,6 +197,25 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
     env_group.add_argument("--button2-x", type=float, default=0.50)
     env_group.add_argument("--button2-y", type=float, default=0.46)
 
+    # -- Reward Shaping ----------------------------------------------------
+    rew = p.add_argument_group("reward shaping")
+    rew.add_argument("--w-damage", type=float, default=hp.W_DAMAGE,
+                     help="weight on normalized damage dealt")
+    rew.add_argument("--w-kill", type=float, default=hp.W_KILL,
+                     help="weight on confirmed kills")
+    rew.add_argument("--w-damage-taken", type=float, default=hp.W_DAMAGE_TAKEN,
+                     help="weight on normalized damage taken")
+    rew.add_argument("--w-death", type=float, default=hp.W_DEATH,
+                     help="penalty on player deaths")
+    rew.add_argument("--w-shot-cost", type=float, default=hp.W_SHOT_COST,
+                     help="per-shot cost outside combat")
+    rew.add_argument("--w-idle", type=float, default=hp.W_IDLE,
+                     help="idle penalty weight")
+    rew.add_argument("--w-not-shooting", type=float, default=hp.W_NOT_SHOOTING,
+                     help="penalty for not shooting when enemies are engaged")
+    rew.add_argument("--w-time", type=float, default=hp.W_TIME,
+                     help="flat per-step cost")
+
     # -- PPO ---------------------------------------------------------------
     ppo = p.add_argument_group("PPO")
     ppo.add_argument("--total-timesteps", type=int, default=hp.TOTAL_TIMESTEPS)
@@ -325,6 +344,25 @@ def build_config(a: argparse.Namespace, host: Optional[str] = None, serial: Opti
         e.terminate_on_death = True
 
     e.__post_init__()
+
+    r = cfg.reward
+    if hasattr(a, "w_damage") and a.w_damage is not None:
+        r.w_damage = a.w_damage
+    if hasattr(a, "w_kill") and a.w_kill is not None:
+        r.w_kill = a.w_kill
+    if hasattr(a, "w_damage_taken") and a.w_damage_taken is not None:
+        r.w_damage_taken = a.w_damage_taken
+    if hasattr(a, "w_death") and a.w_death is not None:
+        r.w_death = a.w_death
+    if hasattr(a, "w_shot_cost") and a.w_shot_cost is not None:
+        r.w_shot_cost = a.w_shot_cost
+    if hasattr(a, "w_idle") and a.w_idle is not None:
+        r.w_idle = a.w_idle
+    if hasattr(a, "w_not_shooting") and a.w_not_shooting is not None:
+        r.w_not_shooting = a.w_not_shooting
+    if hasattr(a, "w_time") and a.w_time is not None:
+        r.w_time = a.w_time
+    r.__post_init__()
 
     cfg.obs.max_enemies = a.max_enemies
     cfg.obs.max_enemy_scan = max(cfg.obs.max_enemy_scan, a.max_enemies)

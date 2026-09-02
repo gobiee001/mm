@@ -222,7 +222,7 @@ python_gym_Wrapper/
 ├── frida_bridge.py      JS bundling, config injection, RPC transport
 ├── mock_bridge.py       in-process double — same payload shape, toy physics
 ├── minimilitia_env.py   the gymnasium.Env
-├── reward.py            RewardCalculator, breakdown, episode totals
+├── rewards/             RewardComponent / RewardManager, one file per component, breakdown, episode totals
 ├── utils.py             ObservationEncoder + vector helpers
 ├── demo.py              verification harness and timescale probe
 ├── run_gym_demo.bat     Windows launcher (venv + adb forward + flag passthrough)

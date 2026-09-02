@@ -206,6 +206,13 @@ class RewardConfig:
     w_time: float = 0.0
     """Optional flat per-step cost to discourage stalling."""
 
+    w_aim_align: float = 0.0
+    """Weight for the optional AimAlignmentComponent (see rewards/aim_alignment.py): rewards
+    *improving* alignment between the commanded aim and the direction to the
+    nearest enemy each step, not absolute alignment. 0.0 (off) by default --
+    not part of default_components; append AimAlignmentComponent(w_aim_align)
+    yourself to opt in."""
+
     enemy_max_hp: float = 100.0
     player_max_hp: float = 100.0
 

@@ -10,7 +10,7 @@ from gymnasium import spaces
 
 from .config import MiniMilitiaConfig
 from .frida_bridge import BridgeError, BridgeTimeout, FridaBridge, is_process_crash
-from .reward import RewardBreakdown, RewardCalculator
+from .rewards import RewardBreakdown, RewardManager, default_components
 from .utils import ObservationEncoder
 
 
@@ -58,7 +58,8 @@ class MiniMilitiaEnv(gym.Env):
     def __init__(self, config: Optional[MiniMilitiaConfig] = None,
                  bridge: Optional[Any] = None,
                  render_mode: Optional[str] = None,
-                 auto_connect: bool = True):
+                 auto_connect: bool = True,
+                 reward_manager: Optional[RewardManager] = None):
         super().__init__()
 
         if render_mode is not None and render_mode not in self.metadata["render_modes"]:
@@ -69,7 +70,9 @@ class MiniMilitiaEnv(gym.Env):
         self._auto_connect = auto_connect
 
         self._encoder = ObservationEncoder(self.cfg.obs)
-        self._reward = RewardCalculator(self.cfg.reward, self.cfg.env.frame_skip)
+        self._reward = reward_manager or RewardManager(
+            default_components(self.cfg.reward), self.cfg.env.frame_skip,
+            self.cfg.reward.clip)
 
         a = self.cfg.action
         self.action_space = spaces.Box(
@@ -216,7 +219,7 @@ class MiniMilitiaEnv(gym.Env):
             breakdown = RewardBreakdown()
             info = {
                 "reward": breakdown.as_dict(),
-                "episode_totals": self._reward.totals.as_dict(),
+                "episode_totals": self._reward.episode_totals(),
                 "events": {},
                 "ticks": 0,
                 "tick_slip": -self.cfg.env.frame_skip,
@@ -242,7 +245,8 @@ class MiniMilitiaEnv(gym.Env):
         acc = payload.get("acc", {}) or {}
         self._last_raw = raw
 
-        breakdown = self._reward.compute(events, acc)
+        breakdown = self._reward.compute(
+            events, acc, raw, tuple(float(v) for v in vec))
         obs = self._encoder.encode_copy(raw)
 
         ticks = int(acc.get("ticks", 0) or 0)
@@ -254,7 +258,7 @@ class MiniMilitiaEnv(gym.Env):
 
         info: Dict[str, Any] = {
             "reward": breakdown.as_dict(),
-            "episode_totals": self._reward.totals.as_dict(),
+            "episode_totals": self._reward.episode_totals(),
             "events": events,
             "ticks": ticks,
             "tick_slip": slip,

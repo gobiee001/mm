@@ -20,7 +20,7 @@ below the environment's own 1000.
 Normalisation is already handled upstream
 -----------------------------------------
 ``ObservationEncoder`` emits observations already normalised and clipped to
-[-10, 10], and ``RewardCalculator`` already clips reward to [-10, 10] on a scale
+[-10, 10], and ``RewardManager`` already clips reward to [-10, 10] on a scale
 where a typical step lands in [-1, 1]. So there is deliberately no
 ``VecNormalize`` in the training stack -- see the note in ``train_ppo.py``.
 """

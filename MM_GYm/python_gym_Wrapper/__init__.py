@@ -32,7 +32,22 @@ from .config import (
 from .frida_bridge import BridgeError, BridgeTimeout, FridaBridge, bundle_js
 from .minimilitia_env import MiniMilitiaEnv
 from .mock_bridge import MockBridge
-from .reward import EpisodeTotals, RewardBreakdown, RewardCalculator
+from .rewards import (
+    AimAlignmentComponent,
+    DamageComponent,
+    DamageTakenComponent,
+    DeathComponent,
+    IdleComponent,
+    KillComponent,
+    NotShootingComponent,
+    RewardBreakdown,
+    RewardComponent,
+    RewardManager,
+    RewardStats,
+    ShotCostComponent,
+    TimeComponent,
+    default_components,
+)
 from .utils import ObservationEncoder
 
 __version__ = "1.0.0"
@@ -52,9 +67,20 @@ __all__ = [
     "BridgeError",
     "BridgeTimeout",
     "bundle_js",
-    "RewardCalculator",
+    "RewardManager",
+    "RewardComponent",
+    "RewardStats",
     "RewardBreakdown",
-    "EpisodeTotals",
+    "default_components",
+    "DamageComponent",
+    "KillComponent",
+    "DamageTakenComponent",
+    "DeathComponent",
+    "ShotCostComponent",
+    "IdleComponent",
+    "NotShootingComponent",
+    "TimeComponent",
+    "AimAlignmentComponent",
     "ObservationEncoder",
     "ENV_ID",
     "register",

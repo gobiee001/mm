@@ -72,9 +72,9 @@ class TestResetContract(unittest.TestCase):
             env.reset()
             for _ in range(5):
                 env.step(np.array([0, 0, 1, 0, 1], dtype=np.float32))
-            self.assertGreater(env._reward.totals.steps, 0)
+            self.assertGreater(env._reward.episode_totals()["steps"], 0)
             env.reset()
-            self.assertEqual(env._reward.totals.steps, 0)
+            self.assertEqual(env._reward.episode_totals()["steps"], 0)
         finally:
             env.close()
 

@@ -102,6 +102,10 @@ class EnvConfig:
     infinite_reload_ammo: bool = True
     reload_ammo_reserve: int = 999
     disable_sarge: bool = True
+    fix_spawn_time: bool = False
+    """Zero SoldierManager::getRespawnTime() so the player respawns instantly.
+    OFF by default: instant respawn removes a real signal (death cost/recovery time)."""
+
     disable_rendering: bool = False
     disable_sound: bool = True
     game_speed: float = 1.0
@@ -332,6 +336,7 @@ class MiniMilitiaConfig:
             "infinite_reload_ammo": e.infinite_reload_ammo,
             "reload_ammo_reserve": e.reload_ammo_reserve,
             "disable_sarge": e.disable_sarge,
+            "fix_spawn_time": e.fix_spawn_time,
             "disable_rendering": e.disable_rendering,
             "disable_sound": e.disable_sound,
             "game_speed": e.game_speed,

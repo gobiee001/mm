@@ -34,6 +34,17 @@ export function initRuntime(cfg, diag) {
         onEnter() { lastSoldier = ptr(0); }   // force re-equip after respawn
     });
 
+    if (cfg.fix_spawn_time) {
+        attach("_ZN14SoldierManager14getRespawnTimeEv", {
+            onEnter(args) {
+                const self = args[0];
+                if (self.isNull()) return;
+                try { self.add(0x1c).writeFloat(0.0); }
+                catch (e) { diag.respawn_time_err++; }
+            }
+        });
+    }
+
     if (cfg.always_spawn_with_weapon) {
         attach("_ZN21SoldierHostController10updateStepEf6cpVectS0_f", {
             onEnter(args) {

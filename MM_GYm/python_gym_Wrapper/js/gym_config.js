@@ -25,6 +25,7 @@ export const DEFAULT_CONFIG = {
     infinite_reload_ammo: false,// OFF: clamping ammo hides the shot signal
     reload_ammo_reserve: 999,
     disable_sarge: true,
+    fix_spawn_time: false,
     disable_rendering: true,
     disable_sound: true,
     game_speed: 1.0,

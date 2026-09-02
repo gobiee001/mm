@@ -40,7 +40,7 @@ const diag = {
     joypad_write_err: 0, controller_write_err: 0, damage_hook_err: 0,
     player_view_err: 0, player_pos_err: 0, player_vel_err: 0, player_hp_err: 0,
     weapon_err: 0, dict_err: 0, enemy_pos_err: 0, enemy_vel_err: 0, enemy_hp_err: 0,
-    synth_id_count: 0, equip_err: 0, reset_err: 0, dt_fallback: 0,
+    synth_id_count: 0, equip_err: 0, reset_err: 0, respawn_time_err: 0, dt_fallback: 0,
     step_timeouts: 0, overlapped_steps: 0,
     // Touch-gate simulation (see gym_actions.js) - synthetic touch priming
     // health and the cpVect setter fallback channel.

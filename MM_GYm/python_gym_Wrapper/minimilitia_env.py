@@ -53,7 +53,7 @@ class MiniMilitiaEnv(gym.Env):
     silently folded into the reward.
     """
 
-    metadata = {"render_modes": ["ansi"], "render_fps": 60}
+    metadata = {"render_modes": ["ansi", "human", "rgb_array"], "render_fps": 60}
 
     def __init__(self, config: Optional[MiniMilitiaConfig] = None,
                  bridge: Optional[Any] = None,
@@ -300,29 +300,31 @@ class MiniMilitiaEnv(gym.Env):
 
         return terminated, truncated, reason
 
-    def render(self) -> Optional[str]:
-        if self.render_mode != "ansi":
-            return None
-
-        p = (self._last_raw.get("player") or {})
-        enemies = self._last_raw.get("enemies") or []
-        acc = self._last_payload.get("acc") or {}
-        lines = [
-            f"step {self._steps}  ticks={acc.get('ticks', 0)}  "
-            f"dt={acc.get('dt_mean', 0.0):.5f}",
-            f"player  pos=({p.get('x', 0.0):8.1f},{p.get('y', 0.0):8.1f})  "
-            f"vel=({p.get('vx', 0.0):7.1f},{p.get('vy', 0.0):7.1f})  "
-            f"hp={p.get('hp', 0):5.1f}  ammo={p.get('ammo', 0)}"
-            f"{'  RELOADING' if p.get('reloading') else ''}",
-            f"enemies {len(enemies)} shown / {self._last_raw.get('enemy_count', 0)} active",
-        ]
-        names = {0: "Hawk", 1: "Humanoid", 2: "Worm"}
-        for i, e in enumerate(enemies):
-            lines.append(
-                f"  [{i}] {names.get(e.get('type'), '?'):9s} hp={e.get('hp', 0):5.1f} "
-                f"pos=({e.get('x', 0.0):8.1f},{e.get('y', 0.0):8.1f}) "
-                f"d={e.get('dist', 0.0):7.1f}")
-        return "\n".join(lines)
+    def render(self) -> Optional[Any]:
+        if self.render_mode == "ansi":
+            p = (self._last_raw.get("player") or {})
+            enemies = self._last_raw.get("enemies") or []
+            acc = self._last_payload.get("acc") or {}
+            lines = [
+                f"step {self._steps}  ticks={acc.get('ticks', 0)}  "
+                f"dt={acc.get('dt_mean', 0.0):.5f}",
+                f"player  pos=({p.get('x', 0.0):8.1f},{p.get('y', 0.0):8.1f})  "
+                f"vel=({p.get('vx', 0.0):7.1f},{p.get('vy', 0.0):7.1f})  "
+                f"hp={p.get('hp', 0):5.1f}  ammo={p.get('ammo', 0)}"
+                f"{'  RELOADING' if p.get('reloading') else ''}",
+                f"enemies {len(enemies)} shown / {self._last_raw.get('enemy_count', 0)} active",
+            ]
+            names = {0: "Hawk", 1: "Humanoid", 2: "Worm"}
+            for i, e in enumerate(enemies):
+                lines.append(
+                    f"  [{i}] {names.get(e.get('type'), '?'):9s} hp={e.get('hp', 0):5.1f} "
+                    f"pos=({e.get('x', 0.0):8.1f},{e.get('y', 0.0):8.1f}) "
+                    f"d={e.get('dist', 0.0):7.1f}")
+            return "\n".join(lines)
+        elif self.render_mode in ("human", "rgb_array"):
+            if self._bridge is not None and hasattr(self._bridge, "render"):
+                return self._bridge.render(self.render_mode)
+        return None
 
     def force_spawn(self) -> Dict[str, Any]:
         """Trigger SoldierManager::spawnPlayer immediately via the bridge."""

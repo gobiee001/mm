@@ -13,9 +13,12 @@ if errorlevel 1 (
     )
 )
 
-:: Step 2: Forward the Frida gadget port(s). Skipped in --mock mode.
-echo %* | find /i "--mock" >nul
-if errorlevel 1 (
+:: Step 2: Forward the Frida gadget port(s). Skipped in --mock or --clone mode.
+set "IS_SIM=0"
+echo %* | find /i "--mock" >nul && set "IS_SIM=1"
+echo %* | find /i "--clone" >nul && set "IS_SIM=1"
+
+if "!IS_SIM!"=="0" (
     echo Setting up ADB port forwarding...
     set /a FORWARD_COUNT=0
     set /a PORT=27042
@@ -38,7 +41,7 @@ if errorlevel 1 (
         )
     )
 ) else (
-    echo [*] Mock mode: skipping ADB port forwarding.
+    echo [*] Simulation mode - skipping ADB port forwarding.
 )
 
 :: Step 3: Locate Python.
@@ -89,11 +92,11 @@ echo   --run-name LABEL            label the run folder
 
 echo.
 echo Outputs:
-echo   models  MM_GYm\models\run_^<timestamp^\>\
+echo   models  MM_GYm\models\run_[timestamp]\
 echo   logs    MM_GYm\logs\   (contents cleared at the start of every run)
 echo.
 echo To stop a long run cleanly, run stop_training.bat or:
-echo   type nul ^> MM_GYm\models\run_^<timestamp^\>\STOP
+echo   type nul ^> MM_GYm\models\run_[timestamp]\STOP
 echo.
 
 :: Step 5: TensorBoard reminder.

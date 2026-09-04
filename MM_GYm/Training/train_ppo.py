@@ -128,6 +128,15 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
         "--mock", action="store_true",
         help="train against the in-process simulator; no device or game needed")
     env_group.add_argument(
+        "--clone", action="store_true",
+        help="train against TrainingCloneEnv with real map geometry and Chipmunk physics; no device needed")
+    env_group.add_argument(
+        "--clone-map", default="survival_new",
+        help="TMX map to use under --clone (default: survival_new)")
+    env_group.add_argument(
+        "--clone-tier", type=int, default=128, choices=[64, 128, 256],
+        help="Asset tier for world scale (64 SD, 128 HD, 256 HDR)")
+    env_group.add_argument(
         "--num-envs", "-n", "--n-envs", dest="num_envs", type=int, default=None,
         help="number of parallel environments / devices (default: 1, or inferred from --hosts/--all-devices)")
     env_group.add_argument(
@@ -382,15 +391,35 @@ class SingleEnvFactory:
                  cfg: MiniMilitiaConfig,
                  is_mock: bool,
                  seed: Optional[int],
-                 monitor_csv_path: Optional[str]):
+                 monitor_csv_path: Optional[str],
+                 is_clone: bool = False,
+                 clone_map: str = "survival_new",
+                 clone_tier: int = 128):
         self.cfg = cfg
         self.is_mock = is_mock
         self.seed = seed
         self.monitor_csv_path = monitor_csv_path
+        self.is_clone = is_clone
+        self.clone_map = clone_map
+        self.clone_tier = clone_tier
 
     def __call__(self) -> Monitor:
-        bridge = MockBridge(self.cfg, seed=self.seed) if self.is_mock else None
-        env = MiniMilitiaEnv(self.cfg, bridge=bridge)
+        if self.is_clone:
+            try:
+                from mmclone.envs.factory import make_clone_env
+            except ImportError:
+                from pathlib import Path
+                import sys
+                clone_path = Path(__file__).resolve().parent.parent.parent / "TmxFiles-testing-map" / "TrainingCloneEnv"
+                if str(clone_path) not in sys.path:
+                    sys.path.insert(0, str(clone_path))
+                from mmclone.envs.factory import make_clone_env
+            env = make_clone_env(self.cfg, map_name=self.clone_map, tier=self.clone_tier, seed=self.seed)
+        elif self.is_mock:
+            bridge = MockBridge(self.cfg, seed=self.seed)
+            env = MiniMilitiaEnv(self.cfg, bridge=bridge)
+        else:
+            env = MiniMilitiaEnv(self.cfg, bridge=None)
         env.connect()
         return Monitor(env, filename=self.monitor_csv_path)
 
@@ -410,12 +439,13 @@ def make_env(a: argparse.Namespace,
     Returns:
         ``(vec_env, configs, hosts, serials)``.
     """
+    is_sim = a.mock or getattr(a, "clone", False)
     req_num_envs = a.num_envs
     if req_num_envs is None:
         if a.hosts:
-            resolved_hosts, _ = hp.resolve_hosts(a.hosts, a.host, 1, a.mock, auto_devices=False)
+            resolved_hosts, _ = hp.resolve_hosts(a.hosts, a.host, 1, is_sim, auto_devices=False)
             req_num_envs = len(resolved_hosts)
-        elif a.all_devices and not a.mock:
+        elif a.all_devices and not is_sim:
             req_num_envs = None
         else:
             req_num_envs = 1
@@ -424,7 +454,7 @@ def make_env(a: argparse.Namespace,
         hosts_spec=a.hosts,
         base_host=a.host,
         num_envs=req_num_envs,
-        is_mock=a.mock,
+        is_mock=is_sim,
         auto_devices=a.all_devices,
     )
     num_envs = len(hosts)
@@ -435,7 +465,7 @@ def make_env(a: argparse.Namespace,
     for i in range(num_envs):
         host = hosts[i]
         serial = serials[i] if i < len(serials) and serials[i] and not serials[i].startswith("mock") else None
-        cfg = build_config(a, host=host if not a.mock else a.host, serial=serial)
+        cfg = build_config(a, host=host if not is_sim else a.host, serial=serial)
         configs.append(cfg)
 
         seed = None if a.seed is None else (a.seed + i * 1000)
@@ -445,6 +475,9 @@ def make_env(a: argparse.Namespace,
             is_mock=a.mock,
             seed=seed,
             monitor_csv_path=monitor_path,
+            is_clone=getattr(a, "clone", False),
+            clone_map=getattr(a, "clone_map", "survival_new"),
+            clone_tier=getattr(a, "clone_tier", 128),
         ))
 
     vec_type = a.vec_env_type

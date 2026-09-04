@@ -93,6 +93,18 @@ class CloneConfig:
                             if "power_regen_rate" in raw_phys:
                                 bp.power_regen_rate = float(raw_phys["power_regen_rate"])
 
+                    # Space/solver knobs. damping_tau is a time constant, so the
+                    # per-tick multiplier is re-derived whenever either it or dt
+                    # changes -- never write space.damping directly.
+                    raw_space = data.get("space", {})
+                    if raw_space:
+                        if "dt" in raw_space:
+                            self.space.dt = float(raw_space["dt"])
+                        if "damping_tau" in raw_space:
+                            tau = raw_space["damping_tau"]
+                            self.space.damping_tau = None if tau is None else float(tau)
+                        self.space.recompute_damping()
+
                     if "default_map" in data:
                         self.map.map_name = str(data["default_map"])
                     if "collider_inset_pixels" in data:

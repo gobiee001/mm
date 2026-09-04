@@ -11,6 +11,10 @@
   "humanoid_height": 42,
   "worm_width": 30,
   "worm_height": 20,
+  "space": {
+    "dt": 0.016666666666666666,
+    "damping_tau": 0.5
+  },
   "physics": {
     "mass": 0.1,
     "gravity_airborne": [0.0, -300.0],

@@ -26,3 +26,9 @@ MM_GYm/models/
 
 # Baked map geometry cache
 TmxFiles-testing-map/TrainingCloneEnv/cache/
+
+# IDE / editor settings. Per-developer and machine-specific.
+.idea/
+**/.idea/
+.vscode/
+**/.vscode/

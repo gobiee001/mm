@@ -23,3 +23,6 @@ python/venv*/
 # Both are regenerated per run and the model zips are large.
 MM_GYm/logs/
 MM_GYm/models/
+
+# Baked map geometry cache
+TmxFiles-testing-map/TrainingCloneEnv/cache/

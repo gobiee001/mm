@@ -1,0 +1,36 @@
+{
+  "default_map": "survival_new",
+  "collider_inset_pixels": 6,
+  "collision_alpha_threshold": 50,
+  "show_colliders": true,
+  "player_width": 24,
+  "player_height": 42,
+  "hawk_width": 32,
+  "hawk_height": 32,
+  "humanoid_width": 24,
+  "humanoid_height": 42,
+  "worm_width": 30,
+  "worm_height": 20,
+  "physics": {
+    "mass": 0.1,
+    "gravity_airborne": [0.0, -300.0],
+    "gravity_grounded": [0.0, -50.0],
+    "max_speed_x": 190.0,
+    "max_speed_flight": 325.0,
+    "jump_impulse": 220.0,
+    "flight_accel_mult": 1.5,
+    "ground_accel_mult": 3.0,
+    "power_drain_rate": 25.0,
+    "power_regen_rate": 20.0
+  },
+  "maps": {
+    "survival_new": {
+      "borders": {
+        "left": 100,
+        "right": 3100,
+        "bottom": 60,
+        "top": 1800
+      }
+    }
+  }
+}

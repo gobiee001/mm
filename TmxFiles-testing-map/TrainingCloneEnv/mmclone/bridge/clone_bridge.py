@@ -27,10 +27,27 @@ class CloneBridge:
         self.world = CloneWorld(self.cfg, geom)
         self._closed = False
         self._viewer = None
+        # Wall-clock playback rate for the debug viewer. 1.0 = realtime; raise it to
+        # fast-forward, lower it for slow motion. Only affects rendering.
+        self.render_speed = 1.0
 
     @property
     def tick_source(self) -> str:
         return "clone"
+
+    @property
+    def render_fps(self) -> float:
+        """Frames per second that makes one render() per env.step() run at realtime.
+
+        Each env.step() advances frame_skip ticks of dt seconds, so a viewer pacing
+        itself at any other rate plays the world back at the wrong speed. At the
+        default frame_skip=10 this is 6 fps -- correct, but choppy; drop frame_skip
+        to 1 for a smooth 60 fps view (see tools/demo.py --frame-skip).
+        """
+        sim_seconds_per_step = self.cfg.gym.env.frame_skip * self.cfg.space.dt
+        if sim_seconds_per_step <= 0.0:
+            return 0.0
+        return self.render_speed / sim_seconds_per_step
 
     def seed(self, seed: int) -> None:
         import random
@@ -43,7 +60,9 @@ class CloneBridge:
     def render(self, mode: str = "human") -> Any:
         if self._viewer is None:
             from ..render.pygame_debug import PygameDebugViewer
-            self._viewer = PygameDebugViewer(self.world, render_mode=mode)
+            self._viewer = PygameDebugViewer(
+                self.world, render_mode=mode, target_fps=self.render_fps
+            )
         return self._viewer.render()
 
     def close(self) -> None:

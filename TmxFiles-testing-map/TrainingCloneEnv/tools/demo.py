@@ -4,7 +4,6 @@ import argparse
 import math
 from pathlib import Path
 import sys
-import time
 
 clone_root = Path(__file__).resolve().parent.parent
 if str(clone_root) not in sys.path:
@@ -21,10 +20,28 @@ def main():
     parser.add_argument("--tier", type=int, default=64, choices=[64, 128, 256], help="Asset scale tier (default: 64 SD)")
     parser.add_argument("--steps", type=int, default=5000, help="Max simulation steps to run")
     parser.add_argument("--manual", action="store_true", help="Control the player manually with WASD + Mouse")
+    parser.add_argument(
+        "--frame-skip", type=int, default=1,
+        help="Physics ticks per env.step(). One frame is drawn per step, so 1 gives a "
+             "smooth 60 fps realtime view; training's default of 10 is correct but "
+             "renders at only 6 fps (default: 1)")
+    parser.add_argument(
+        "--speed", type=float, default=1.0,
+        help="Wall-clock playback multiplier. 1.0 = realtime, 0.25 = slow motion, "
+             "4.0 = fast-forward (default: 1.0)")
     args = parser.parse_args()
 
+    # Imported here, not at module scope: mmclone's import above is what puts the
+    # MM_GYm sys.path root in place.
+    from python_gym_Wrapper.config import MiniMilitiaConfig
+
+    gym_cfg = MiniMilitiaConfig()
+    gym_cfg.env.frame_skip = args.frame_skip
+    gym_cfg.env.__post_init__()
+
     map_kw = {"map_name": args.map} if args.map else {}
-    env = make_clone_env(tier=args.tier, render_mode="human", **map_kw)
+    env = make_clone_env(config=gym_cfg, tier=args.tier, render_mode="human", **map_kw)
+    env.bridge.render_speed = args.speed
 
     from mmclone.config.bodies import HAWK_PHYSICS, HUMANOID_PHYSICS, WORM_PHYSICS
 
@@ -42,6 +59,9 @@ def main():
     print(f"  Humanoid: {HUMANOID_PHYSICS.half_w * 2 * scale:.0f} x {HUMANOID_PHYSICS.half_h * 2 * scale:.0f} px (Physics Body)")
     print(f"  Worm:     {WORM_PHYSICS.half_w * 2 * scale:.0f} x {WORM_PHYSICS.half_h * 2 * scale:.0f} px (Physics Body)")
     print(f"  Mode:     {'Manual (WASD + Mouse)' if args.manual else 'Autonomous Bot'}")
+    dt = env.bridge.cfg.space.dt
+    print(f"  Timing:   frame_skip={args.frame_skip} ({args.frame_skip * dt * 1000:.1f} ms sim/step)"
+          f" -> {env.bridge.render_fps:.1f} fps for {args.speed:g}x realtime")
     print(f"=======================================================\n")
     if args.manual:
         print("Controls:")

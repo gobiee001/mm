@@ -17,11 +17,17 @@ class PygameDebugViewer:
         width: int = 1280,
         height: int = 720,
         render_mode: str = "human",
+        target_fps: float = 60.0,
     ) -> None:
         self.world = world
         self.width = width
         self.height = height
         self.render_mode = render_mode
+        # One render() call covers one env.step(), i.e. frame_skip physics ticks of
+        # sim time. Pacing at a fixed 60 fps therefore ran the world at
+        # frame_skip x realtime. The caller passes the fps that makes wall-clock
+        # time match sim time; see CloneBridge.render_fps.
+        self.target_fps = float(target_fps)
 
         if render_mode == "rgb_array":
             os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -235,7 +241,8 @@ class PygameDebugViewer:
 
         if self.render_mode == "human":
             pygame.display.flip()
-            self.clock.tick(60)
+            if self.target_fps > 0.0:
+                self.clock.tick(self.target_fps)
             return None
         elif self.render_mode == "rgb_array":
             data = pygame.surfarray.array3d(self.screen)

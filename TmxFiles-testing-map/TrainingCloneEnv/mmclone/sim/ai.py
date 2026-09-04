@@ -49,10 +49,60 @@ def update_enemy_perception(
         enemy.state = EnemyState.PATROL
 
 
+def pick_patrol_target(
+    enemy: Enemy,
+    geom: MapGeometry,
+    frame: WorldFrame,
+    profile: AggressionProfile,
+) -> None:
+    """Chooses a fresh random patrol destination for ``enemy``.
+
+    Samples uniformly in a box around the enemy rather than nudging it a little
+    each time, so successive destinations are uncorrelated and patrol routes cover
+    a large slice of the map -- roughly the behaviour of the binary's
+    ``getSearchPoint``, which draws from a range spanning a third of the map.
+
+    Flyers get a random altitude too; ground kinds keep their current y, since
+    gravity and terrain decide it for them. Candidates landing inside terrain are
+    rejected up to ``patrol_place_tries`` times, after which the last candidate is
+    used anyway -- an unreachable destination is harmless because the repick timer
+    will replace it shortly.
+    """
+    body = enemy.body
+    scale = enemy.scale
+    rx = profile.patrol_radius * scale
+    ry = profile.patrol_radius_y * scale
+    margin = 80.0 * scale
+
+    lo_x, hi_x = frame.min_x + margin, frame.max_x - margin
+    lo_y, hi_y = frame.min_y + margin, frame.max_y - margin
+
+    tx, ty = body.x, body.y
+    for _ in range(max(1, profile.patrol_place_tries)):
+        tx = body.x + random.uniform(-rx, rx)
+        tx = min(hi_x, max(lo_x, tx))
+
+        if enemy.kind == 0:  # Hawk: free to choose an altitude
+            ty = body.y + random.uniform(-ry, ry)
+            ty = min(hi_y, max(lo_y, ty))
+        else:
+            ty = body.y
+
+        gx, gy = frame.world_to_grid(tx, ty)
+        if not geom.is_point_solid(gx, gy):
+            break
+
+    enemy.target_x = tx
+    enemy.target_y = ty
+    enemy.patrol_timer = profile.patrol_repick_ticks
+
+
 def update_enemy_locomotion(
     enemy: Enemy,
     dt: float,
     frame: WorldFrame,
+    geom: MapGeometry,
+    profile: AggressionProfile,
 ) -> None:
     """Calculates horizontal and vertical forces/velocities based on kind and state."""
     body = enemy.body
@@ -84,17 +134,28 @@ def update_enemy_locomotion(
                 body.vy = 220.0 * scale  # Jump impulse 220
 
     elif enemy.state == EnemyState.PATROL:
-        # Idle or slight wandering
-        if abs(body.x - enemy.target_x) < 30.0:
-            # Pick a new nearby patrol target
-            offset = random.uniform(-200.0 * scale, 200.0 * scale)
-            enemy.target_x = max(100.0, min(frame.world_w - 100.0, body.x + offset))
+        # Re-pick on arrival, or when the timer runs out. The timer is what keeps
+        # an enemy wedged against terrain from holding an unreachable destination
+        # forever -- the old code only re-picked on arrival, so it could stall.
+        if enemy.patrol_timer > 0:
+            enemy.patrol_timer -= 1
+        arrive = profile.patrol_arrive_px * scale
+        reached = abs(body.x - enemy.target_x) < arrive and (
+            enemy.kind != 0 or abs(body.y - enemy.target_y) < arrive)
+        if reached or enemy.patrol_timer <= 0:
+            pick_patrol_target(enemy, geom, frame, profile)
 
-        dir_x = 1.0 if enemy.target_x > body.x else -1.0
-        body.vx += (dir_x * 50.0 * scale - body.vx) * 0.1
+        speed = profile.patrol_speed * scale
+        dx = enemy.target_x - body.x
+        dir_x = 1.0 if dx > arrive else (-1.0 if dx < -arrive else 0.0)
+        body.vx += (dir_x * speed - body.vx) * 0.1
+
         if enemy.kind == 0:
-            # Hawk hovering in place against gravity
-            body.vy += (0.0 - body.vy) * 0.1 + (50.0 * dt)
+            # Hawk patrols in two dimensions: steer toward the chosen altitude
+            # while cancelling the -50 per-body gravity it is given when airborne.
+            dy = enemy.target_y - body.y
+            dir_y = 1.0 if dy > arrive else (-1.0 if dy < -arrive else 0.0)
+            body.vy += (dir_y * speed - body.vy) * 0.1 + (50.0 * dt)
 
 
 def update_enemy_gunnery(

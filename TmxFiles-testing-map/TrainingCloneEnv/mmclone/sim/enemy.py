@@ -39,6 +39,10 @@ class Enemy:
         self.weapon: WeaponSpec = UZI
         self.fire_timer = 0
         self.retarget_timer = 0
+        # Counts down to a forced patrol re-pick. Starts at 0 so a freshly spawned
+        # enemy chooses a destination on its first patrol tick instead of sitting
+        # on the spawn point until it happens to drift 60px.
+        self.patrol_timer = 0
         self.has_los = False
         self.distance_to_player = 999999.0
 
@@ -54,5 +58,9 @@ class Enemy:
         self.aim_y = 0.0
         self.fire_timer = 0
         self.retarget_timer = 0
+        # Counts down to a forced patrol re-pick. Starts at 0 so a freshly spawned
+        # enemy chooses a destination on its first patrol tick instead of sitting
+        # on the spawn point until it happens to drift 60px.
+        self.patrol_timer = 0
         self.has_los = False
         self.distance_to_player = 999999.0

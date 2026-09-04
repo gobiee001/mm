@@ -162,7 +162,9 @@ class CloneWorld:
                     dy = self.player.body.y - enemy.body.y
                     enemy.distance_to_player = math.hypot(dx, dy)
 
-                update_enemy_locomotion(enemy, dt, self.frame)
+                update_enemy_locomotion(
+                    enemy, dt, self.frame, self.geom, self.config.aggression
+                )
 
                 enemy_fired = update_enemy_gunnery(
                     enemy,

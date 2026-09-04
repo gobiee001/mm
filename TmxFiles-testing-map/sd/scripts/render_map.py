@@ -23,15 +23,37 @@ except:
     large_font = pygame.font.Font(None, 24)
 
 import os
+from config import (
+    DEFAULT_MAP,
+    COLLIDER_INSET_PIXELS,
+    COLLISION_ALPHA_THRESHOLD,
+    SHOW_COLLIDERS,
+    COLLIDER_FILL_COLOR,
+    COLLIDER_LINE_COLOR,
+    COLLIDER_LINE_WIDTH,
+    get_map_borders,
+)
+
 # Get the directory of the script to resolve files relative to it
 script_dir = os.path.dirname(os.path.abspath(__file__))
-tmx_file = os.path.join(script_dir, "../1outpost_new.tmx")
+map_dir = os.path.abspath(os.path.join(script_dir, ".."))
+
+target_map = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_MAP
+if not target_map.endswith(".tmx"):
+    target_map += ".tmx"
+
+if os.path.isabs(target_map):
+    tmx_file = target_map
+else:
+    tmx_file = os.path.join(map_dir, target_map)
+
+pygame.display.set_caption(f"Mini Militia Map Viewer - {os.path.basename(tmx_file)}")
 
 import traceback
 try:
     tmx_data = load_pygame(tmx_file)
 except Exception as e:
-    print(f"Error loading TMX map: {e}")
+    print(f"Error loading TMX map '{tmx_file}': {e}")
     traceback.print_exc()
     sys.exit(1)
 
@@ -46,19 +68,73 @@ show_tilebg = True
 show_tile = True
 show_objects = True
 show_grid = False
+show_colliders = SHOW_COLLIDERS
+
+INSET_PIXELS = COLLIDER_INSET_PIXELS
 
 # Map dimensions in pixels
 map_width_pixels = tmx_data.width * tmx_data.tilewidth
 map_height_pixels = tmx_data.height * tmx_data.tileheight
 
-# Pre-render the tile layers to a surface for optimization
-def create_map_surface():
-    temp_surf = pygame.Surface((map_width_pixels, map_height_pixels), pygame.SRCALPHA)
-    for layer in tmx_data.visible_layers:
-        if isinstance(layer, pytmx.TiledTileLayer):
-            # We will draw layer by layer in the main loop to handle toggles
-            pass
-    return temp_surf
+_map_borders = get_map_borders(target_map)
+border_min_x = _map_borders.get("left", 0)
+border_max_x = _map_borders.get("right", map_width_pixels)
+if "bottom" in _map_borders and "top" in _map_borders:
+    border_min_y = map_height_pixels - _map_borders["top"]
+    border_max_y = map_height_pixels - _map_borders["bottom"]
+else:
+    border_min_y = 0
+    border_max_y = map_height_pixels
+
+import numpy as np
+
+
+def erode_binary_mask(bool_arr: np.ndarray, pixels: int = 2) -> np.ndarray:
+    """Erodes a 2D boolean mask by N pixels on all 4 borders."""
+    res = bool_arr.copy()
+    for _ in range(pixels):
+        e = res.copy()
+        e[1:, :] &= res[:-1, :]
+        e[:-1, :] &= res[1:, :]
+        e[:, 1:] &= res[:, :-1]
+        e[:, :-1] &= res[:, 1:]
+        res = e
+    return res
+
+
+def create_eroded_tile_mask(image: pygame.Surface, inset_pixels: int = 2, alpha_thresh: int = 50):
+    raw_mask = pygame.mask.from_surface(image, alpha_thresh)
+    if inset_pixels <= 0 or raw_mask.count() == 0:
+        return raw_mask
+    rgba_surf = raw_mask.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0))
+    alpha = pygame.surfarray.pixels_alpha(rgba_surf) > 127
+    eroded = erode_binary_mask(alpha, pixels=inset_pixels)
+    temp_surf = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+    a = pygame.surfarray.pixels_alpha(temp_surf)
+    a[:] = eroded.astype(np.uint8) * 255
+    del a
+    return pygame.mask.from_surface(temp_surf, 127)
+
+
+# Pre-calculate fine polygon outlines 2px inside boundary
+print(f"Extracting collider outlines ({INSET_PIXELS}px inside boundary)...")
+tile_polygons = []
+for layer in tmx_data.visible_layers:
+    if isinstance(layer, pytmx.TiledTileLayer) and layer.name == "tile":
+        for x, y, image in layer.tiles():
+            if image:
+                tile_mask = create_eroded_tile_mask(
+                    image, inset_pixels=INSET_PIXELS, alpha_thresh=COLLISION_ALPHA_THRESHOLD
+                )
+                outline = tile_mask.outline(every=3)
+                if outline:
+                    world_outline = [
+                        (x * tmx_data.tilewidth + px, y * tmx_data.tileheight + py)
+                        for (px, py) in outline
+                    ]
+                    tile_polygons.append(world_outline)
+
+print(f"Extracted {len(tile_polygons)} collider outlines.")
 
 print(f"Loaded map: {tmx_file}")
 print(f"Map size: {tmx_data.width}x{tmx_data.height} tiles ({map_width_pixels}x{map_height_pixels} pixels)")
@@ -79,7 +155,7 @@ running = True
 pan_speed = 10
 
 while running:
-    # Handle events
+        # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -127,6 +203,8 @@ while running:
                 show_tile = not show_tile
             elif event.key == pygame.K_3:
                 show_objects = not show_objects
+            elif event.key == pygame.K_4 or event.key == pygame.K_c:
+                show_colliders = not show_colliders
             elif event.key == pygame.K_g:
                 show_grid = not show_grid
             elif event.key == pygame.K_SPACE:
@@ -184,6 +262,30 @@ while running:
                             scaled_img = pygame.transform.scale(image, (tw, th))
                             sx, sy = world_to_screen(x * tmx_data.tilewidth, y * tmx_data.tileheight)
                             screen.blit(scaled_img, (sx, sy))
+
+    # 1b. Render 2px Inset Collider Polygons
+    if show_colliders and show_tile:
+        for poly in tile_polygons:
+            screen_poly = [world_to_screen(wx, wy) for (wx, wy) in poly]
+            if len(screen_poly) >= 3:
+                xs = [p[0] for p in screen_poly]
+                ys = [p[1] for p in screen_poly]
+                min_x, max_x = min(xs), max(xs)
+                min_y, max_y = min(ys), max(ys)
+                if max_x >= 0 and min_x < SCREEN_WIDTH and max_y >= 0 and min_y < SCREEN_HEIGHT:
+                    w = max_x - min_x
+                    h = max_y - min_y
+                    if w > 0 and h > 0:
+                        poly_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+                        local_poly = [(sx - min_x, sy - min_y) for (sx, sy) in screen_poly]
+                        pygame.draw.polygon(poly_surf, (0, 100, 255, 110), local_poly)
+                        screen.blit(poly_surf, (min_x, min_y))
+                        pygame.draw.polygon(screen, (0, 220, 255), screen_poly, 1)
+
+    # Draw configured map borders
+    bsx, bsy = world_to_screen(border_min_x, border_min_y)
+    bex, bey = world_to_screen(border_max_x, border_max_y)
+    pygame.draw.rect(screen, (255, 60, 60), (bsx, bsy, bex - bsx, bey - bsy), max(2, int(2 * zoom_level)))
 
     # 2. Render Grid
     if show_grid:
@@ -300,11 +402,11 @@ while running:
                 screen.blit(txt_surf, bg_rect)
 
     # 4. HUD / Info overlay (always drawn relative to screen, not camera)
-    hud_bg = pygame.Surface((340, 220))
+    hud_bg = pygame.Surface((360, 245))
     hud_bg.fill((20, 20, 25))
     hud_bg.set_alpha(220)
     screen.blit(hud_bg, (10, 10))
-    pygame.draw.rect(screen, (100, 100, 120), (10, 10, 340, 220), 1)
+    pygame.draw.rect(screen, (100, 100, 120), (10, 10, 360, 245), 1)
 
     # Display status text
     texts = [
@@ -316,6 +418,7 @@ while running:
         ("[1] Toggle Background (tilebg): " + ("ON" if show_tilebg else "OFF"), (100, 255, 100) if show_tilebg else (255, 100, 100), False),
         ("[2] Toggle Foreground (tile):   " + ("ON" if show_tile else "OFF"), (100, 255, 100) if show_tile else (255, 100, 100), False),
         ("[3] Toggle Objects (objects):   " + ("ON" if show_objects else "OFF"), (100, 255, 100) if show_objects else (255, 100, 100), False),
+        ("[4]/[C] Colliders (6px inset):  " + ("ON" if show_colliders else "OFF"), (100, 255, 100) if show_colliders else (255, 100, 100), False),
         ("[G] Toggle Grid lines:          " + ("ON" if show_grid else "OFF"), (100, 255, 100) if show_grid else (255, 100, 100), False),
         ("[SPACE] Reset View  |  [ESC] Exit", (255, 255, 100), False)
     ]

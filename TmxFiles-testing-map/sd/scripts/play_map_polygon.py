@@ -25,49 +25,123 @@ except:
     font = pygame.font.Font(None, 18)
     hud_font = pygame.font.Font(None, 24)
 
+from config import (
+    DEFAULT_MAP,
+    COLLIDER_INSET_PIXELS,
+    COLLISION_ALPHA_THRESHOLD,
+    SHOW_COLLIDERS,
+    PLAYER_WIDTH,
+    PLAYER_HEIGHT,
+    get_map_borders,
+)
+
 # Load TMX map from parent directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
-tmx_file = os.path.join(script_dir, "../1outpost_new.tmx")
+map_dir = os.path.abspath(os.path.join(script_dir, ".."))
+
+target_map = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_MAP
+if not target_map.endswith(".tmx"):
+    target_map += ".tmx"
+
+if os.path.isabs(target_map):
+    tmx_file = target_map
+else:
+    tmx_file = os.path.join(map_dir, target_map)
+
+pygame.display.set_caption(f"Mini Militia Interactive Map - {os.path.basename(tmx_file)}")
+
 try:
     tmx_data = load_pygame(tmx_file)
 except Exception as e:
-    print(f"Error loading TMX map: {e}")
+    print(f"Error loading TMX map '{tmx_file}': {e}")
     sys.exit(1)
+
+import numpy as np
 
 # Map boundary limits
 map_width_pixels = tmx_data.width * tmx_data.tilewidth
 map_height_pixels = tmx_data.height * tmx_data.tileheight
 
+_map_borders = get_map_borders(target_map)
+border_min_x = _map_borders.get("left", 0)
+border_max_x = _map_borders.get("right", map_width_pixels)
+# Note: Cocos Y-up bottom/top vs Pygame Y-down:
+if "bottom" in _map_borders and "top" in _map_borders:
+    # If bottom/top are given in Cocos coords:
+    # top_cocos -> py_min_y = map_height_pixels - top_cocos
+    # bottom_cocos -> py_max_y = map_height_pixels - bottom_cocos
+    border_min_y = map_height_pixels - _map_borders["top"]
+    border_max_y = map_height_pixels - _map_borders["bottom"]
+else:
+    border_min_y = 0
+    border_max_y = map_height_pixels
+
+INSET_PIXELS = COLLIDER_INSET_PIXELS
+
+
+def erode_binary_mask(bool_arr: np.ndarray, pixels: int = 2) -> np.ndarray:
+    """Erodes a 2D boolean mask by N pixels on all 4 borders."""
+    res = bool_arr.copy()
+    for _ in range(pixels):
+        e = res.copy()
+        e[1:, :] &= res[:-1, :]
+        e[:-1, :] &= res[1:, :]
+        e[:, 1:] &= res[:, :-1]
+        e[:, :-1] &= res[:, 1:]
+        res = e
+    return res
+
+
+def create_eroded_tile_mask(image: pygame.Surface, inset_pixels: int = 2, alpha_thresh: int = 50):
+    raw_mask = pygame.mask.from_surface(image, alpha_thresh)
+    if inset_pixels <= 0 or raw_mask.count() == 0:
+        return raw_mask, image
+    rgba_surf = raw_mask.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0))
+    alpha = pygame.surfarray.pixels_alpha(rgba_surf) > 127
+    eroded = erode_binary_mask(alpha, pixels=inset_pixels)
+
+    temp_surf = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+    a = pygame.surfarray.pixels_alpha(temp_surf)
+    a[:] = eroded.astype(np.uint8) * 255
+    del a
+
+    mask = pygame.mask.from_surface(temp_surf, 127)
+    return mask, temp_surf
+
+
 # 1. Create a Giant Mask for Pixel-Perfect / Fine Collision Check
-print("Extracting actual texture pixel masks for foreground tiles...")
+print(f"Extracting texture pixel masks for foreground tiles (eroded {INSET_PIXELS}px inside boundary)...")
 giant_collision_surf = pygame.Surface((map_width_pixels, map_height_pixels), pygame.SRCALPHA)
 
-# 2. Extract and pre-calculate simplified polygon outlines for visual highlighting
+# 2. Extract and pre-calculate simplified polygon outlines 2px inside boundary
 tile_polygons = []
 
 for layer in tmx_data.visible_layers:
     if isinstance(layer, pytmx.TiledTileLayer) and layer.name == "tile":
         for x, y, image in layer.tiles():
             if image:
-                # Blit tile to the giant collision surface
-                giant_collision_surf.blit(image, (x * tmx_data.tilewidth, y * tmx_data.tileheight))
-                
-                # Get the pixel mask of the tile texture to extract outline points
-                tile_mask = pygame.mask.from_surface(image)
-                # Sample every 3rd point (every=3) to simplify the polygon vertex count for high performance
+                # Erode inset pixels inside boundary
+                tile_mask, eroded_surf = create_eroded_tile_mask(
+                    image, inset_pixels=INSET_PIXELS, alpha_thresh=COLLISION_ALPHA_THRESHOLD
+                )
+                # Blit eroded tile to the giant collision surface
+                giant_collision_surf.blit(
+                    eroded_surf, (x * tmx_data.tilewidth, y * tmx_data.tileheight)
+                )
+
+                # Sample outline from the eroded mask
                 outline = tile_mask.outline(every=3)
                 if outline:
-                    # Translate outline points to world coordinates
                     world_outline = [
-                        (x * tmx_data.tilewidth + px, y * tmx_data.tileheight + py) 
+                        (x * tmx_data.tilewidth + px, y * tmx_data.tileheight + py)
                         for (px, py) in outline
                     ]
                     tile_polygons.append(world_outline)
 
-# Create the final giant mask from the collision surface (alpha > 50 is solid)
-giant_collision_mask = pygame.mask.from_surface(giant_collision_surf, 50)
+# Create the final giant mask from the collision surface
+giant_collision_mask = pygame.mask.from_surface(giant_collision_surf, 127)
 print(f"Successfully generated map collision mask. Solid pixels: {giant_collision_mask.count()}")
-print(f"Pre-calculated {len(tile_polygons)} fine polygon outlines.")
+print(f"Pre-calculated {len(tile_polygons)} fine polygon outlines (2px inside boundary).")
 
 # Locate player spawn points
 spawn_points = []
@@ -158,8 +232,8 @@ class Bullet:
 
 class Player:
     def __init__(self, x, y):
-        self.width = 24
-        self.height = 42
+        self.width = PLAYER_WIDTH
+        self.height = PLAYER_HEIGHT
         self.rect = pygame.Rect(x, y, self.width, self.height)
         
         self.vx = 0
@@ -246,6 +320,22 @@ class Player:
             if self.vy > 0:
                 self.on_ground = True
             self.vy = 0
+
+        # Clamp to configured map borders
+        if self.rect.x < border_min_x:
+            self.rect.x = border_min_x
+            self.vx = 0
+        elif self.rect.right > border_max_x:
+            self.rect.right = border_max_x
+            self.vx = 0
+
+        if self.rect.y < border_min_y:
+            self.rect.y = border_min_y
+            self.vy = 0
+        elif self.rect.bottom > border_max_y:
+            self.rect.bottom = border_max_y
+            self.vy = 0
+            self.on_ground = True
 
         if self.on_ground:
             self.fuel = min(self.max_fuel, self.fuel + 1.25)
@@ -428,6 +518,13 @@ while running:
                         pygame.draw.polygon(poly_surf, (0, 100, 255, 105), local_poly)
                         screen.blit(poly_surf, (min_x, min_y))
                         pygame.draw.polygon(screen, (0, 170, 255), screen_poly, 1)
+
+    # Draw configured map borders
+    bsx = int((border_min_x - camera_x) * zoom_level)
+    bsy = int((border_min_y - camera_y) * zoom_level)
+    bsw = int((border_max_x - border_min_x) * zoom_level)
+    bsh = int((border_max_y - border_min_y) * zoom_level)
+    pygame.draw.rect(screen, (255, 60, 60), (bsx, bsy, bsw, bsh), max(2, int(2 * zoom_level)))
 
     if show_objects:
         for obj in tmx_data.objects:
